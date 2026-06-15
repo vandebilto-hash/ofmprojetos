@@ -1,0 +1,107 @@
+import { notFound } from "next/navigation";
+import { DialogAction } from "@/components/ui/dialog-action";
+import { PageHeader } from "@/components/ui/page-header";
+import { ProjectTabs } from "@/features/projects/project-tabs";
+import { prisma } from "@/lib/prisma/client";
+import { createStakeholderAction, deleteStakeholderAction, updateStakeholderAction } from "@/server/actions/projects";
+
+export default async function ProjectGovernancePage({ params }: { params: { id: string } }) {
+  const project = await prisma.project.findUnique({
+    where: { id: params.id },
+    include: { stakeholders: { orderBy: { name: "asc" } } }
+  });
+  if (!project) notFound();
+
+  const critical = project.stakeholders.filter((item) => item.influence === "HIGH" && item.interest === "HIGH").length;
+
+  return (
+    <>
+      <PageHeader title={`Governanca | ${project.name}`} description="Stakeholders, mapa de influencia/interesse e indicadores analiticos." />
+      <ProjectTabs projectId={project.id} />
+      <div className="mb-4 flex justify-end">
+        <DialogAction title="Cadastrar stakeholder" description="Adicione um novo stakeholder ao mapa de governanca." trigger="create" triggerLabel="Novo stakeholder">
+          <form action={createStakeholderAction} className="grid gap-3">
+            <input type="hidden" name="projectId" value={project.id} />
+            <div className="grid grid-cols-2 gap-3">
+              <label className="grid gap-1 text-sm font-medium">Nome<input name="name" required className="h-10 rounded-md border border-line px-3" /></label>
+              <label className="grid gap-1 text-sm font-medium">Empresa/Area<input name="company" className="h-10 rounded-md border border-line px-3" /></label>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <label className="grid gap-1 text-sm font-medium">Cargo<input name="jobTitle" className="h-10 rounded-md border border-line px-3" /></label>
+              <label className="grid gap-1 text-sm font-medium">Papel no projeto<input name="projectRole" className="h-10 rounded-md border border-line px-3" /></label>
+            </div>
+            <div className="grid grid-cols-3 gap-3">
+              <label className="grid gap-1 text-sm font-medium">Tipo<select name="type" defaultValue="CLIENT" className="h-10 rounded-md border border-line px-3"><option value="INTERNAL">Interno</option><option value="CLIENT">Cliente</option><option value="PARTNER">Parceiro</option><option value="SUPPLIER">Fornecedor</option><option value="SPONSOR">Sponsor</option></select></label>
+              <label className="grid gap-1 text-sm font-medium">Influencia<select name="influence" defaultValue="MEDIUM" className="h-10 rounded-md border border-line px-3"><option value="LOW">Baixa</option><option value="MEDIUM">Media</option><option value="HIGH">Alta</option></select></label>
+              <label className="grid gap-1 text-sm font-medium">Interesse<select name="interest" defaultValue="MEDIUM" className="h-10 rounded-md border border-line px-3"><option value="LOW">Baixo</option><option value="MEDIUM">Medio</option><option value="HIGH">Alto</option></select></label>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <label className="grid gap-1 text-sm font-medium">E-mail<input name="email" type="email" className="h-10 rounded-md border border-line px-3" /></label>
+              <label className="grid gap-1 text-sm font-medium">Telefone<input name="phone" className="h-10 rounded-md border border-line px-3" /></label>
+            </div>
+            <label className="grid gap-1 text-sm font-medium">Classificacao<input name="classification" placeholder="Gerenciar de perto, manter informado..." className="h-10 rounded-md border border-line px-3" /></label>
+            <label className="grid gap-1 text-sm font-medium">Observacoes<textarea name="notes" rows={3} className="rounded-md border border-line px-3 py-2" /></label>
+            <button className="w-fit rounded-md bg-brand-600 px-4 py-2 text-sm font-semibold text-white">Cadastrar</button>
+          </form>
+        </DialogAction>
+      </div>
+      <section className="grid gap-4 md:grid-cols-4">
+        <div className="rounded-lg border border-line bg-white p-4 shadow-soft"><p className="text-sm text-slate-500">Stakeholders</p><p className="mt-2 text-2xl font-bold">{project.stakeholders.length}</p></div>
+        <div className="rounded-lg border border-line bg-white p-4 shadow-soft"><p className="text-sm text-slate-500">Criticos</p><p className="mt-2 text-2xl font-bold">{critical}</p></div>
+        <div className="rounded-lg border border-line bg-white p-4 shadow-soft"><p className="text-sm text-slate-500">Alta influencia</p><p className="mt-2 text-2xl font-bold">{project.stakeholders.filter((item) => item.influence === "HIGH").length}</p></div>
+        <div className="rounded-lg border border-line bg-white p-4 shadow-soft"><p className="text-sm text-slate-500">Ativos</p><p className="mt-2 text-2xl font-bold">{project.stakeholders.filter((item) => item.active).length}</p></div>
+      </section>
+      <section className="mt-5 grid gap-4 lg:grid-cols-[1fr_1.2fr]">
+        <div className="rounded-lg border border-line bg-white p-5 shadow-soft">
+          <h2 className="text-lg font-bold">Mapa de stakeholders</h2>
+          <div className="mt-4 grid grid-cols-2 gap-3 text-sm">
+            {[["HIGH", "HIGH", "Gerenciar de perto"], ["HIGH", "LOW", "Manter satisfeito"], ["LOW", "HIGH", "Manter informado"], ["LOW", "LOW", "Monitorar"]].map(([influence, interest, label]) => (
+              <div key={`${influence}-${interest}`} className="min-h-32 rounded-lg border border-line p-3">
+                <p className="font-semibold text-ink">{label}</p>
+                <p className="mt-1 text-xs text-slate-500">Influencia {influence} | Interesse {interest}</p>
+                <div className="mt-3 grid gap-2">
+                  {project.stakeholders.filter((item) => item.influence === influence && item.interest === interest).map((item) => <span key={item.id} className="rounded bg-slate-100 px-2 py-1">{item.name}</span>)}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+        <div className="rounded-lg border border-line bg-white p-5 shadow-soft">
+          <h2 className="text-lg font-bold">Cadastro de stakeholders</h2>
+          <div className="mt-4 grid gap-2">
+            {project.stakeholders.map((item) => (
+              <div key={item.id} className="flex items-start justify-between gap-3 rounded-md border border-line p-3 text-sm">
+                <div>
+                  <p className="font-semibold">{item.name}</p>
+                  <p className="text-slate-500">{item.company ?? "-"} | {item.jobTitle ?? item.projectRole ?? "-"} | {item.type}</p>
+                </div>
+                <div className="flex gap-2">
+                  <DialogAction title="Editar stakeholder" description={item.name} trigger="edit">
+                    <form action={updateStakeholderAction} className="grid gap-3">
+                      <input type="hidden" name="stakeholderId" value={item.id} />
+                      <input type="hidden" name="projectId" value={project.id} />
+                      <div className="grid grid-cols-2 gap-3"><label className="grid gap-1 text-sm font-medium">Nome<input name="name" required defaultValue={item.name} className="h-10 rounded-md border border-line px-3" /></label><label className="grid gap-1 text-sm font-medium">Empresa/Area<input name="company" defaultValue={item.company ?? ""} className="h-10 rounded-md border border-line px-3" /></label></div>
+                      <div className="grid grid-cols-2 gap-3"><label className="grid gap-1 text-sm font-medium">Cargo<input name="jobTitle" defaultValue={item.jobTitle ?? ""} className="h-10 rounded-md border border-line px-3" /></label><label className="grid gap-1 text-sm font-medium">Papel no projeto<input name="projectRole" defaultValue={item.projectRole ?? ""} className="h-10 rounded-md border border-line px-3" /></label></div>
+                      <div className="grid grid-cols-3 gap-3"><label className="grid gap-1 text-sm font-medium">Tipo<select name="type" defaultValue={item.type} className="h-10 rounded-md border border-line px-3"><option value="INTERNAL">Interno</option><option value="CLIENT">Cliente</option><option value="PARTNER">Parceiro</option><option value="SUPPLIER">Fornecedor</option><option value="SPONSOR">Sponsor</option></select></label><label className="grid gap-1 text-sm font-medium">Influencia<select name="influence" defaultValue={item.influence} className="h-10 rounded-md border border-line px-3"><option value="LOW">Baixa</option><option value="MEDIUM">Media</option><option value="HIGH">Alta</option></select></label><label className="grid gap-1 text-sm font-medium">Interesse<select name="interest" defaultValue={item.interest} className="h-10 rounded-md border border-line px-3"><option value="LOW">Baixo</option><option value="MEDIUM">Medio</option><option value="HIGH">Alto</option></select></label></div>
+                      <div className="grid grid-cols-2 gap-3"><label className="grid gap-1 text-sm font-medium">E-mail<input name="email" type="email" defaultValue={item.email ?? ""} className="h-10 rounded-md border border-line px-3" /></label><label className="grid gap-1 text-sm font-medium">Telefone<input name="phone" defaultValue={item.phone ?? ""} className="h-10 rounded-md border border-line px-3" /></label></div>
+                      <label className="grid gap-1 text-sm font-medium">Classificacao<input name="classification" defaultValue={item.classification ?? ""} className="h-10 rounded-md border border-line px-3" /></label>
+                      <label className="grid gap-1 text-sm font-medium">Observacoes<textarea name="notes" defaultValue={item.notes ?? ""} rows={3} className="rounded-md border border-line px-3 py-2" /></label>
+                      <button className="w-fit rounded-md bg-brand-600 px-4 py-2 text-sm font-semibold text-white">Salvar</button>
+                    </form>
+                  </DialogAction>
+                  <DialogAction title="Excluir stakeholder" description={`Deseja realmente excluir "${item.name}"?`} trigger="delete">
+                    <form action={deleteStakeholderAction} className="flex justify-end">
+                      <input type="hidden" name="stakeholderId" value={item.id} />
+                      <input type="hidden" name="projectId" value={project.id} />
+                      <button className="rounded-md bg-red-600 px-4 py-2 text-sm font-semibold text-white">Sim, excluir</button>
+                    </form>
+                  </DialogAction>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+    </>
+  );
+}

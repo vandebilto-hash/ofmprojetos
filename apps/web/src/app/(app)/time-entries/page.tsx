@@ -1,0 +1,37 @@
+import { PageHeader } from "@/components/ui/page-header";
+import { createTimeEntryAction } from "@/server/actions/time-entries";
+import { formatDate, formatHours } from "@/lib/format";
+import { prisma } from "@/lib/prisma/client";
+
+export default async function TimeEntriesPage() {
+  const [tasks, entries] = await Promise.all([
+    prisma.task.findMany({ include: { project: true }, orderBy: { name: "asc" } }),
+    prisma.timeEntry.findMany({ include: { task: true, project: true, user: true }, orderBy: { date: "desc" } })
+  ]);
+
+  return (
+    <>
+      <PageHeader title="Apontamento de horas" description="Horas trabalhadas alimentam tarefas, projetos, custos e indicadores." />
+      <form action={createTimeEntryAction} className="mb-4 grid grid-cols-[1.4fr_150px_120px_1fr_auto] gap-3 rounded-lg border border-line bg-white p-3 shadow-soft">
+        <select name="taskId" className="h-10 rounded-md border border-line px-3">
+          {tasks.map((task) => (
+            <option key={task.id} value={task.id}>
+              {task.project.name} / {task.name}
+            </option>
+          ))}
+        </select>
+        <input name="date" type="date" required className="h-10 rounded-md border border-line px-3" />
+        <input name="hours" type="number" step="0.5" min="0.5" required className="h-10 rounded-md border border-line px-3" />
+        <input name="description" placeholder="Trabalho realizado" required className="h-10 rounded-md border border-line px-3" />
+        <button className="rounded-md bg-brand-600 px-4 text-sm font-semibold text-white">Apontar</button>
+      </form>
+      <div className="grid gap-2">
+        {entries.map((entry) => (
+          <div key={entry.id} className="rounded-md border border-line bg-white p-3 text-sm shadow-sm">
+            <strong>{entry.user.name}</strong> | {entry.project.name} / {entry.task.name} | {formatDate(entry.date)} | {formatHours(entry.hours)}
+          </div>
+        ))}
+      </div>
+    </>
+  );
+}

@@ -1,0 +1,33 @@
+{
+  "name": "projete-se",
+  "private": true,
+  "version": "0.1.0",
+  "workspaces": [
+    "apps/*"
+  ],
+  "scripts": {
+    "dev": "C:\\Progra~1\\nodejs\\npm.cmd run dev -w apps/web",
+    "build": "C:\\Progra~1\\nodejs\\npm.cmd run build -w apps/web",
+    "lint": "C:\\Progra~1\\nodejs\\npm.cmd run lint -w apps/web",
+    "typecheck": "C:\\Progra~1\\nodejs\\npm.cmd run typecheck -w apps/web",
+    "db:generate": "C:\\Progra~1\\nodejs\\node.exe node_modules/prisma/build/index.js generate --schema prisma/schema.prisma",
+    "db:push": "C:\\Progra~1\\nodejs\\node.exe node_modules/prisma/build/index.js db push --schema prisma/schema.prisma",
+    "db:seed": "tsx prisma/seed.ts",
+    "docker:up": "docker compose up -d",
+    "docker:down": "docker compose down"
+  },
+  "overrides": {
+    "react": "18.3.1",
+    "react-dom": "18.3.1"
+  },
+  "devDependencies": {
+    "prisma": "^6.19.3",
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
+    "tsx": "^4.19.2",
+    "typescript": "^5.6.3"
+  },
+  "dependencies": {
+    "@prisma/client": "^6.19.3"
+  }
+}

@@ -1,0 +1,13 @@
+node_modules
+.next
+.env
+.env.local
+dist
+coverage
+*.log
+postgres-data
+minio-data
+.codex-logs
+prints de exemplo
+dev.err.log
+dev.log
