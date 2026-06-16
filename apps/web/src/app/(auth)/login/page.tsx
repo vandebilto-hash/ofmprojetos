@@ -19,9 +19,6 @@ export default function LoginPage() {
           <Suspense fallback={<div className="text-sm text-slate-500">Carregando login...</div>}>
             <LoginForm />
           </Suspense>
-          <p className="mt-5 text-xs text-slate-500">
-            Seed local: admin@projete.local / Projete@123
-          </p>
         </div>
       </section>
       <section className="flex items-center bg-ink px-14 text-white">
