@@ -2,8 +2,9 @@ import { DialogAction } from "@/components/ui/dialog-action";
 import { DeleteConfirmationDialog } from "@/components/ui/delete-confirmation-dialog";
 import { PageHeader } from "@/components/ui/page-header";
 import { StatusBadge } from "@/components/ui/status-badge";
+import { CreateUserForm } from "@/features/admin/create-user-form";
 import { prisma } from "@/lib/prisma/client";
-import { createUserAction, deleteUserAction, updateUserStatusAction } from "@/server/actions/admin";
+import { deleteUserAction, updateUserStatusAction } from "@/server/actions/admin";
 
 export default async function AdminUsersPage() {
   const [users, clients] = await Promise.all([
@@ -16,18 +17,18 @@ export default async function AdminUsersPage() {
       <PageHeader title="Usuarios e funcionarios" description="Cadastro de funcionarios, gestores, administradores e usuarios cliente." />
       <div className="mb-4 flex justify-end">
         <DialogAction title="Criar usuario" description="Cadastre acesso, perfil e capacidade do novo usuario. A senha inicial exigira troca no primeiro login." trigger="create" triggerLabel="Novo usuario">
-          <form action={createUserAction} className="grid gap-3">
+          <CreateUserForm>
             <label className="grid gap-1 text-sm font-medium">
               Nome
-              <input name="name" required className="h-10 rounded-md border border-line px-3" />
+              <input name="name" required minLength={2} className="h-10 rounded-md border border-line px-3" />
             </label>
             <label className="grid gap-1 text-sm font-medium">
               E-mail
               <input name="email" type="email" required className="h-10 rounded-md border border-line px-3" />
             </label>
             <label className="grid gap-1 text-sm font-medium">
-              Senha inicial
-              <input name="password" type="password" required className="h-10 rounded-md border border-line px-3" />
+              Senha inicial (minimo 8 caracteres)
+              <input name="password" type="password" required minLength={8} className="h-10 rounded-md border border-line px-3" />
             </label>
             <div className="grid grid-cols-2 gap-3">
               <label className="grid gap-1 text-sm font-medium">
@@ -65,8 +66,7 @@ export default async function AdminUsersPage() {
                 <input name="hourlyRate" type="number" step="0.01" className="h-10 rounded-md border border-line px-3" />
               </label>
             </div>
-            <button className="w-fit rounded-md bg-brand-600 px-4 py-2 text-sm font-semibold text-white">Criar usuario</button>
-          </form>
+          </CreateUserForm>
         </DialogAction>
       </div>
       <div className="overflow-hidden rounded-lg border border-line bg-white shadow-soft">

@@ -72,7 +72,13 @@ export async function createUserAction(formData: FormData) {
   const session = await getServerSession(authOptions);
   if (!can(session?.user.role, "manage:users")) throw new Error("Sem permissao para criar usuarios.");
 
-  const data = userSchema.parse(Object.fromEntries(formData));
+  const parsed = userSchema.safeParse(Object.fromEntries(formData));
+  if (!parsed.success) {
+    const msg = parsed.error.errors.map((e) => e.message).join(", ");
+    throw new Error(msg || "Dados invalidos.");
+  }
+  const data = parsed.data;
+
   const role = await prisma.role.findUniqueOrThrow({ where: { name: data.roleName } });
   const passwordHash = await bcrypt.hash(data.password, 12);
 
