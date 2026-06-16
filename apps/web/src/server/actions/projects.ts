@@ -970,10 +970,6 @@ export async function importMppProjectAction(formData: FormData) {
   const projectName = data.projectName?.trim() || imported.name || file.name.replace(/\.[^.]+$/i, "");
   const projectStart = minDate(importedTasks.map((task) => task.start));
   const projectEnd = maxDate(importedTasks.map((task) => task.finish));
-  const users = await prisma.user.findMany({ where: { status: "ACTIVE" } });
-  const usersByName = new Map(users.map((user) => [normalizeName(user.name), user]));
-  const employeeRole = await prisma.role.findUniqueOrThrow({ where: { name: "EMPLOYEE" } });
-
   if (existingProjectId && formData.get("confirmImport") !== "1") {
     const changes = await importedScheduleChanges(existingProjectId, importedTasks, legacySource);
     if (!changes.length) return { redirect: `/projects/${existingProjectId}/gantt?importStatus=nochanges` };
@@ -1169,8 +1165,9 @@ async function applyImportedSchedule({
       [...stackByLevel.keys()].filter((level) => level > importedTask.outlineLevel).forEach((level) => stackByLevel.delete(level));
 
       if (existingTask) await tx.resourceAllocation.deleteMany({ where: { taskId: task.id } });
-      for (const assignment of importedTask.assignments ?? []) {
-        const user = await findOrCreateImportedResourceUser(tx, usersByName, employeeRole.id, assignment.resourceName);
+      for (const [index, assignment] of (importedTask.assignments ?? []).entries()) {
+        const user = assignmentUsers[index];
+        if (!user) continue;
         await tx.resourceAllocation.create({
           data: {
             projectId: createdProject.id,
@@ -1222,7 +1219,7 @@ async function applyImportedSchedule({
     });
 
     return createdProject;
-  });
+  }, { maxWait: 10000, timeout: 120000 });
 }
 
 async function importedScheduleChanges(projectId: string, importedTasks: NormalizedImportedTask[], legacySource: string) {
