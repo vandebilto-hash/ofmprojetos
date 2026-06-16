@@ -21,7 +21,9 @@ export function ImportMppForm({ projectId, clientId, managerId }: ImportMppFormP
     startTransition(async () => {
       try {
         const result = await importMppProjectAction(formData);
-        if (result?.redirect) {
+        if (result?.error) {
+          setError(result.error);
+        } else if (result?.redirect) {
           router.push(result.redirect);
         } else {
           formRef.current?.reset();

@@ -921,8 +921,9 @@ export async function deleteProjectAction(formData: FormData) {
 }
 
 export async function importMppProjectAction(formData: FormData) {
-  const session = await getServerSession(authOptions);
-  if (!canManageProject(session?.user.role)) throw new Error("Sem permissao para importar projetos.");
+  try {
+    const session = await getServerSession(authOptions);
+    if (!canManageProject(session?.user.role)) throw new Error("Sem permissao para importar projetos.");
 
   const file = formData.get("file");
   if (!(file instanceof File) || file.size === 0) throw new Error("Selecione um arquivo MPP, XML, MPX ou CSV valido.");
@@ -1017,7 +1018,13 @@ export async function importMppProjectAction(formData: FormData) {
   await recalculateProject(project.id);
   revalidatePath("/projects");
   revalidateProjectModule(project.id);
-  return { redirect: `/projects/${project.id}/tasks` };
+    return { redirect: `/projects/${project.id}/tasks` };
+  } catch (error) {
+    console.error("[IMPORT_MPP_PROJECT]", error);
+    return {
+      error: error instanceof Error ? error.message : "Erro ao importar cronograma."
+    };
+  }
 }
 
 export async function confirmMppImportAction(formData: FormData) {
