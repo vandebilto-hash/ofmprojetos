@@ -1,7 +1,6 @@
 "use client";
 
 import { useId, useRef } from "react";
-import { useRouter } from "next/navigation";
 import { Pencil, Plus, Trash2, X } from "lucide-react";
 
 type DialogActionProps = {
@@ -15,7 +14,6 @@ type DialogActionProps = {
 
 export function DialogAction({ title, description, trigger, triggerLabel, triggerVariant = "default", children }: DialogActionProps) {
   const dialogRef = useRef<HTMLDialogElement>(null);
-  const router = useRouter();
   const titleId = useId();
   const isCreate = trigger === "create";
   const isEdit = trigger === "edit";
@@ -59,17 +57,6 @@ export function DialogAction({ title, description, trigger, triggerLabel, trigge
       <dialog
         ref={dialogRef}
         aria-labelledby={titleId}
-        onSubmitCapture={() => {
-          window.dispatchEvent(
-            new CustomEvent("projete:toast", {
-              detail: { message: trigger === "delete" ? "Registro excluido com sucesso." : "Alteracao salva com sucesso." }
-            })
-          );
-          window.setTimeout(() => dialogRef.current?.close(), 80);
-          window.setTimeout(() => router.refresh(), 600);
-          window.setTimeout(() => router.refresh(), 1500);
-          window.setTimeout(() => router.refresh(), 3000);
-        }}
         className="w-full max-w-2xl rounded-lg border border-line p-0 shadow-soft backdrop:bg-ink/40"
       >
         <div className="flex items-start justify-between border-b border-line px-5 py-4">

@@ -2,10 +2,11 @@ import { notFound } from "next/navigation";
 import { DialogAction } from "@/components/ui/dialog-action";
 import { PageHeader } from "@/components/ui/page-header";
 import { GanttView } from "@/features/gantt/gantt-view";
+import { ImportMppForm } from "@/features/projects/import-mpp-form";
 import { ProjectTabs } from "@/features/projects/project-tabs";
 import { TaskForm } from "@/features/tasks/task-form";
 import { prisma } from "@/lib/prisma/client";
-import { confirmMppImportAction, importMppProjectAction } from "@/server/actions/projects";
+import { confirmMppImportAction } from "@/server/actions/projects";
 
 export default async function ProjectGanttPage({ params, searchParams }: { params: { id: string }; searchParams: { importPreview?: string; importStatus?: string } }) {
   const project = await prisma.project.findUnique({
@@ -72,13 +73,7 @@ export default async function ProjectGanttPage({ params, searchParams }: { param
           <TaskForm projectId={project.id} users={users} tasks={project.tasks} />
         </DialogAction>
         <DialogAction title="Importar MPP" description="Envie um arquivo MPP/XML/MPX/CSV para criar ou atualizar as atividades deste projeto." trigger="create" triggerLabel="Importar MPP">
-          <form action={importMppProjectAction} className="grid gap-3">
-            <input type="hidden" name="existingProjectId" value={project.id} />
-            <input type="hidden" name="clientId" value={project.clientId} />
-            <input type="hidden" name="managerId" value={project.managerId} />
-            <label className="grid gap-1 text-sm font-medium">Arquivo MPP/XML/MPX/CSV<input name="file" type="file" required accept=".mpp,.xml,.mpx,.csv" className="rounded-md border border-line px-3 py-2" /></label>
-            <button className="w-fit rounded-md bg-brand-600 px-4 py-2 text-sm font-semibold text-white">Importar cronograma</button>
-          </form>
+          <ImportMppForm projectId={project.id} clientId={project.clientId} managerId={project.managerId} />
         </DialogAction>
       </div>
       <GanttView tasks={project.tasks} baselines={project.baselines} dependencies={dependencies} />
