@@ -944,10 +944,19 @@ export async function importMppProjectAction(formData: FormData) {
     const importForm = new FormData();
     importForm.set("file", file);
 
-    const response = await fetch(`${serviceUrl}/import`, {
-      method: "POST",
-      body: importForm
-    });
+    let response: Response;
+    try {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 60000);
+      response = await fetch(`${serviceUrl}/import`, {
+        method: "POST",
+        body: importForm,
+        signal: controller.signal
+      });
+      clearTimeout(timeout);
+    } catch {
+      throw new Error("Servico de importacao MPP esta dormindo (Render free tier). Aguarde 30s e tente novamente para acorda-lo.");
+    }
 
     if (!response.ok) throw new Error("Falha ao importar arquivo pelo servico MPXJ.");
     imported = (await response.json()) as ImportedMppProject;
@@ -966,7 +975,7 @@ export async function importMppProjectAction(formData: FormData) {
 
   if (existingProjectId && formData.get("confirmImport") !== "1") {
     const changes = await importedScheduleChanges(existingProjectId, importedTasks, legacySource);
-    if (!changes.length) redirect(`/projects/${existingProjectId}/gantt?importStatus=nochanges`);
+    if (!changes.length) return { redirect: `/projects/${existingProjectId}/gantt?importStatus=nochanges` };
 
     const previewKey = `import-preview-${randomBytes(12).toString("hex")}`;
     await prisma.systemSetting.create({
@@ -987,7 +996,7 @@ export async function importMppProjectAction(formData: FormData) {
         }
       }
     });
-    redirect(`/projects/${existingProjectId}/gantt?importPreview=${previewKey}`);
+    return { redirect: `/projects/${existingProjectId}/gantt?importPreview=${previewKey}` };
   }
 
   const project = await applyImportedSchedule({
@@ -1008,7 +1017,7 @@ export async function importMppProjectAction(formData: FormData) {
   await recalculateProject(project.id);
   revalidatePath("/projects");
   revalidateProjectModule(project.id);
-  redirect(`/projects/${project.id}/tasks`);
+  return { redirect: `/projects/${project.id}/tasks` };
 }
 
 export async function confirmMppImportAction(formData: FormData) {

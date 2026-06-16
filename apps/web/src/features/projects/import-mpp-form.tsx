@@ -20,12 +20,15 @@ export function ImportMppForm({ projectId, clientId, managerId }: ImportMppFormP
     setError(null);
     startTransition(async () => {
       try {
-        await importMppProjectAction(formData);
-        formRef.current?.reset();
-        window.dispatchEvent(new CustomEvent("projete:toast", { detail: { message: "Cronograma importado com sucesso." } }));
-        router.refresh();
+        const result = await importMppProjectAction(formData);
+        if (result?.redirect) {
+          router.push(result.redirect);
+        } else {
+          formRef.current?.reset();
+          window.dispatchEvent(new CustomEvent("projete:toast", { detail: { message: "Cronograma importado com sucesso." } }));
+          router.refresh();
+        }
       } catch (err: any) {
-        if (err?.message?.includes("NEXT_REDIRECT")) throw err;
         setError(err?.message || "Erro ao importar cronograma.");
       }
     });
