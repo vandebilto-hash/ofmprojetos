@@ -69,13 +69,6 @@ export function LoginForm() {
       >
         {loading ? "Entrando..." : "Entrar"}
       </button>
-      <button
-        type="button"
-        onClick={() => signIn("google")}
-        className="h-11 rounded-md border border-line bg-white px-4 font-semibold text-slate-700 hover:bg-slate-50"
-      >
-        Entrar com Google
-      </button>
     </form>
   );
 }
