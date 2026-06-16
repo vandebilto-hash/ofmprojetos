@@ -1,10 +1,12 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { registerAction } from "@/server/actions/auth";
 
 export default function RegisterPage() {
+  const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
@@ -12,9 +14,9 @@ export default function RegisterPage() {
     setError(null);
     startTransition(async () => {
       try {
-        await registerAction(formData);
+        const result = await registerAction(formData);
+        if (result?.ok) router.push("/login?registered=success");
       } catch (err: any) {
-        if (err?.message?.includes("NEXT_REDIRECT")) throw err;
         setError(err?.message || "Erro ao criar conta.");
       }
     });

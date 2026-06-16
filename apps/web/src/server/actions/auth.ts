@@ -198,5 +198,5 @@ export async function registerAction(formData: FormData) {
     }
   });
 
-  redirect("/login?registered=success");
+  return { ok: true };
 }
