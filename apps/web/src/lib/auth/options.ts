@@ -54,25 +54,30 @@ export const authOptions: NextAuthOptions = {
     async signIn({ user, account }) {
       if (!user.email) return false;
 
-      let dbUser = await prisma.user.findUnique({ where: { email: user.email } });
+      try {
+        let dbUser = await prisma.user.findUnique({ where: { email: user.email } });
 
-      if (!dbUser && account?.provider === "google") {
-        const employeeRole = await prisma.role.findUnique({ where: { name: "EMPLOYEE" } });
-        if (!employeeRole) return false;
+        if (!dbUser && account?.provider === "google") {
+          const employeeRole = await prisma.role.findUnique({ where: { name: "EMPLOYEE" } });
+          if (!employeeRole) return false;
 
-        dbUser = await prisma.user.create({
-          data: {
-            email: user.email,
-            name: user.name ?? user.email,
-            image: user.image,
-            status: "ACTIVE",
-            mustChangePassword: false,
-            roleId: employeeRole.id
-          }
-        });
+          dbUser = await prisma.user.create({
+            data: {
+              email: user.email,
+              name: user.name ?? user.email,
+              image: user.image,
+              status: "ACTIVE",
+              mustChangePassword: false,
+              roleId: employeeRole.id
+            }
+          });
+        }
+
+        return Boolean(dbUser && dbUser.status === "ACTIVE");
+      } catch (error) {
+        console.error("SignIn error:", error);
+        return false;
       }
-
-      return Boolean(dbUser && dbUser.status === "ACTIVE");
     },
     async jwt({ token, user }) {
       const email = user?.email ?? token.email;
@@ -98,6 +103,11 @@ export const authOptions: NextAuthOptions = {
         session.user.mustChangePassword = Boolean(token.mustChangePassword);
       }
       return session;
+    },
+    async redirect({ url, baseUrl }) {
+      if (url.startsWith("/")) return `${baseUrl}${url}`;
+      if (new URL(url).origin === baseUrl) return url;
+      return baseUrl;
     }
   }
 };
