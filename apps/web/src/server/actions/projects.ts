@@ -374,6 +374,39 @@ export async function updateProjectPortalEmailsAction(formData: FormData) {
   revalidatePath(`/projects/${projectId}/portal`);
 }
 
+export async function generateProjectShareLinkAction(projectId: string) {
+  const session = await getServerSession(authOptions);
+  if (!canManageProject(session?.user.role)) throw new Error("Sem permissao para gerar link do portal.");
+
+  const existing = await prisma.projectShareLink.findFirst({
+    where: { projectId, active: true }
+  });
+  if (existing) return existing.token;
+
+  const token = randomBytes(24).toString("hex");
+  await prisma.projectShareLink.create({
+    data: {
+      projectId,
+      token,
+      active: true,
+      allowDownloads: true
+    }
+  });
+
+  await logProjectChange({
+    actorId: session?.user.id,
+    projectId,
+    entityType: "ProjectShareLink",
+    entityId: projectId,
+    action: "CREATE",
+    description: "Gerou link publico do portal do cliente.",
+    after: { token, active: true }
+  });
+
+  revalidatePath(`/projects/${projectId}/portal`);
+  return token;
+}
+
 export async function updateProjectHomeAction(formData: FormData) {
   const session = await getServerSession(authOptions);
   if (!canManageProject(session?.user.role)) throw new Error("Sem permissao para editar a Home do projeto.");

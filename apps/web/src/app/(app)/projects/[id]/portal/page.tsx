@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { PageHeader } from "@/components/ui/page-header";
 import { portalModules } from "@/features/portal/modules";
+import { GenerateLinkButton } from "@/features/projects/generate-link-button";
 import { ProjectTabs } from "@/features/projects/project-tabs";
 import { prisma } from "@/lib/prisma/client";
 import { updateProjectPortalModulesAction, updateProjectPortalEmailsAction } from "@/server/actions/projects";
@@ -34,7 +35,10 @@ export default async function ProjectPortalSettingsPage({ params }: { params: { 
             </Link>
           </div>
         ) : (
-          <p className="mt-2 text-sm text-red-600">Este projeto ainda nao possui link publico ativo.</p>
+          <div>
+            <p className="mt-2 text-sm text-red-600">Este projeto ainda nao possui link publico ativo.</p>
+            <GenerateLinkButton projectId={project.id} />
+          </div>
         )}
       </section>
 
