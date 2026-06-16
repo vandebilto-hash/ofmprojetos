@@ -364,6 +364,7 @@ async function main() {
       projectId: project.id,
       name: "Baseline inicial",
       description: "Snapshot inicial criado pelo seed.",
+      reason: "Baseline de referencia para o projeto piloto.",
       isActive: true,
       createdById: admin.id,
       tasks: {
