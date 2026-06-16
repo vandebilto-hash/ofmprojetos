@@ -169,10 +169,11 @@ export async function registerAction(formData: FormData) {
     throw new Error("Este e-mail ja esta cadastrado.");
   }
 
-  const clientRole = await prisma.role.findUnique({ where: { name: "CLIENT" } });
-  if (!clientRole) {
-    throw new Error("Role CLIENT nao encontrada no sistema.");
-  }
+  const clientRole = await prisma.role.upsert({
+    where: { name: "CLIENT" },
+    update: {},
+    create: { name: "CLIENT", description: "Cliente" }
+  });
 
   const passwordHash = await bcrypt.hash(data.password, 12);
 
