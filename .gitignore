@@ -11,3 +11,4 @@ minio-data
 prints de exemplo
 dev.err.log
 dev.log
+.env.backup
