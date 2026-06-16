@@ -25,6 +25,8 @@ export function ImportMppForm({ projectId, clientId, managerId }: ImportMppFormP
           setError(result.error);
         } else if (result?.redirect) {
           router.push(result.redirect);
+          router.refresh();
+          window.dispatchEvent(new CustomEvent("projete:toast", { detail: { message: "Arquivo processado. Verifique a pagina atualizada." } }));
         } else {
           formRef.current?.reset();
           window.dispatchEvent(new CustomEvent("projete:toast", { detail: { message: "Cronograma importado com sucesso." } }));
