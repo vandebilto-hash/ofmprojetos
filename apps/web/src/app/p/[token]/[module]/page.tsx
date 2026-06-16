@@ -1,5 +1,5 @@
-import { headers } from "next/headers";
-import { notFound } from "next/navigation";
+import { cookies, headers } from "next/headers";
+import { notFound, redirect } from "next/navigation";
 import { PublicPortalModule, PublicPortalShell } from "@/features/portal/public-portal";
 import { portalModuleByKey, portalModules } from "@/features/portal/modules";
 import { prisma } from "@/lib/prisma/client";
@@ -43,6 +43,22 @@ export default async function PublicProjectModulePage({ params }: { params: { to
 
   if (!shareLink?.active) notFound();
   if (shareLink.expiresAt && shareLink.expiresAt < new Date()) notFound();
+
+  if (shareLink.allowedEmails) {
+    const allowedList = shareLink.allowedEmails
+      .split(",")
+      .map((e: string) => e.trim().toLowerCase())
+      .filter(Boolean);
+
+    if (allowedList.length > 0) {
+      const cookieStore = await cookies();
+      const hasAccess = cookieStore.get(`portal_access_${params.token}`)?.value;
+
+      if (!hasAccess) {
+        redirect(`/p/${params.token}/gate`);
+      }
+    }
+  }
 
   const settingsByKey = new Map(shareLink.project.moduleSettings.map((module) => [module.key, module]));
   const hasSavedSettings = shareLink.project.moduleSettings.length > 0;

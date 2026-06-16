@@ -4,7 +4,7 @@ import { PageHeader } from "@/components/ui/page-header";
 import { portalModules } from "@/features/portal/modules";
 import { ProjectTabs } from "@/features/projects/project-tabs";
 import { prisma } from "@/lib/prisma/client";
-import { updateProjectPortalModulesAction } from "@/server/actions/projects";
+import { updateProjectPortalModulesAction, updateProjectPortalEmailsAction } from "@/server/actions/projects";
 
 export default async function ProjectPortalSettingsPage({ params }: { params: { id: string } }) {
   const project = await prisma.project.findUnique({
@@ -37,6 +37,32 @@ export default async function ProjectPortalSettingsPage({ params }: { params: { 
           <p className="mt-2 text-sm text-red-600">Este projeto ainda nao possui link publico ativo.</p>
         )}
       </section>
+
+      {activeLink && (
+        <form action={updateProjectPortalEmailsAction} className="mb-5 rounded-lg border border-line bg-white p-5 shadow-soft">
+          <input type="hidden" name="shareLinkId" value={activeLink.id} />
+          <input type="hidden" name="projectId" value={project.id} />
+          <div className="mb-3">
+            <h2 className="text-lg font-bold text-ink">Restricao de acesso por e-mail</h2>
+            <p className="mt-1 text-sm text-slate-600">
+              Se preenchido, apenas os e-mails listados poderao acessar o portal. Deixe vazio para permitir acesso a qualquer pessoa com o link.
+            </p>
+          </div>
+          <label className="grid gap-1 text-sm font-medium text-slate-700">
+            E-mails autorizados (separados por virgula)
+            <textarea
+              name="allowedEmails"
+              defaultValue={activeLink.allowedEmails ?? ""}
+              rows={3}
+              placeholder="cliente@empresa.com, outro@email.com"
+              className="rounded-md border border-line px-3 py-2 text-sm outline-none focus:border-brand-500"
+            />
+          </label>
+          <button className="mt-3 rounded-md bg-brand-600 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-700">
+            Salvar e-mails autorizados
+          </button>
+        </form>
+      )}
 
       <form action={updateProjectPortalModulesAction} className="rounded-lg border border-line bg-white p-5 shadow-soft">
         <input type="hidden" name="projectId" value={project.id} />

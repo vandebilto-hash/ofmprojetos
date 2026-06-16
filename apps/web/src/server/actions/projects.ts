@@ -344,6 +344,36 @@ export async function updateProjectPortalModulesAction(formData: FormData) {
   revalidatePath(`/projects/${projectId}`);
 }
 
+export async function updateProjectPortalEmailsAction(formData: FormData) {
+  const session = await getServerSession(authOptions);
+  if (!canManageProject(session?.user.role)) throw new Error("Sem permissao para configurar o portal do cliente.");
+
+  const shareLinkId = String(formData.get("shareLinkId"));
+  const projectId = String(formData.get("projectId"));
+  const allowedEmails = String(formData.get("allowedEmails") || "").trim() || null;
+
+  if (!shareLinkId || !projectId) throw new Error("Dados invalidos.");
+
+  await prisma.projectShareLink.update({
+    where: { id: shareLinkId },
+    data: { allowedEmails }
+  });
+
+  await logProjectChange({
+    actorId: session?.user.id,
+    projectId,
+    entityType: "ProjectShareLink",
+    entityId: shareLinkId,
+    action: "UPDATE",
+    description: allowedEmails
+      ? "Atualizou e-mails autorizados no portal do cliente."
+      : "Removeu restricao de e-mails no portal do cliente.",
+    after: { allowedEmails }
+  });
+
+  revalidatePath(`/projects/${projectId}/portal`);
+}
+
 export async function updateProjectHomeAction(formData: FormData) {
   const session = await getServerSession(authOptions);
   if (!canManageProject(session?.user.role)) throw new Error("Sem permissao para editar a Home do projeto.");

@@ -380,6 +380,7 @@ model ProjectShareLink {
   active         Boolean           @default(true)
   expiresAt      DateTime?
   allowDownloads Boolean           @default(true)
+  allowedEmails  String?
   project        Project           @relation(fields: [projectId], references: [id], onDelete: Cascade)
   accessLogs     ClientAccessLog[]
   createdAt      DateTime          @default(now())
