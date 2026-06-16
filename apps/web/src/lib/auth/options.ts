@@ -1,10 +1,34 @@
+import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import type { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma/client";
 
+const adapter = PrismaAdapter(prisma);
+
+const originalCreateUser = adapter.createUser?.bind(adapter);
+
+const customAdapter = {
+  ...adapter,
+  async createUser(data: any) {
+    const employeeRole = await prisma.role.findUnique({ where: { name: "EMPLOYEE" } });
+    return prisma.user.create({
+      data: {
+        email: data.email,
+        name: data.name,
+        image: data.image,
+        emailVerified: data.emailVerified,
+        status: "ACTIVE",
+        mustChangePassword: false,
+        roleId: employeeRole!.id
+      }
+    });
+  }
+};
+
 export const authOptions: NextAuthOptions = {
+  adapter: customAdapter as any,
   session: {
     strategy: "jwt"
   },
@@ -43,39 +67,15 @@ export const authOptions: NextAuthOptions = {
       }
     }),
     GoogleProvider({
-      clientId: process.env.GOOGLE_CLIENT_ID || "not-configured",
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET || "not-configured",
-      allowDangerousEmailAccountLinking: false
+      clientId: process.env.GOOGLE_CLIENT_ID!,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET!
     })
   ],
   callbacks: {
     async signIn({ user, account }) {
       if (!user.email) return false;
-
-      try {
-        let dbUser = await prisma.user.findUnique({ where: { email: user.email } });
-
-        if (!dbUser && account?.provider === "google") {
-          const employeeRole = await prisma.role.findUnique({ where: { name: "EMPLOYEE" } });
-          if (!employeeRole) return false;
-
-          dbUser = await prisma.user.create({
-            data: {
-              email: user.email,
-              name: user.name ?? user.email,
-              image: user.image,
-              status: "ACTIVE",
-              mustChangePassword: false,
-              roleId: employeeRole.id
-            }
-          });
-        }
-
-        return Boolean(dbUser && dbUser.status === "ACTIVE");
-      } catch (error) {
-        console.error("SignIn error:", error);
-        return false;
-      }
+      const dbUser = await prisma.user.findUnique({ where: { email: user.email } });
+      return Boolean(dbUser && dbUser.status === "ACTIVE");
     },
     async jwt({ token, user }) {
       const email = user?.email ?? token.email;
@@ -103,9 +103,7 @@ export const authOptions: NextAuthOptions = {
       return session;
     },
     async redirect({ url, baseUrl }) {
-      if (url.startsWith("/")) return `${baseUrl}${url}`;
-      if (new URL(url).origin === baseUrl) return url;
-      return baseUrl;
+      return `${baseUrl}/dashboard`;
     }
   }
 };
