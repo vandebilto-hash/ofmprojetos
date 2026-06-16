@@ -5,7 +5,7 @@ export async function GET() {
 
   if (!serviceUrl) {
     return NextResponse.json(
-      { error: "Servico MPP nao esta disponivel. O template MPP requer o servico MPXJ." },
+      { error: "Servico MPP nao esta disponivel. O template requer o servico MPXJ." },
       { status: 503 }
     );
   }
@@ -14,15 +14,15 @@ export async function GET() {
     const response = await fetch(`${serviceUrl}/template`);
 
     if (!response.ok) {
-      return NextResponse.json({ error: "Falha ao gerar template MPP." }, { status: 502 });
+      return NextResponse.json({ error: "Falha ao gerar template." }, { status: 502 });
     }
 
     const buffer = await response.arrayBuffer();
 
     return new NextResponse(buffer, {
       headers: {
-        "Content-Type": "application/octet-stream",
-        "Content-Disposition": 'attachment; filename="template-projete-se.mpp"'
+        "Content-Type": "application/xml; charset=utf-8",
+        "Content-Disposition": 'attachment; filename="template-projete-se.xml"'
       }
     });
   } catch {

@@ -46,7 +46,7 @@ export function ImportMppForm({ projectId, clientId, managerId }: ImportMppFormP
         <input name="file" type="file" required accept=".mpp,.xml,.mpx,.csv" className="rounded-md border border-line px-3 py-2" />
       </label>
       <a href="/api/templates/import-project" target="_blank" rel="noopener noreferrer" className="w-fit text-xs font-medium text-brand-600 underline underline-offset-2 hover:text-brand-800">
-        Baixar template (XML para MS Project ou CSV)
+        Baixar template (abre no MS Project)
       </a>
       <button disabled={isPending} className="w-fit rounded-md bg-brand-600 px-4 py-2 text-sm font-semibold text-white disabled:opacity-50">
         {isPending ? "Importando..." : "Importar cronograma"}
