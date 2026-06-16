@@ -1,34 +1,10 @@
-import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import type { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma/client";
 
-const adapter = PrismaAdapter(prisma);
-
-const originalCreateUser = adapter.createUser?.bind(adapter);
-
-const customAdapter = {
-  ...adapter,
-  async createUser(data: any) {
-    const employeeRole = await prisma.role.findUnique({ where: { name: "EMPLOYEE" } });
-    return prisma.user.create({
-      data: {
-        email: data.email,
-        name: data.name,
-        image: data.image,
-        emailVerified: data.emailVerified,
-        status: "ACTIVE",
-        mustChangePassword: false,
-        roleId: employeeRole!.id
-      }
-    });
-  }
-};
-
 export const authOptions: NextAuthOptions = {
-  adapter: customAdapter as any,
   session: {
     strategy: "jwt"
   },
@@ -72,10 +48,49 @@ export const authOptions: NextAuthOptions = {
     })
   ],
   callbacks: {
-    async signIn({ user, account }) {
-      if (!user.email) return false;
-      const dbUser = await prisma.user.findUnique({ where: { email: user.email } });
-      return Boolean(dbUser && dbUser.status === "ACTIVE");
+    async signIn({ user, account, profile }) {
+      if (account?.provider !== "google" || !user?.email) return true;
+
+      try {
+        let dbUser = await prisma.user.findUnique({ where: { email: user.email } });
+
+        if (!dbUser) {
+          const employeeRole = await prisma.role.findUnique({ where: { name: "EMPLOYEE" } });
+          if (!employeeRole) return false;
+
+          dbUser = await prisma.user.create({
+            data: {
+              email: user.email,
+              name: user.name ?? (profile as any)?.name ?? user.email,
+              image: user.image ?? (profile as any)?.picture,
+              status: "ACTIVE",
+              mustChangePassword: false,
+              roleId: employeeRole.id
+            }
+          });
+
+          await prisma.account.create({
+            data: {
+              userId: dbUser.id,
+              type: account.type,
+              provider: account.provider,
+              providerAccountId: account.providerAccountId,
+              refresh_token: account.refresh_token ?? null,
+              access_token: account.access_token ?? null,
+              expires_at: account.expires_at ?? null,
+              token_type: account.token_type ?? null,
+              scope: account.scope ?? null,
+              id_token: account.id_token ?? null,
+              session_state: (account as any)?.session_state ?? null
+            }
+          });
+        }
+
+        return dbUser.status === "ACTIVE";
+      } catch (error) {
+        console.error("Google sign-in error:", error);
+        return false;
+      }
     },
     async jwt({ token, user }) {
       const email = user?.email ?? token.email;
@@ -101,9 +116,6 @@ export const authOptions: NextAuthOptions = {
         session.user.mustChangePassword = Boolean(token.mustChangePassword);
       }
       return session;
-    },
-    async redirect({ url, baseUrl }) {
-      return `${baseUrl}/dashboard`;
     }
   }
 };
