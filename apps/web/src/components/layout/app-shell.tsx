@@ -2,7 +2,6 @@ import Link from "next/link";
 import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
 import {
-  BarChart3,
   BriefcaseBusiness,
   FileBarChart,
   FolderKanban,
@@ -61,8 +60,6 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
             <p className="text-xs text-slate-500">{session.user.role}</p>
           </div>
           <div className="flex items-center gap-3 text-sm text-slate-600">
-            <BarChart3 size={18} />
-            <span>Ambiente self-hosted gratuito</span>
             <ThemeToggle />
           </div>
         </header>
