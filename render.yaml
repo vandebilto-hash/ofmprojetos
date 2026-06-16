@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: mpp-service
+    runtime: docker
+    dockerfilePath: ./services/mpp-service/Dockerfile
+    dockerContext: ./services/mpp-service
+    plan: free
+    healthCheckPath: /health
+    envVars:
+      - key: SERVER_PORT
+        value: 8081

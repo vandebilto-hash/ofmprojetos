@@ -873,7 +873,11 @@ export async function importMppProjectAction(formData: FormData) {
   if (extension === "csv") {
     imported = parseCsvProject(decodeCsvFile(await file.arrayBuffer()), file.name);
   } else {
-    const serviceUrl = process.env.MPP_SERVICE_URL ?? "http://localhost:8081";
+    const serviceUrl = process.env.MPP_SERVICE_URL;
+    if (!serviceUrl) {
+      throw new Error("Servico de importacao MPP nao esta disponivel. Use arquivos CSV ou configure MPP_SERVICE_URL.");
+    }
+
     const importForm = new FormData();
     importForm.set("file", file);
 
