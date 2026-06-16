@@ -1,37 +1,31 @@
-import { S3Client, PutObjectCommand, GetObjectCommand } from "@aws-sdk/client-s3";
-import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+import { createClient } from "@supabase/supabase-js";
 
-export const storageClient = new S3Client({
-  region: process.env.MINIO_REGION ?? "us-east-1",
-  endpoint: process.env.MINIO_ENDPOINT ?? "http://localhost:9000",
-  forcePathStyle: true,
-  credentials: {
-    accessKeyId: process.env.MINIO_ACCESS_KEY ?? "projete",
-    secretAccessKey: process.env.MINIO_SECRET_KEY ?? "projete-secret"
-  }
-});
+const supabaseUrl = process.env.SUPABASE_URL!;
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
 
-export const bucket = process.env.MINIO_BUCKET ?? "projete-se";
+export const storageClient = createClient(supabaseUrl, supabaseServiceKey);
+
+export const bucket = process.env.SUPABASE_STORAGE_BUCKET ?? "projete-se";
 
 export async function createUploadUrl(path: string, contentType: string) {
-  return getSignedUrl(
-    storageClient,
-    new PutObjectCommand({
-      Bucket: bucket,
-      Key: path,
-      ContentType: contentType
-    }),
-    { expiresIn: 300 }
-  );
+  const { data, error } = await storageClient.storage
+    .from(bucket)
+    .createSignedUploadUrl(path, { upsert: true });
+
+  if (error) throw error;
+  return data.signedUrl;
 }
 
 export async function createDownloadUrl(path: string) {
-  return getSignedUrl(
-    storageClient,
-    new GetObjectCommand({
-      Bucket: bucket,
-      Key: path
-    }),
-    { expiresIn: 300 }
-  );
+  const { data, error } = await storageClient.storage
+    .from(bucket)
+    .createSignedUrl(path, 300);
+
+  if (error) throw error;
+  return data.signedUrl;
+}
+
+export async function deleteFile(path: string) {
+  const { error } = await storageClient.storage.from(bucket).remove([path]);
+  if (error) throw error;
 }
