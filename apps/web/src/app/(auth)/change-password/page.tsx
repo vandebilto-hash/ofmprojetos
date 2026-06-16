@@ -1,5 +1,6 @@
 import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
+import { PasswordInput } from "@/components/ui/password-input";
 import { authOptions } from "@/lib/auth/options";
 import { changeRequiredPasswordAction } from "@/server/actions/auth";
 
@@ -20,34 +21,28 @@ export default async function ChangePasswordPage() {
         <form action={changeRequiredPasswordAction} className="mt-6 grid gap-4">
           <label className="grid gap-1 text-sm font-medium text-slate-700">
             Senha atual
-            <input
+            <PasswordInput
               name="currentPassword"
-              type="password"
               autoComplete="current-password"
               required
-              className="h-11 rounded-md border border-line bg-white px-3 outline-none focus:border-brand-500"
             />
           </label>
           <label className="grid gap-1 text-sm font-medium text-slate-700">
             Nova senha
-            <input
+            <PasswordInput
               name="newPassword"
-              type="password"
               autoComplete="new-password"
               minLength={8}
               required
-              className="h-11 rounded-md border border-line bg-white px-3 outline-none focus:border-brand-500"
             />
           </label>
           <label className="grid gap-1 text-sm font-medium text-slate-700">
             Confirmar nova senha
-            <input
+            <PasswordInput
               name="confirmPassword"
-              type="password"
               autoComplete="new-password"
               minLength={8}
               required
-              className="h-11 rounded-md border border-line bg-white px-3 outline-none focus:border-brand-500"
             />
           </label>
           <button className="h-11 rounded-md bg-brand-600 px-4 font-semibold text-white hover:bg-brand-700">

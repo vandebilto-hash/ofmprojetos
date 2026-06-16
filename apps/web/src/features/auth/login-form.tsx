@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { PasswordInput } from "@/components/ui/password-input";
 
 export function LoginForm() {
   const router = useRouter();
@@ -65,12 +66,10 @@ export function LoginForm() {
       </label>
       <label className="grid gap-1 text-sm font-medium text-slate-700">
         Senha
-        <input
+        <PasswordInput
           name="password"
-          type="password"
           autoComplete="current-password"
           required
-          className="h-11 rounded-md border border-line bg-white px-3 outline-none focus:border-brand-500"
         />
       </label>
       <div className="flex items-center justify-between text-sm">

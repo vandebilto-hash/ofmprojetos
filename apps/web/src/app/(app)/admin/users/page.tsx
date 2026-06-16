@@ -1,6 +1,7 @@
 import { DialogAction } from "@/components/ui/dialog-action";
 import { DeleteConfirmationDialog } from "@/components/ui/delete-confirmation-dialog";
 import { PageHeader } from "@/components/ui/page-header";
+import { PasswordInput } from "@/components/ui/password-input";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { CreateUserForm } from "@/features/admin/create-user-form";
 import { prisma } from "@/lib/prisma/client";
@@ -28,7 +29,7 @@ export default async function AdminUsersPage() {
             </label>
             <label className="grid gap-1 text-sm font-medium">
               Senha inicial (minimo 8 caracteres)
-              <input name="password" type="password" required minLength={8} className="h-10 rounded-md border border-line px-3" />
+              <PasswordInput name="password" required minLength={8} />
             </label>
             <div className="grid grid-cols-2 gap-3">
               <label className="grid gap-1 text-sm font-medium">

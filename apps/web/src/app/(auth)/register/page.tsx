@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
+import { PasswordInput } from "@/components/ui/password-input";
 import { registerAction } from "@/server/actions/auth";
 
 export default function RegisterPage() {
@@ -62,26 +63,22 @@ export default function RegisterPage() {
           </label>
           <label className="grid gap-1 text-sm font-medium text-slate-700">
             Senha
-            <input
+            <PasswordInput
               name="password"
-              type="password"
               autoComplete="new-password"
               required
               minLength={8}
               placeholder="Minimo 8 caracteres"
-              className="h-11 rounded-md border border-line bg-white px-3 outline-none focus:border-brand-500"
             />
           </label>
           <label className="grid gap-1 text-sm font-medium text-slate-700">
             Confirmar senha
-            <input
+            <PasswordInput
               name="confirmPassword"
-              type="password"
               autoComplete="new-password"
               required
               minLength={8}
               placeholder="Repita a senha"
-              className="h-11 rounded-md border border-line bg-white px-3 outline-none focus:border-brand-500"
             />
           </label>
           <button

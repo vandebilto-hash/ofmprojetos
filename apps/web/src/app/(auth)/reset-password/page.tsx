@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useState, useTransition, Suspense } from "react";
+import { PasswordInput } from "@/components/ui/password-input";
 import { resetPasswordAction } from "@/server/actions/auth";
 
 function ResetPasswordForm() {
@@ -47,26 +48,22 @@ function ResetPasswordForm() {
         <input type="hidden" name="token" value={token} />
         <label className="grid gap-1 text-sm font-medium text-slate-700">
           Nova senha
-          <input
+          <PasswordInput
             name="newPassword"
-            type="password"
             autoComplete="new-password"
             required
             minLength={8}
             placeholder="Minimo 8 caracteres"
-            className="h-11 rounded-md border border-line bg-white px-3 outline-none focus:border-brand-500"
           />
         </label>
         <label className="grid gap-1 text-sm font-medium text-slate-700">
           Confirmar nova senha
-          <input
+          <PasswordInput
             name="confirmPassword"
-            type="password"
             autoComplete="new-password"
             required
             minLength={8}
             placeholder="Repita a nova senha"
-            className="h-11 rounded-md border border-line bg-white px-3 outline-none focus:border-brand-500"
           />
         </label>
         <button
