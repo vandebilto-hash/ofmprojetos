@@ -77,6 +77,9 @@ export function ImportProjectForm({ projects, clients, managers, defaultManagerI
       <p className="text-xs text-slate-500">
         No CSV, use colunas como EDT/WBS, Tarefa, Inicio, Fim, Horas, Avanco, Responsavel e Predecessoras. Recursos serao vinculados automaticamente quando o nome corresponder a um usuario ativo do Projete-se.
       </p>
+      <a href="/api/templates/import-project" target="_blank" rel="noopener noreferrer" className="w-fit text-xs font-medium text-brand-600 underline underline-offset-2 hover:text-brand-800">
+        Baixar template CSV de exemplo
+      </a>
       <button disabled={isPending} className="w-fit rounded-md bg-brand-600 px-4 py-2 text-sm font-semibold text-white disabled:opacity-50">
         {isPending ? "Importando..." : "Importar projeto"}
       </button>
