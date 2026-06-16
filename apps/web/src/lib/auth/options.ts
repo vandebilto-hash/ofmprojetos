@@ -51,9 +51,27 @@ export const authOptions: NextAuthOptions = {
     })
   ],
   callbacks: {
-    async signIn({ user }) {
+    async signIn({ user, account }) {
       if (!user.email) return false;
-      const dbUser = await prisma.user.findUnique({ where: { email: user.email } });
+
+      let dbUser = await prisma.user.findUnique({ where: { email: user.email } });
+
+      if (!dbUser && account?.provider === "google") {
+        const employeeRole = await prisma.role.findUnique({ where: { name: "EMPLOYEE" } });
+        if (!employeeRole) return false;
+
+        dbUser = await prisma.user.create({
+          data: {
+            email: user.email,
+            name: user.name ?? user.email,
+            image: user.image,
+            status: "ACTIVE",
+            mustChangePassword: false,
+            roleId: employeeRole.id
+          }
+        });
+      }
+
       return Boolean(dbUser && dbUser.status === "ACTIVE");
     },
     async jwt({ token, user }) {
