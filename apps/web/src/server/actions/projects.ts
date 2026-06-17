@@ -1233,13 +1233,16 @@ async function importedScheduleChanges(projectId: string, importedTasks: Normali
   for (const importedTask of importedTasks) {
     const parent = nearestPreviewParent(stackByLevel, importedTask.outlineLevel);
     const wbsCode = importedTask.wbsCode ?? nextWbsCode(countersByLevel, importedTask.outlineLevel);
-    const existing = byLegacy.get(`${legacySource}:${importedTask.legacyItemCode ?? wbsCode}`)
-      ?? byWbs.get(wbsCode)
-      ?? existingTasks.find((task) =>
-        normalizeName(task.name) === normalizeName(importedTask.name)
-        && task.outlineLevel === importedTask.outlineLevel
-        && task.parentTaskId === parent?.id
-      );
+    const existingByStrongKey = byLegacy.get(`${legacySource}:${importedTask.legacyItemCode ?? wbsCode}`) ?? byWbs.get(wbsCode);
+    const existing = existingByStrongKey ?? (
+      importedTask.legacyItemCode || importedTask.wbsCode
+        ? null
+        : existingTasks.find((task) =>
+          normalizeName(task.name) === normalizeName(importedTask.name)
+          && task.outlineLevel === importedTask.outlineLevel
+          && task.parentTaskId === parent?.id
+        )
+    );
     if (!existing) {
       changes.push({ type: "CREATE", wbs: wbsCode, task: importedTask.name, fields: [] });
       stackByLevel.set(importedTask.outlineLevel, { id: null, wbsCode });
@@ -1307,6 +1310,7 @@ async function findExistingImportedTask(tx: any, projectId: string, legacySource
     const byWbs = await tx.task.findFirst({ where: { projectId, wbsCode: importedTask.wbsCode } });
     if (byWbs) return byWbs;
   }
+  if (legacyItemCode || importedTask.wbsCode) return null;
   return tx.task.findFirst({
     where: {
       projectId,
@@ -1791,20 +1795,20 @@ function parseCsvProject(content: string, fileName: string): ImportedMppProject 
   const headers = rows[0].map(normalizeCsvHeader);
   const tasks = rows.slice(1).flatMap((row, index) => {
     const record = Object.fromEntries(headers.map((header, columnIndex) => [header, row[columnIndex]?.trim() ?? ""]));
-    const name = firstCsvValue(record, ["descricao", "descrição", "descrio", "tarefa", "nome", "name", "task", "atividade", "taskname"]);
+    const name = firstCsvValue(record, ["descricao", "descrição", "descrio", "tarefa", "nome", "name", "task", "atividade", "taskname"]) || row[2]?.trim() || "";
     if (!name) return [];
 
-    const wbs = firstCsvValue(record, ["item", "edt", "wbs", "eap", "codigoedt", "codigowbs"]);
-    const occurrence = firstCsvValue(record, ["ocorrencia", "ocorrência", "ocorrncia", "id", "externalid", "idexterno", "uid"]);
+    const wbs = firstCsvValue(record, ["item", "edt", "wbs", "eap", "codigoedt", "codigowbs"]) || row[1]?.trim() || "";
+    const occurrence = firstCsvValue(record, ["ocorrencia", "ocorrência", "ocorrncia", "id", "externalid", "idexterno", "uid"]) || row[0]?.trim() || "";
     const externalId = occurrence || wbs || String(index + 1);
-    const start = parseCsvDate(firstCsvValue(record, ["datainicio", "data início", "dataincio", "inicio", "incio", "start", "plannedstart", "inicioplanejado"]));
-    const finish = parseCsvDate(firstCsvValue(record, ["datafimplanejada", "data fim planejada", "fim", "finish", "termino", "datafim", "plannedend", "fimplanejado"]));
-    const actualEnd = parseCsvDate(firstCsvValue(record, ["datafimreal", "data fim real", "actualend", "fimreal"]));
-    const percentComplete = parseCsvNumber(firstCsvValue(record, ["avanco", "progresso", "percentual", "percentcomplete", "percentualconclusao"]));
-    const hours = parseCsvNumber(firstCsvValue(record, ["horasplanejadas", "horas planejadas", "horas", "estimatedhours", "trabalho", "work"]));
-    const actualHours = parseCsvNumber(firstCsvValue(record, ["horastrabalhadas", "horas trabalhadas", "actualhours", "horasrealizadas"]));
-    const resources = firstCsvValue(record, ["responsavel", "responsável", "responsvel", "responsaveis", "responsáveis", "responsveis", "recurso", "recursos", "owner", "resource"]);
-    const legacyStatus = firstCsvValue(record, ["situacaoocorrencia", "situação ocorrência", "situaoocorrncia", "situacao", "situação", "situao", "status"]);
+    const start = parseCsvDate(firstCsvValue(record, ["datainicio", "data início", "dataincio", "inicio", "incio", "start", "plannedstart", "inicioplanejado"]) || row[3]?.trim() || "");
+    const finish = parseCsvDate(firstCsvValue(record, ["datafimplanejada", "data fim planejada", "fim", "finish", "termino", "datafim", "plannedend", "fimplanejado"]) || row[7]?.trim() || "");
+    const actualEnd = parseCsvDate(firstCsvValue(record, ["datafimreal", "data fim real", "actualend", "fimreal"]) || row[11]?.trim() || "");
+    const percentComplete = parseCsvNumber(firstCsvValue(record, ["avanco", "progresso", "percentual", "percentcomplete", "percentualconclusao"]) || row[6]?.trim() || "");
+    const hours = parseCsvNumber(firstCsvValue(record, ["horasplanejadas", "horas planejadas", "horas", "estimatedhours", "trabalho", "work"]) || row[4]?.trim() || "");
+    const actualHours = parseCsvNumber(firstCsvValue(record, ["horastrabalhadas", "horas trabalhadas", "actualhours", "horasrealizadas"]) || row[5]?.trim() || "");
+    const resources = firstCsvValue(record, ["responsavel", "responsável", "responsvel", "responsaveis", "responsáveis", "responsveis", "recurso", "recursos", "owner", "resource"]) || row[8]?.trim() || "";
+    const legacyStatus = firstCsvValue(record, ["situacaoocorrencia", "situação ocorrência", "situaoocorrncia", "situacao", "situação", "situao", "status"]) || row[10]?.trim() || "";
     const predecessors = firstCsvValue(record, ["predecessoras", "predecessores", "predecessors", "pred"]);
     const outlineLevel = parseCsvNumber(firstCsvValue(record, ["nivel", "outlinelevel", "outline", "level"])) || outlineLevelFromWbs(wbs);
 
