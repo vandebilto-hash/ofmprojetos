@@ -21,12 +21,17 @@ export function ImportProjectForm({ projects, clients, managers, defaultManagerI
     setError(null);
     startTransition(async () => {
       try {
-        await importMppProjectAction(formData);
-        formRef.current?.reset();
-        window.dispatchEvent(new CustomEvent("projete:toast", { detail: { message: "Projeto importado com sucesso." } }));
-        router.refresh();
+        const result = await importMppProjectAction(formData);
+        if (result?.error) {
+          setError(result.error);
+        } else if (result?.redirect) {
+          window.location.assign(result.redirect);
+        } else {
+          formRef.current?.reset();
+          window.dispatchEvent(new CustomEvent("projete:toast", { detail: { message: "Projeto importado com sucesso." } }));
+          router.refresh();
+        }
       } catch (err: any) {
-        if (err?.message?.includes("NEXT_REDIRECT")) throw err;
         setError(err?.message || "Erro ao importar projeto.");
       }
     });
