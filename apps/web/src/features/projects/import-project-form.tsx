@@ -17,8 +17,10 @@ export function ImportProjectForm({ projects, clients, managers, defaultManagerI
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
 
-  function handleSubmit(formData: FormData) {
+  function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
     setError(null);
+    const formData = new FormData(event.currentTarget);
     startTransition(async () => {
       try {
         const result = await importMppProjectAction(formData);
@@ -38,7 +40,7 @@ export function ImportProjectForm({ projects, clients, managers, defaultManagerI
   }
 
   return (
-    <form ref={formRef} action={handleSubmit} className="grid gap-3">
+    <form ref={formRef} onSubmit={handleSubmit} className="grid gap-3">
       {error && (
         <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
           {error}
