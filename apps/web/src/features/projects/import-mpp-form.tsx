@@ -24,8 +24,7 @@ export function ImportMppForm({ projectId, clientId, managerId }: ImportMppFormP
         if (result?.error) {
           setError(result.error);
         } else if (result?.redirect) {
-          router.push(result.redirect);
-          router.refresh();
+          window.location.assign(result.redirect);
           window.dispatchEvent(new CustomEvent("projete:toast", { detail: { message: "Arquivo processado. Verifique a pagina atualizada." } }));
         } else {
           formRef.current?.reset();

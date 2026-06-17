@@ -972,6 +972,14 @@ export async function importMppProjectAction(formData: FormData) {
   const projectEnd = maxDate(importedTasks.map((task) => task.finish));
   if (existingProjectId && formData.get("confirmImport") !== "1") {
     const changes = await importedScheduleChanges(existingProjectId, importedTasks, legacySource);
+    console.log("[IMPORT_MPP_PREVIEW]", {
+      projectId: existingProjectId,
+      source: legacySource,
+      importedTasks: importedTasks.length,
+      changes: changes.length,
+      creates: changes.filter((change) => change.type === "CREATE").length,
+      updates: changes.filter((change) => change.type === "UPDATE").length
+    });
     if (!changes.length) return { redirect: `/projects/${existingProjectId}/gantt?importStatus=nochanges` };
 
     const previewKey = `import-preview-${randomBytes(12).toString("hex")}`;
