@@ -1131,7 +1131,7 @@ async function applyImportedSchedule({
       const wbsCode = importedTask.wbsCode ?? nextWbsCode(countersByLevel, importedTask.outlineLevel);
       const estimatedHours = estimatedHoursForImportedTask(importedTask);
       const plannedDuration = plannedDurationDays(importedTask.start, importedTask.finish);
-      const existingTask = await findExistingImportedTask(tx, createdProject.id, legacySource, importedTask);
+      const existingTask = await findExistingImportedTask(tx, createdProject.id, legacySource, importedTask, parentTaskId);
 
       const taskData = {
           projectId: createdProject.id,
@@ -1228,20 +1228,41 @@ async function importedScheduleChanges(projectId: string, importedTasks: Normali
   const byWbs = new Map(existingTasks.filter((task) => task.wbsCode).map((task) => [task.wbsCode!, task]));
   const changes: Array<{ type: string; wbs: string | null; task: string; fields: Array<{ field: string; current: string; next: string }> }> = [];
   const countersByLevel = new Map<number, number>();
+  const stackByLevel = new Map<number, { id: string | null; wbsCode: string }>();
 
   for (const importedTask of importedTasks) {
+    const parent = nearestPreviewParent(stackByLevel, importedTask.outlineLevel);
     const wbsCode = importedTask.wbsCode ?? nextWbsCode(countersByLevel, importedTask.outlineLevel);
-    const existing = byLegacy.get(`${legacySource}:${importedTask.legacyItemCode ?? wbsCode}`) ?? byWbs.get(wbsCode) ?? existingTasks.find((task) => normalizeName(task.name) === normalizeName(importedTask.name));
+    const existing = byLegacy.get(`${legacySource}:${importedTask.legacyItemCode ?? wbsCode}`)
+      ?? byWbs.get(wbsCode)
+      ?? existingTasks.find((task) =>
+        normalizeName(task.name) === normalizeName(importedTask.name)
+        && task.outlineLevel === importedTask.outlineLevel
+        && task.parentTaskId === parent?.id
+      );
     if (!existing) {
       changes.push({ type: "CREATE", wbs: wbsCode, task: importedTask.name, fields: [] });
+      stackByLevel.set(importedTask.outlineLevel, { id: null, wbsCode });
+      [...stackByLevel.keys()].filter((level) => level > importedTask.outlineLevel).forEach((level) => stackByLevel.delete(level));
       continue;
     }
+
+    stackByLevel.set(importedTask.outlineLevel, { id: existing.id, wbsCode });
+    [...stackByLevel.keys()].filter((level) => level > importedTask.outlineLevel).forEach((level) => stackByLevel.delete(level));
 
     const fields = importedTaskFieldChanges(existing, importedTask, wbsCode);
     if (fields.length) changes.push({ type: "UPDATE", wbs: wbsCode, task: importedTask.name, fields });
   }
 
   return changes;
+}
+
+function nearestPreviewParent(stackByLevel: Map<number, { id: string | null; wbsCode: string }>, outlineLevel: number) {
+  for (let level = outlineLevel - 1; level >= 1; level--) {
+    const parent = stackByLevel.get(level);
+    if (parent) return parent;
+  }
+  return null;
 }
 
 function importedTaskFieldChanges(existing: any, importedTask: NormalizedImportedTask, wbsCode: string) {
@@ -1276,7 +1297,7 @@ function restoreImportedTasks(tasks: any[]): NormalizedImportedTask[] {
   }));
 }
 
-async function findExistingImportedTask(tx: any, projectId: string, legacySource: string, importedTask: NormalizedImportedTask) {
+async function findExistingImportedTask(tx: any, projectId: string, legacySource: string, importedTask: NormalizedImportedTask, parentTaskId: string | null) {
   const legacyItemCode = importedTask.legacyItemCode ?? importedTask.wbsCode ?? importedTask.externalId ?? null;
   if (legacyItemCode) {
     const byLegacy = await tx.task.findFirst({ where: { projectId, legacySource, legacyItemCode } });
@@ -1286,7 +1307,14 @@ async function findExistingImportedTask(tx: any, projectId: string, legacySource
     const byWbs = await tx.task.findFirst({ where: { projectId, wbsCode: importedTask.wbsCode } });
     if (byWbs) return byWbs;
   }
-  return tx.task.findFirst({ where: { projectId, name: importedTask.name } });
+  return tx.task.findFirst({
+    where: {
+      projectId,
+      name: importedTask.name,
+      outlineLevel: importedTask.outlineLevel,
+      parentTaskId
+    }
+  });
 }
 
 export async function createTaskAction(formData: FormData) {
