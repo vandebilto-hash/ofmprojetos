@@ -1271,19 +1271,28 @@ function nearestPreviewParent(stackByLevel: Map<number, { id: string | null; wbs
 function importedTaskFieldChanges(existing: any, importedTask: NormalizedImportedTask, wbsCode: string) {
   const estimatedHours = estimatedHoursForImportedTask(importedTask);
   const plannedDuration = plannedDurationDays(importedTask.start, importedTask.finish);
+  const importedOwner = importedTask.assignments?.[0]?.resourceName ?? "";
   const checks = [
     ["EDT", existing.wbsCode ?? "", wbsCode],
     ["Nome", existing.name ?? "", importedTask.name],
-    ["Inicio", dateKey(existing.plannedStart), dateKey(importedTask.start)],
-    ["Fim planejado", dateKey(existing.plannedEnd), dateKey(importedTask.finish)],
+    ["Inicio", dateTimeKey(existing.plannedStart), dateTimeKey(importedTask.start)],
+    ["Fim planejado", dateTimeKey(existing.plannedEnd), dateTimeKey(importedTask.finish)],
     ["Fim real", dateKey(existing.actualEnd), dateKey(importedTask.actualEnd)],
     ["Duracao", String(existing.plannedDuration ?? 0), String(plannedDuration)],
     ["Avanco", String(Number(existing.progressPercent)), String(importedTask.percentComplete)],
     ["Horas planejadas", String(Number(existing.estimatedHours)), String(estimatedHours)],
     ["Horas executadas", String(Number(existing.actualHours)), String(importedTask.actualHours ?? 0)],
-    ["Status", existing.status ?? "", importedTask.status ?? taskStatusFromPercent(importedTask.percentComplete)]
+    ["Status", existing.status ?? "", importedTask.status ?? taskStatusFromPercent(importedTask.percentComplete)],
+    ["Responsavel", normalizeName(existing.owner?.name ?? ""), normalizeName(importedOwner)]
   ];
   return checks.filter(([, current, next]) => current !== next).map(([field, current, next]) => ({ field, current, next }));
+}
+
+function dateTimeKey(value: Date | string | null | undefined) {
+  if (!value) return "";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "";
+  return date.toISOString().slice(0, 16);
 }
 
 function dateKey(value: Date | string | null | undefined) {
