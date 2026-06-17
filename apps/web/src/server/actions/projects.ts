@@ -1791,20 +1791,20 @@ function parseCsvProject(content: string, fileName: string): ImportedMppProject 
   const headers = rows[0].map(normalizeCsvHeader);
   const tasks = rows.slice(1).flatMap((row, index) => {
     const record = Object.fromEntries(headers.map((header, columnIndex) => [header, row[columnIndex]?.trim() ?? ""]));
-    const name = firstCsvValue(record, ["descricao", "descrição", "tarefa", "nome", "name", "task", "atividade", "taskname"]);
+    const name = firstCsvValue(record, ["descricao", "descrição", "descrio", "tarefa", "nome", "name", "task", "atividade", "taskname"]);
     if (!name) return [];
 
     const wbs = firstCsvValue(record, ["item", "edt", "wbs", "eap", "codigoedt", "codigowbs"]);
-    const occurrence = firstCsvValue(record, ["ocorrencia", "ocorrência", "id", "externalid", "idexterno", "uid"]);
+    const occurrence = firstCsvValue(record, ["ocorrencia", "ocorrência", "ocorrncia", "id", "externalid", "idexterno", "uid"]);
     const externalId = occurrence || wbs || String(index + 1);
-    const start = parseCsvDate(firstCsvValue(record, ["datainicio", "data início", "inicio", "start", "plannedstart", "inicioplanejado"]));
+    const start = parseCsvDate(firstCsvValue(record, ["datainicio", "data início", "dataincio", "inicio", "incio", "start", "plannedstart", "inicioplanejado"]));
     const finish = parseCsvDate(firstCsvValue(record, ["datafimplanejada", "data fim planejada", "fim", "finish", "termino", "datafim", "plannedend", "fimplanejado"]));
     const actualEnd = parseCsvDate(firstCsvValue(record, ["datafimreal", "data fim real", "actualend", "fimreal"]));
     const percentComplete = parseCsvNumber(firstCsvValue(record, ["avanco", "progresso", "percentual", "percentcomplete", "percentualconclusao"]));
     const hours = parseCsvNumber(firstCsvValue(record, ["horasplanejadas", "horas planejadas", "horas", "estimatedhours", "trabalho", "work"]));
     const actualHours = parseCsvNumber(firstCsvValue(record, ["horastrabalhadas", "horas trabalhadas", "actualhours", "horasrealizadas"]));
-    const resources = firstCsvValue(record, ["responsavel", "responsaveis", "recurso", "recursos", "owner", "resource"]);
-    const legacyStatus = firstCsvValue(record, ["situacaoocorrencia", "situação ocorrência", "situacao", "situação", "status"]);
+    const resources = firstCsvValue(record, ["responsavel", "responsável", "responsvel", "responsaveis", "responsáveis", "responsveis", "recurso", "recursos", "owner", "resource"]);
+    const legacyStatus = firstCsvValue(record, ["situacaoocorrencia", "situação ocorrência", "situaoocorrncia", "situacao", "situação", "situao", "status"]);
     const predecessors = firstCsvValue(record, ["predecessoras", "predecessores", "predecessors", "pred"]);
     const outlineLevel = parseCsvNumber(firstCsvValue(record, ["nivel", "outlinelevel", "outline", "level"])) || outlineLevelFromWbs(wbs);
 
