@@ -1043,6 +1043,11 @@ export async function confirmMppImportAction(formData: FormData) {
     const session = await getServerSession(authOptions);
     if (!canManageProject(session?.user.role)) throw new Error("Sem permissao para confirmar importacao.");
 
+    const currentUserId = session?.user.id;
+    if (!currentUserId) throw new Error("Sessao invalida. Faca logout e login novamente.");
+    const currentUser = await prisma.user.findUnique({ where: { id: currentUserId }, select: { id: true } });
+    if (!currentUser) throw new Error("Usuario da sessao nao encontrado no banco. Faca logout e login novamente.");
+
     const previewKey = String(formData.get("previewKey"));
     const preview = await prisma.systemSetting.findUnique({ where: { key: previewKey } });
     if (!preview) throw new Error("Previa de importacao nao encontrada. Tente importar novamente.");
@@ -1067,7 +1072,7 @@ export async function confirmMppImportAction(formData: FormData) {
     const projectStart = minDate(importedTasks.map((task) => task.start));
     const projectEnd = maxDate(importedTasks.map((task) => task.finish));
     const project = await applyImportedSchedule({
-      actorId: session?.user.id,
+      actorId: currentUser.id,
       existingProjectId: value.existingProjectId,
       projectName: value.projectName,
       clientId: value.clientId,
