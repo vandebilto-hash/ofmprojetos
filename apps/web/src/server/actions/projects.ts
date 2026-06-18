@@ -9,6 +9,7 @@ import { authOptions } from "@/lib/auth/options";
 import { defaultModuleSettings, portalModules } from "@/features/portal/modules";
 import { canManageProject, canManageTask } from "@/lib/permissions/rbac";
 import { prisma } from "@/lib/prisma/client";
+import type { ImportOptions } from "@/features/projects/import-types";
 
 const dateField = z.preprocess((value) => parseFormDate(value), z.coerce.date());
 const optionalDateField = z.preprocess((value) => {
@@ -1046,6 +1047,19 @@ export async function confirmMppImportAction(formData: FormData) {
   const value = preview.value as any;
   if (!value.existingProjectId || !Array.isArray(value.tasks)) throw new Error("Previa de importacao invalida.");
 
+  const importOptions: ImportOptions = {
+    activities: formData.get("activities") === "on",
+    deadlines: formData.get("deadlines") === "on",
+    hours: formData.get("hours") === "on",
+    progress: formData.get("progress") === "on",
+    resources: formData.get("resources") === "on"
+  };
+
+  if (!Object.values(importOptions).some(Boolean)) {
+    await prisma.systemSetting.delete({ where: { key: previewKey } });
+    redirect(`/projects/${value.existingProjectId}/gantt?importStatus=nochanges`);
+  }
+
   const importedTasks = restoreImportedTasks(value.tasks);
   const projectStart = minDate(importedTasks.map((task) => task.start));
   const projectEnd = maxDate(importedTasks.map((task) => task.finish));
@@ -1061,7 +1075,8 @@ export async function confirmMppImportAction(formData: FormData) {
     sourceLabel: value.sourceLabel,
     legacySource: value.legacySource,
     fileName: value.fileName,
-    action: value.legacySource === "LEGACY_CSV" ? "REIMPORT_CSV" : "REIMPORT_MPP"
+    action: value.legacySource === "LEGACY_CSV" ? "REIMPORT_CSV" : "REIMPORT_MPP",
+    importOptions
   });
   await prisma.systemSetting.delete({ where: { key: previewKey } });
   await recalculateProject(project.id);
@@ -1082,7 +1097,8 @@ async function applyImportedSchedule({
   sourceLabel,
   legacySource,
   fileName,
-  action
+  action,
+  importOptions
 }: {
   actorId?: string | null;
   existingProjectId: string;
@@ -1096,6 +1112,7 @@ async function applyImportedSchedule({
   legacySource: string;
   fileName: string;
   action: string;
+  importOptions?: ImportOptions | null;
 }) {
   const users = await prisma.user.findMany({ where: { status: "ACTIVE" } });
   const usersByName = new Map(users.map((user) => [normalizeName(user.name), user]));
@@ -1106,10 +1123,8 @@ async function applyImportedSchedule({
       ? await tx.project.update({
           where: { id: existingProjectId },
           data: {
-            name: projectName || undefined,
-            plannedStart: projectStart,
-            plannedEnd: projectEnd,
-            currentEnd: projectEnd,
+            ...(importOptions?.activities ? { name: projectName || undefined } : {}),
+            ...(importOptions?.deadlines !== false ? { plannedStart: projectStart, plannedEnd: projectEnd, currentEnd: projectEnd } : {}),
             clientId,
             managerId
           }
@@ -1147,51 +1162,98 @@ async function applyImportedSchedule({
       const plannedDuration = plannedDurationDays(importedTask.start, importedTask.finish);
       const existingTask = await findExistingImportedTask(tx, createdProject.id, legacySource, importedTask, parentTaskId);
 
-      const taskData = {
+      if (!existingTask && importOptions && !importOptions.activities) {
+        stackByLevel.set(importedTask.outlineLevel, parentTaskId ?? "");
+        [...stackByLevel.keys()].filter((level) => level > importedTask.outlineLevel).forEach((level) => stackByLevel.delete(level));
+        continue;
+      }
+
+      const taskData = (() => {
+        if (!existingTask || !importOptions) {
+          return {
+            projectId: createdProject.id,
+            parentTaskId,
+            wbsCode,
+            outlineLevel: importedTask.outlineLevel,
+            legacySource,
+            legacyOccurrenceId: importedTask.legacyOccurrenceId ?? importedTask.externalId ?? null,
+            legacyItemCode: importedTask.legacyItemCode ?? wbsCode,
+            name: importedTask.name,
+            description: importedTask.externalId ? `Importado de ${sourceLabel} | ID externo: ${importedTask.externalId}` : `Importado de ${sourceLabel}`,
+            ownerId: owner?.id ?? null,
+            status: importedTask.status ?? taskStatusFromPercent(importedTask.percentComplete),
+            priority: "MEDIUM" as const,
+            plannedStart: importedTask.start,
+            plannedEnd: importedTask.finish,
+            actualEnd: importedTask.actualEnd ?? null,
+            plannedDuration,
+            progressPercent: importedTask.percentComplete,
+            estimatedHours,
+            actualHours: importedTask.actualHours ?? 0
+          };
+        }
+
+        const data: Record<string, any> = {
           projectId: createdProject.id,
-          parentTaskId,
-          wbsCode,
+          parentTaskId: existingTask.parentTaskId,
           outlineLevel: importedTask.outlineLevel,
-          legacySource,
+          legacySource: existingTask.legacySource,
           legacyOccurrenceId: importedTask.legacyOccurrenceId ?? importedTask.externalId ?? null,
           legacyItemCode: importedTask.legacyItemCode ?? wbsCode,
-          name: importedTask.name,
-          description: importedTask.externalId ? `Importado de ${sourceLabel} | ID externo: ${importedTask.externalId}` : `Importado de ${sourceLabel}`,
-          ownerId: owner?.id ?? null,
-          status: importedTask.status ?? taskStatusFromPercent(importedTask.percentComplete),
-          priority: "MEDIUM" as const,
-          plannedStart: importedTask.start,
-          plannedEnd: importedTask.finish,
-          actualEnd: importedTask.actualEnd ?? null,
-          plannedDuration,
-          progressPercent: importedTask.percentComplete,
-          estimatedHours,
-          actualHours: importedTask.actualHours ?? 0
-      };
+          priority: "MEDIUM"
+        };
+
+        if (importOptions.activities) {
+          data.wbsCode = wbsCode;
+          data.name = importedTask.name;
+          data.description = importedTask.externalId ? `Importado de ${sourceLabel} | ID externo: ${importedTask.externalId}` : `Importado de ${sourceLabel}`;
+        }
+        if (importOptions.deadlines) {
+          data.plannedStart = importedTask.start;
+          data.plannedEnd = importedTask.finish;
+          data.actualEnd = importedTask.actualEnd ?? null;
+          data.plannedDuration = plannedDuration;
+        }
+        if (importOptions.hours) {
+          data.estimatedHours = estimatedHours;
+          data.actualHours = importedTask.actualHours ?? 0;
+        }
+        if (importOptions.progress) {
+          data.progressPercent = importedTask.percentComplete;
+          data.status = importedTask.status ?? taskStatusFromPercent(importedTask.percentComplete);
+        }
+        if (importOptions.resources) {
+          data.ownerId = owner?.id ?? null;
+        }
+
+        return data;
+      })();
 
       const task = existingTask
-        ? await tx.task.update({ where: { id: existingTask.id }, data: taskData })
-        : await tx.task.create({ data: taskData });
+        ? await tx.task.update({ where: { id: existingTask.id }, data: taskData as any })
+        : await tx.task.create({ data: taskData as any });
 
       if (importedTask.externalId) taskIdByExternalId.set(importedTask.externalId, task.id);
       if (importedTask.legacyItemCode) taskIdByExternalId.set(importedTask.legacyItemCode, task.id);
       stackByLevel.set(importedTask.outlineLevel, task.id);
       [...stackByLevel.keys()].filter((level) => level > importedTask.outlineLevel).forEach((level) => stackByLevel.delete(level));
 
-      if (existingTask) await tx.resourceAllocation.deleteMany({ where: { taskId: task.id } });
-      for (const [index, assignment] of (importedTask.assignments ?? []).entries()) {
-        const user = assignmentUsers[index];
-        if (!user) continue;
-        await tx.resourceAllocation.create({
-          data: {
-            projectId: createdProject.id,
-            taskId: task.id,
-            userId: user.id,
-            startDate: importedTask.start,
-            endDate: importedTask.finish,
-            allocatedHours: assignment.workHours && assignment.workHours > 0 ? assignment.workHours : estimatedHours
-          }
-        });
+      if (!existingTask || importOptions?.resources) {
+        if (existingTask) await tx.resourceAllocation.deleteMany({ where: { taskId: task.id } });
+        for (const [index, assignment] of (importedTask.assignments ?? []).entries()) {
+          const user = assignmentUsers[index];
+          if (!user) continue;
+          await tx.resourceAllocation.create({
+            data: {
+              projectId: createdProject.id,
+              taskId: task.id,
+              userId: user.id,
+              startDate: importedTask.start,
+              endDate: importedTask.finish,
+              allocatedHours: assignment.workHours && assignment.workHours > 0 ? assignment.workHours : estimatedHours
+            }
+          });
+        }
       }
     }
 
