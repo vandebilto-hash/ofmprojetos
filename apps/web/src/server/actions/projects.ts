@@ -959,8 +959,10 @@ export async function importMppProjectAction(formData: FormData) {
       throw new Error("Servico de importacao MPP esta dormindo (Render free tier). Aguarde 30s e tente novamente para acorda-lo.");
     }
 
-    if (!response.ok) throw new Error("Falha ao importar arquivo pelo servico MPXJ.");
-    imported = (await response.json()) as ImportedMppProject;
+    const body = await response.json();
+    if (!response.ok) throw new Error(body?.error || "Falha ao importar arquivo pelo servico MPXJ.");
+    if (body?.error) throw new Error(body.error);
+    imported = body as ImportedMppProject;
   }
 
   const importedTasks = normalizeImportedTasks(imported.tasks);

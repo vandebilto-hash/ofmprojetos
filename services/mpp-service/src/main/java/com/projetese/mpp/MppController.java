@@ -9,6 +9,8 @@ import java.util.Objects;
 import net.sf.mpxj.ProjectFile;
 import net.sf.mpxj.Task;
 import net.sf.mpxj.reader.UniversalProjectReader;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -18,24 +20,61 @@ import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 public class MppController {
+
+  private static final Logger log = LoggerFactory.getLogger(MppController.class);
+
   @GetMapping("/health")
   public Health health() {
     return new Health("ok");
   }
 
   @PostMapping(path = "/import", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-  public ImportResult importMpp(@RequestParam("file") MultipartFile file) throws Exception {
-    File tempFile = Files.createTempFile("projete-se-", "-" + Objects.requireNonNullElse(file.getOriginalFilename(), "project.mpp")).toFile();
-    file.transferTo(tempFile);
+  public Object importMpp(@RequestParam("file") MultipartFile file) throws Exception {
+    String originalName = Objects.requireNonNullElse(file.getOriginalFilename(), "project.mpp");
+    log.info("[IMPORT] Received file: {} ({} bytes)", originalName, file.getSize());
 
-    ProjectFile project = new UniversalProjectReader().read(tempFile);
-    List<ImportedTask> tasks = project.getTasks().stream()
-      .filter(task -> task.getName() != null && !task.getName().isBlank())
-      .map(this::toImportedTask)
-      .toList();
+    if (file.isEmpty() || file.getSize() <= 0) {
+      log.error("[IMPORT] File is empty: {}", originalName);
+      return new ErrorResponse("Arquivo vazio. Selecione um arquivo MPP valido.");
+    }
 
-    tempFile.delete();
-    return new ImportResult(project.getProjectProperties().getProjectTitle(), tasks);
+    File tempFile = Files.createTempFile("projete-se-", "-" + originalName).toFile();
+    try {
+      file.transferTo(tempFile);
+      log.info("[IMPORT] Temp file written: {} ({} bytes)", tempFile.getAbsolutePath(), tempFile.length());
+
+      if (tempFile.length() == 0) {
+        log.error("[IMPORT] Temp file is empty after transfer");
+        return new ErrorResponse("Falha ao ler o arquivo. O arquivo esta vazio apos transferencia.");
+      }
+
+      ProjectFile project = new UniversalProjectReader().read(tempFile);
+
+      if (project == null) {
+        log.error("[IMPORT] MPXJ returned null for file: {} (size: {})", originalName, tempFile.length());
+        return new ErrorResponse("Nao foi possivel ler o arquivo. Verifique se e um arquivo MPP, XML ou MPX valido e nao corrompido.");
+      }
+
+      List<Task> allTasks = project.getTasks();
+      if (allTasks == null || allTasks.isEmpty()) {
+        log.warn("[IMPORT] No tasks found in file: {}", originalName);
+        return new ErrorResponse("O arquivo nao contem tarefas.");
+      }
+
+      List<ImportedTask> tasks = allTasks.stream()
+        .filter(task -> task.getName() != null && !task.getName().isBlank())
+        .map(this::toImportedTask)
+        .toList();
+
+      log.info("[IMPORT] Successfully parsed {} tasks from {}", tasks.size(), originalName);
+      String title = project.getProjectProperties() != null ? project.getProjectProperties().getProjectTitle() : null;
+      return new ImportResult(title, tasks);
+    } catch (Exception e) {
+      log.error("[IMPORT] Error parsing file {}: {}", originalName, e.getMessage(), e);
+      return new ErrorResponse("Erro ao processar o arquivo: " + e.getMessage());
+    } finally {
+      tempFile.delete();
+    }
   }
 
   private ImportedTask toImportedTask(Task task) {
@@ -125,4 +164,5 @@ public class MppController {
   public record ImportedTask(String externalId, String name, String start, String finish, int percentComplete, int outlineLevel, List<ImportedAssignment> assignments, List<ImportedPredecessor> predecessors) {}
   public record ImportedAssignment(String resourceName, Double workHours) {}
   public record ImportedPredecessor(String externalId, String type, int lagDays) {}
+  public record ErrorResponse(String error) {}
 }
