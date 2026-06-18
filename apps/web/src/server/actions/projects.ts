@@ -1286,9 +1286,10 @@ async function applyImportedSchedule({
       }
     }
 
+    const validActor = actorId ? await tx.user.findUnique({ where: { id: actorId }, select: { id: true } }) : null;
     await tx.auditLog.create({
       data: {
-        actorId,
+        actorId: validActor?.id ?? null,
         projectId: createdProject.id,
         entityType: "Project",
         entityId: createdProject.id,
