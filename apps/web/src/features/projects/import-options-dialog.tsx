@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { confirmMppImportAction } from "@/server/actions/projects";
 import { CATEGORIES, FIELD_CATEGORY_MAP, type ImportOptions } from "./import-types";
 
@@ -29,6 +30,7 @@ function countChangesByCategory(changes: Change[], key: keyof ImportOptions): nu
 }
 
 export function ImportOptionsDialog({ previewKey, changes }: ImportOptionsDialogProps) {
+  const formRef = useRef<HTMLFormElement>(null);
   const [options, setOptions] = useState<ImportOptions>({
     activities: true,
     deadlines: true,
@@ -36,6 +38,9 @@ export function ImportOptionsDialog({ previewKey, changes }: ImportOptionsDialog
     progress: true,
     resources: true
   });
+  const [error, setError] = useState<string | null>(null);
+  const [isPending, startTransition] = useTransition();
+  const router = useRouter();
 
   const allChecked = Object.values(options).every(Boolean);
   const anyChecked = Object.values(options).some(Boolean);
@@ -172,7 +177,34 @@ export function ImportOptionsDialog({ previewKey, changes }: ImportOptionsDialog
         </table>
       </div>
 
-      <form action={confirmMppImportAction} className="mt-4 flex justify-end gap-3">
+      {error && (
+        <div className="mt-3 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+          {error}
+        </div>
+      )}
+      <form
+        ref={formRef}
+        onSubmit={(event) => {
+          event.preventDefault();
+          setError(null);
+          const formData = new FormData(event.currentTarget);
+          startTransition(async () => {
+            try {
+              const result = await confirmMppImportAction(formData);
+              if (result?.error) {
+                setError(result.error);
+              } else if (result?.redirect) {
+                window.location.assign(result.redirect);
+              } else {
+                router.refresh();
+              }
+            } catch (err: any) {
+              setError(err?.message || "Erro ao confirmar importacao.");
+            }
+          });
+        }}
+        className="mt-4 flex justify-end gap-3"
+      >
         <input type="hidden" name="previewKey" value={previewKey} />
         {CATEGORIES.map((cat) => (
           <input
@@ -183,10 +215,10 @@ export function ImportOptionsDialog({ previewKey, changes }: ImportOptionsDialog
           />
         ))}
         <button
-          disabled={!anyChecked}
+          disabled={!anyChecked || isPending}
           className="rounded-md bg-amber-700 px-5 py-2 text-sm font-semibold text-white hover:bg-amber-800 disabled:opacity-50 disabled:hover:bg-amber-700"
         >
-          Aplicar {anyChecked ? `(${totalSelected})` : ""}
+          {isPending ? "Aplicando..." : `Aplicar${anyChecked ? ` (${totalSelected})` : ""}`}
         </button>
       </form>
     </section>

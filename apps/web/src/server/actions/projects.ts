@@ -1039,50 +1039,59 @@ export async function importMppProjectAction(formData: FormData) {
 }
 
 export async function confirmMppImportAction(formData: FormData) {
-  const session = await getServerSession(authOptions);
-  if (!canManageProject(session?.user.role)) throw new Error("Sem permissao para confirmar importacao.");
+  try {
+    const session = await getServerSession(authOptions);
+    if (!canManageProject(session?.user.role)) throw new Error("Sem permissao para confirmar importacao.");
 
-  const previewKey = String(formData.get("previewKey"));
-  const preview = await prisma.systemSetting.findUniqueOrThrow({ where: { key: previewKey } });
-  const value = preview.value as any;
-  if (!value.existingProjectId || !Array.isArray(value.tasks)) throw new Error("Previa de importacao invalida.");
+    const previewKey = String(formData.get("previewKey"));
+    const preview = await prisma.systemSetting.findUnique({ where: { key: previewKey } });
+    if (!preview) throw new Error("Previa de importacao nao encontrada. Tente importar novamente.");
+    const value = preview.value as any;
+    if (!value.existingProjectId || !Array.isArray(value.tasks)) throw new Error("Previa de importacao invalida.");
 
-  const importOptions: ImportOptions = {
-    activities: formData.get("activities") === "on",
-    deadlines: formData.get("deadlines") === "on",
-    hours: formData.get("hours") === "on",
-    progress: formData.get("progress") === "on",
-    resources: formData.get("resources") === "on"
-  };
+    const importOptions: ImportOptions = {
+      activities: formData.get("activities") === "on",
+      deadlines: formData.get("deadlines") === "on",
+      hours: formData.get("hours") === "on",
+      progress: formData.get("progress") === "on",
+      resources: formData.get("resources") === "on"
+    };
 
-  if (!Object.values(importOptions).some(Boolean)) {
+    if (!Object.values(importOptions).some(Boolean)) {
+      await prisma.systemSetting.delete({ where: { key: previewKey } });
+      return { redirect: `/projects/${value.existingProjectId}/gantt?importStatus=nochanges` };
+    }
+
+    const importedTasks = restoreImportedTasks(value.tasks);
+    if (!importedTasks.length) throw new Error("Nenhuma tarefa valida encontrada na previa.");
+    const projectStart = minDate(importedTasks.map((task) => task.start));
+    const projectEnd = maxDate(importedTasks.map((task) => task.finish));
+    const project = await applyImportedSchedule({
+      actorId: session?.user.id,
+      existingProjectId: value.existingProjectId,
+      projectName: value.projectName,
+      clientId: value.clientId,
+      managerId: value.managerId,
+      projectStart,
+      projectEnd,
+      importedTasks,
+      sourceLabel: value.sourceLabel,
+      legacySource: value.legacySource,
+      fileName: value.fileName,
+      action: value.legacySource === "LEGACY_CSV" ? "REIMPORT_CSV" : "REIMPORT_MPP",
+      importOptions
+    });
     await prisma.systemSetting.delete({ where: { key: previewKey } });
-    redirect(`/projects/${value.existingProjectId}/gantt?importStatus=nochanges`);
+    await recalculateProject(project.id);
+    revalidatePath("/projects");
+    revalidateProjectModule(project.id);
+    return { redirect: `/projects/${project.id}/tasks` };
+  } catch (error) {
+    console.error("[CONFIRM_MPP_IMPORT]", error);
+    return {
+      error: error instanceof Error ? error.message : "Erro ao confirmar importacao."
+    };
   }
-
-  const importedTasks = restoreImportedTasks(value.tasks);
-  const projectStart = minDate(importedTasks.map((task) => task.start));
-  const projectEnd = maxDate(importedTasks.map((task) => task.finish));
-  const project = await applyImportedSchedule({
-    actorId: session?.user.id,
-    existingProjectId: value.existingProjectId,
-    projectName: value.projectName,
-    clientId: value.clientId,
-    managerId: value.managerId,
-    projectStart,
-    projectEnd,
-    importedTasks,
-    sourceLabel: value.sourceLabel,
-    legacySource: value.legacySource,
-    fileName: value.fileName,
-    action: value.legacySource === "LEGACY_CSV" ? "REIMPORT_CSV" : "REIMPORT_MPP",
-    importOptions
-  });
-  await prisma.systemSetting.delete({ where: { key: previewKey } });
-  await recalculateProject(project.id);
-  revalidatePath("/projects");
-  revalidateProjectModule(project.id);
-  redirect(`/projects/${project.id}/tasks`);
 }
 
 async function applyImportedSchedule({
