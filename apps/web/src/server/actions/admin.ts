@@ -79,6 +79,11 @@ export async function createUserAction(formData: FormData) {
   }
   const data = parsed.data;
 
+  const existingUser = await prisma.user.findUnique({ where: { email: data.email } });
+  if (existingUser) {
+    throw new Error("Este e-mail ja esta cadastrado.");
+  }
+
   const role = await prisma.role.findUniqueOrThrow({ where: { name: data.roleName } });
   const passwordHash = await bcrypt.hash(data.password, 12);
 

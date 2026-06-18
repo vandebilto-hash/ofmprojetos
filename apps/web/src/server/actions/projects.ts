@@ -822,6 +822,10 @@ export async function createResourceAction(formData: FormData) {
   const data = resourceSchema.parse(Object.fromEntries(formData));
   const role = await prisma.role.findUniqueOrThrow({ where: { name: "EMPLOYEE" } });
   const email = data.email || `recurso-${slugify(data.name)}-${randomBytes(4).toString("hex")}@local.projete`;
+  const existingEmail = await prisma.user.findUnique({ where: { email } });
+  if (existingEmail) {
+    throw new Error("Ja existe um recurso/usuario com este e-mail.");
+  }
   const resource = await prisma.user.create({
     data: {
       name: data.name,
