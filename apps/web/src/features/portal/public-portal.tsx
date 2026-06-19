@@ -2156,33 +2156,20 @@ function plannedProgressForDate(project: any, date: Date, baseline?: any, tasks:
 function statusCurveData(project: any, tasks: any[], baseline: any | undefined, now: Date) {
   const projectProgress = clamp(Number(project.progressPercent ?? 0), 0, 100);
   const currentProgress = currentRealProgress(tasks, now, projectProgress);
-  const start = startOfDay(new Date(project.plannedStart));
   const points = statusCurvePoints(project, tasks, now);
   return points.map((point) => {
     const isFuture = startOfDay(point).getTime() > startOfDay(now).getTime();
-    const calculatedReal = weightedRealProgress(tasks, point, now, projectProgress);
-    const fallbackReal = fallbackRealProgressAtDate(point, start, now, currentProgress);
     return {
       name: formatDate(point).slice(0, 5),
       planejado: plannedProgressForDate(project, point, baseline, tasks),
-      realizado: isFuture ? currentProgress : Math.max(calculatedReal, fallbackReal),
+      realizado: isFuture ? null : weightedRealProgress(tasks, point, now, currentProgress),
     };
   });
 }
 
 function currentRealProgress(tasks: any[], now: Date, projectProgress: number) {
   const calculated = weightedRealProgress(tasks, now, now, projectProgress);
-  return clamp(Math.max(projectProgress, calculated), 0, 100);
-}
-
-function fallbackRealProgressAtDate(date: Date, start: Date, reference: Date, currentProgress: number) {
-  const startTime = start.getTime();
-  const referenceTime = reference.getTime();
-  const pointTime = date.getTime();
-  if (currentProgress <= 0) return 0;
-  if (pointTime <= startTime) return 0;
-  if (pointTime >= referenceTime || referenceTime <= startTime) return currentProgress;
-  return clamp(currentProgress * ((pointTime - startTime) / (referenceTime - startTime)), 0, currentProgress);
+  return clamp(calculated, 0, 100);
 }
 
 function statusCurvePoints(project: any, tasks: any[], now: Date) {
@@ -2213,8 +2200,7 @@ function weightedRealProgress(tasks: any[], date: Date, now: Date, projectProgre
   const total = tasks.reduce((s: number, t: any) => s + taskWeight(t), 0);
   if (!total) return clamp(projectProgress, 0, 100);
   const done = tasks.reduce((s: number, t: any) => s + taskWeight(t) * (realTaskProgressAtDate(t, date, now) / 100), 0);
-  const calculated = clamp((done / total) * 100, 0, 100);
-  return startOfDay(date).getTime() === startOfDay(now).getTime() ? Math.max(projectProgress, calculated) : calculated;
+  return clamp((done / total) * 100, 0, 100);
 }
 
 function plannedTaskProgressAtDate(task: any, date: Date) {
