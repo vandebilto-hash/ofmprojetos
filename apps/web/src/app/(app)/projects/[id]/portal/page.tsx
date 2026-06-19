@@ -71,7 +71,7 @@ export default async function ProjectPortalSettingsPage({ params }: { params: { 
                   <label className="text-sm font-semibold text-slate-500">Nome exibido</label>
                   <input
                     name={`${module.key}:label`}
-                    defaultValue={setting?.label ?? module.label}
+                    defaultValue={module.key === "dashboard" ? module.label : setting?.label ?? module.label}
                     className="mt-1 h-10 w-full rounded-md border border-line px-3 text-sm"
                   />
                   <p className="mt-1 text-xs text-slate-500">{module.description}</p>
