@@ -89,7 +89,8 @@ export function PublicPortalShell({ token, project, modules, activeModule, child
   const health = getProjectHealth(project);
   const groupedNavigation = getNavigationGroups(modules);
   const dashboardModule = modules.find((m) => m.key === "dashboard");
-  const progress = clamp(Number(project.progressPercent ?? 0), 0, 100);
+  const projectProgress = clamp(Number(project.progressPercent ?? 0), 0, 100);
+  const progress = projectProgress;
 
   return (
     <main className="min-h-screen bg-[#f0f4f9] text-slate-900">
@@ -1117,16 +1118,18 @@ function BlockersModule({ project }: { project: any }) {
 function DashboardModule({ project }: { project: any }) {
   const tasks = sortTasksForEdt(project.tasks ?? []);
   const leafTasks = statusReportLeafTasks(tasks);
-  const now = new Date();
+  const generatedAt = new Date();
+  const now = statusReportReferenceDate(project, leafTasks, generatedAt);
   const progress = clamp(Number(project.progressPercent ?? 0), 0, 100);
   const baseline = activeBaseline(project);
-  const plannedProgress = plannedProgressForDate(project, now, baseline);
+  const plannedProgress = plannedProgressForDate(project, now, baseline, leafTasks);
   const doneTasks = leafTasks.filter((t: any) => t.status === "DONE").length;
   const delayedTasks = leafTasks.filter((t: any) => t.status !== "DONE" && new Date(t.plannedEnd) < now);
   const openBlockers = (project.blockers ?? []).filter((b: any) => b.status !== "RESOLVED" && b.status !== "CANCELED");
   const activeRisks = (project.risks ?? []).filter((r: any) => r.status !== "CLOSED");
   const criticalRisks = activeRisks.filter((r: any) => r.classification === "CRITICAL" || r.classification === "HIGH");
   const phaseTasks = tasks.filter((t: any) => Number(t.outlineLevel ?? 1) <= 2).slice(0, 5);
+  const ganttTasks = tasks.length ? tasks : leafTasks;
   const currentActivities = statusReportActivities(leafTasks, now);
   const resourceRows = resourceConsumptionRows(project, leafTasks);
   const riskRows = [
@@ -1176,12 +1179,12 @@ function DashboardModule({ project }: { project: any }) {
                 <BarChart3 size={20} className="text-cyan-300" />
               </div>
               <div>
-                <p className="text-[10px] font-black uppercase tracking-[0.25em] text-cyan-300/80">Status Report · OFM Systems</p>
+                <p className="text-[10px] font-black uppercase tracking-[0.25em] text-cyan-300/80">Status Report Dinâmico v3 · OFM Systems</p>
                 <h1 className="text-xl font-black leading-tight">{project.name}</h1>
               </div>
             </div>
             <div className="flex items-center gap-3">
-              <p className="text-[11px] text-white/50">Gerado em {formatDateTime(now)}</p>
+              <p className="text-[11px] text-white/50">Gerado em {formatDateTime(generatedAt)} · Dados até {formatDate(now)}</p>
               <Link
                 href={`/api/export?projectId=${project.id}&format=pdf&reportType=client-executive`}
                 target="_blank"
@@ -1363,18 +1366,52 @@ function DashboardModule({ project }: { project: any }) {
           <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-sky-50">
             <TrendingUp size={15} className="text-sky-600" />
           </span>
-          <h2 className="text-sm font-black text-slate-900">Curva S — Progresso Planejado vs. Realizado</h2>
+          <h2 className="text-sm font-black text-slate-900">Curva S — Progresso Planejado vs. Progresso Feito</h2>
         </div>
         <div className="overflow-x-auto px-4 pb-4 pt-2">
           <div className="min-w-[680px]">
             <StatusCurveChart data={curveData} />
           </div>
         </div>
+        <div className="border-t border-slate-100 px-6 py-4">
+          <div className="mb-3 flex items-center justify-between gap-3">
+            <h3 className="text-xs font-black uppercase tracking-[0.16em] text-slate-500">Planilha da Curva S</h3>
+            <span className="rounded-full bg-slate-100 px-3 py-1 text-[10px] font-bold text-slate-500">Dados reais das atividades</span>
+          </div>
+          <div className="max-h-[260px] overflow-auto rounded-xl border border-slate-100">
+            <table className="w-full min-w-[560px] text-left text-xs">
+              <thead className="sticky top-0 z-10 bg-slate-50 text-[10px] font-black uppercase tracking-[0.12em] text-slate-400">
+                <tr>
+                  <th className="px-4 py-3">Data</th>
+                  <th className="py-3">Progresso Programado</th>
+                  <th className="py-3">Progresso Realizado</th>
+                  <th className="py-3 pr-4">Desvio</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {curveData.map((point) => {
+                  const realized = point.realizado ?? null;
+                  const deviation = realized == null ? null : realized - point.planejado;
+                  return (
+                    <tr key={point.name} className="hover:bg-slate-50">
+                      <td className="px-4 py-2.5 font-bold text-slate-700">{point.name}</td>
+                      <td className="py-2.5 text-slate-600">{formatPercent(point.planejado)}</td>
+                      <td className="py-2.5 font-black text-[#1e3a5f]">{realized == null ? "-" : formatPercent(realized)}</td>
+                      <td className={`py-2.5 pr-4 font-bold ${deviation == null ? "text-slate-400" : deviation >= 0 ? "text-emerald-600" : "text-red-600"}`}>
+                        {deviation == null ? "-" : `${deviation >= 0 ? "+" : ""}${formatPercent(deviation)}`}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </div>
       </div>
 
       {/* ── GANTT ── */}
       {(() => {
-        const ganttLabelW = 160;
+        const ganttLabelW = 240;
         const ganttStart = project.plannedStart;
         const ganttEnd = project.currentEnd ?? project.plannedEnd;
         const todayPct = timelinePosition(now, ganttStart, ganttEnd);
@@ -1389,14 +1426,14 @@ function DashboardModule({ project }: { project: any }) {
                 <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-50">
                   <CalendarDays size={15} className="text-indigo-600" />
                 </span>
-                <h2 className="text-sm font-black text-slate-900">Cronograma por Fase (Gantt)</h2>
+                <h2 className="text-sm font-black text-slate-900">Cronograma e Avanço por Todas as Atividades (Gantt)</h2>
               </div>
               <p className="text-[11px] text-slate-400">
                 {startLabel} → {endLabel} · {businessDays(ganttStart, ganttEnd)} dias úteis
               </p>
             </div>
-            <div className="overflow-x-auto px-6 py-5">
-              <div className="min-w-[860px] space-y-1.5">
+            <div className="overflow-auto px-6 py-5" style={{ maxHeight: 520 }}>
+              <div className="min-w-[1100px] space-y-1.5">
 
                 {/* Time-axis header — Hoje lives here, correctly inside the bar area */}
                 <div className="flex items-end pb-2">
@@ -1433,7 +1470,7 @@ function DashboardModule({ project }: { project: any }) {
                   color="bg-blue-700"
                   labelWidth={ganttLabelW}
                 />
-                {phaseTasks.map((task: any, i: number) => (
+                {ganttTasks.map((task: any, i: number) => (
                   <GanttBar
                     key={task.id}
                     label={`${task.wbsCode ? `${task.wbsCode} ` : ""}${task.name}`}
@@ -1443,6 +1480,8 @@ function DashboardModule({ project }: { project: any }) {
                     progress={Number(task.progressPercent ?? 0)}
                     color={["bg-cyan-500","bg-violet-500","bg-teal-500","bg-indigo-500","bg-blue-400"][i % 5]}
                     labelWidth={ganttLabelW}
+                    level={Number(task.outlineLevel ?? 1)}
+                    status={task.status}
                   />
                 ))}
               </div>
@@ -1520,7 +1559,7 @@ function DashboardModule({ project }: { project: any }) {
             </span>
             <h2 className="text-sm font-black text-slate-900">Alocação de Recursos</h2>
           </div>
-          <div className="divide-y divide-slate-100 overflow-auto max-h-[420px]">
+          <div id="status-report-resources" className="divide-y divide-slate-100 overflow-auto max-h-[420px]">
             {resourceRows.map((row) => <ResourceReportRow key={row.name} row={row} />)}
           </div>
           <div className="border-t border-slate-100 px-6 py-3">
@@ -1672,6 +1711,8 @@ function GanttBar({
   progress,
   color,
   labelWidth = 160,
+  level = 1,
+  status,
 }: {
   label: string;
   start: Date | string;
@@ -1680,6 +1721,8 @@ function GanttBar({
   progress: number;
   color: string;
   labelWidth?: number;
+  level?: number;
+  status?: string;
 }) {
   const projectStart = project.plannedStart;
   const projectEnd = project.currentEnd ?? project.plannedEnd;
@@ -1688,9 +1731,12 @@ function GanttBar({
   const width = Math.max(2, right - left);
   const filled = clamp(progress, 0, 100);
   const showInline = filled > 18 && width > 15;
+  const isSummary = level <= 2;
+  const statusColor = status === "DONE" ? "bg-emerald-500" : status === "BLOCKED" ? "bg-red-500" : status === "IN_PROGRESS" ? "bg-blue-500" : status === "IN_REVIEW" ? "bg-violet-500" : "bg-slate-400";
   return (
-    <div className="flex items-center" style={{ minHeight: "32px" }}>
-      <span className="shrink-0 truncate pr-3 text-[11px] font-medium text-slate-600" style={{ width: labelWidth }}>
+    <div className={`flex items-center rounded-lg ${isSummary ? "bg-slate-50/80" : ""}`} style={{ minHeight: isSummary ? "36px" : "32px" }}>
+      <span className={`shrink-0 truncate pr-3 text-[11px] ${isSummary ? "font-black text-slate-800" : "font-medium text-slate-600"}`} style={{ width: labelWidth, paddingLeft: Math.max(0, level - 1) * 10 }} title={label}>
+        <span className={`mr-2 inline-block h-2 w-2 rounded-full ${statusColor}`} />
         {label}
       </span>
       <div className="relative flex-1">
@@ -1702,7 +1748,7 @@ function GanttBar({
           style={{ left: `${left}%`, width: `${width}%` }}
         >
           <div
-            className={`h-full rounded-md ${color} flex items-center justify-end`}
+            className={`h-full rounded-md ${status === "DONE" ? "bg-emerald-500" : status === "BLOCKED" ? "bg-red-500" : color} flex items-center justify-end`}
             style={{ width: `${filled}%` }}
           >
             {showInline ? (
@@ -2063,8 +2109,44 @@ function activeBaseline(project: any) {
   return (project.baselines ?? []).find((b: any) => b.isActive) ?? (project.baselines ?? [])[0];
 }
 
-function plannedProgressForDate(project: any, date: Date, baseline?: any) {
-  if (baseline?.tasks?.length) return weightedBaselineProgress(baseline.tasks, date);
+function statusReportReferenceDate(project: any, tasks: any[], generatedAt: Date) {
+  const start = startOfDay(new Date(project.plannedStart));
+  const end = startOfDay(new Date(project.currentEnd ?? project.plannedEnd));
+  const projectProgress = Number(project.progressPercent ?? 0);
+  const updatedAt = project.updatedAt ? new Date(project.updatedAt) : null;
+  const latestActualEnd = latestDate(tasks.map((task) => task.actualEnd).filter(Boolean));
+  const latestProgressDate = latestDate(
+    tasks
+      .filter((task) => Number(task.progressPercent ?? 0) > 0)
+      .map((task) => task.actualEnd ?? task.plannedEnd ?? task.plannedStart)
+      .filter(Boolean),
+  );
+
+  const preferred = projectProgress > 0
+    ? updatedAt ?? latestDate([latestActualEnd, latestProgressDate, generatedAt].filter(Boolean))
+    : generatedAt;
+
+  return clampDate(preferred ?? generatedAt, start, end);
+}
+
+function latestDate(values: Array<Date | string | null | undefined>) {
+  const timestamps = values
+    .map((value) => (value ? new Date(value).getTime() : Number.NaN))
+    .filter((value) => Number.isFinite(value));
+  if (!timestamps.length) return null;
+  return new Date(Math.max(...timestamps));
+}
+
+function clampDate(value: Date, start: Date, end: Date) {
+  const timestamp = value.getTime();
+  if (timestamp < start.getTime()) return start;
+  if (timestamp > end.getTime()) return end;
+  return value;
+}
+
+function plannedProgressForDate(project: any, date: Date, baseline?: any, tasks: any[] = []) {
+  if (baseline?.tasks?.length) return weightedPlannedProgress(baseline.tasks, date);
+  if (tasks.length) return weightedPlannedProgress(tasks, date);
   const start = new Date(project.plannedStart).getTime();
   const end = new Date(project.currentEnd ?? project.plannedEnd).getTime();
   if (end <= start) return 100;
@@ -2072,49 +2154,97 @@ function plannedProgressForDate(project: any, date: Date, baseline?: any) {
 }
 
 function statusCurveData(project: any, tasks: any[], baseline: any | undefined, now: Date) {
-  const start = new Date(project.plannedStart);
-  const end = new Date(project.currentEnd ?? project.plannedEnd);
-  return Array.from({ length: 6 }, (_, i) => {
-    const point = new Date(start.getTime() + ((end.getTime() - start.getTime()) * i) / 5);
+  const projectProgress = clamp(Number(project.progressPercent ?? 0), 0, 100);
+  const currentProgress = currentRealProgress(tasks, now, projectProgress);
+  const start = startOfDay(new Date(project.plannedStart));
+  const points = statusCurvePoints(project, tasks, now);
+  return points.map((point) => {
+    const isFuture = startOfDay(point).getTime() > startOfDay(now).getTime();
+    const calculatedReal = weightedRealProgress(tasks, point, now, projectProgress);
+    const fallbackReal = fallbackRealProgressAtDate(point, start, now, currentProgress);
     return {
       name: formatDate(point).slice(0, 5),
-      planejado: plannedProgressForDate(project, point, baseline),
-      realizado: point <= now ? weightedRealProgress(tasks, point, now) : null,
+      planejado: plannedProgressForDate(project, point, baseline, tasks),
+      realizado: isFuture ? currentProgress : Math.max(calculatedReal, fallbackReal),
     };
   });
 }
 
-function weightedBaselineProgress(tasks: any[], date: Date) {
+function currentRealProgress(tasks: any[], now: Date, projectProgress: number) {
+  const calculated = weightedRealProgress(tasks, now, now, projectProgress);
+  return clamp(Math.max(projectProgress, calculated), 0, 100);
+}
+
+function fallbackRealProgressAtDate(date: Date, start: Date, reference: Date, currentProgress: number) {
+  const startTime = start.getTime();
+  const referenceTime = reference.getTime();
+  const pointTime = date.getTime();
+  if (currentProgress <= 0) return 0;
+  if (pointTime <= startTime) return 0;
+  if (pointTime >= referenceTime || referenceTime <= startTime) return currentProgress;
+  return clamp(currentProgress * ((pointTime - startTime) / (referenceTime - startTime)), 0, currentProgress);
+}
+
+function statusCurvePoints(project: any, tasks: any[], now: Date) {
+  const start = startOfDay(new Date(project.plannedStart));
+  const end = startOfDay(new Date(project.currentEnd ?? project.plannedEnd));
+  const timestamps = new Set<number>([start.getTime(), end.getTime(), startOfDay(now).getTime()]);
+  const span = Math.max(1, end.getTime() - start.getTime());
+  const pointCount = Math.min(14, Math.max(7, Math.ceil(span / (14 * 86_400_000)) + 1));
+
+  for (let index = 0; index < pointCount; index += 1) {
+    timestamps.add(startOfDay(new Date(start.getTime() + (span * index) / (pointCount - 1))).getTime());
+  }
+
+  return [...timestamps]
+    .filter((timestamp) => timestamp >= start.getTime() && timestamp <= end.getTime())
+    .sort((a, b) => a - b)
+    .map((timestamp) => new Date(timestamp));
+}
+
+function weightedPlannedProgress(tasks: any[], date: Date) {
   const total = tasks.reduce((s: number, t: any) => s + taskWeight(t), 0);
   if (!total) return 0;
-  const done = tasks.reduce((s: number, t: any) => s + (new Date(t.plannedEnd) <= date ? taskWeight(t) : 0), 0);
+  const done = tasks.reduce((s: number, t: any) => s + taskWeight(t) * (plannedTaskProgressAtDate(t, date) / 100), 0);
   return clamp((done / total) * 100, 0, 100);
 }
 
-function weightedRealProgress(tasks: any[], date: Date, now: Date) {
+function weightedRealProgress(tasks: any[], date: Date, now: Date, projectProgress: number) {
   const total = tasks.reduce((s: number, t: any) => s + taskWeight(t), 0);
-  if (!total) return 0;
-  const done = tasks.reduce((s: number, t: any) => {
-    const w = taskWeight(t);
-    // Task finished before this date point
-    if (t.status === "DONE" && t.actualEnd && new Date(t.actualEnd) <= date) return s + w;
-    // Task finished but without actualEnd — use plannedEnd as proxy
-    if (t.status === "DONE" && !t.actualEnd && new Date(t.plannedEnd) <= date) return s + w;
-    // Current snapshot (date = today): count in-progress by progressPercent
-    if (date >= now && t.status !== "DONE") return s + w * (Number(t.progressPercent ?? 0) / 100);
-    // Historical point: prorate current progressPercent back in time linearly
-    const pct = Number(t.progressPercent ?? 0);
-    if (pct > 0 && t.status !== "DONE") {
-      const taskStart = t.plannedStart ? new Date(t.plannedStart).getTime() : 0;
-      const nowMs = now.getTime();
-      if (date.getTime() >= taskStart && nowMs > taskStart) {
-        const ratio = Math.min(1, (date.getTime() - taskStart) / (nowMs - taskStart));
-        return s + w * (pct / 100) * ratio;
-      }
-    }
-    return s;
-  }, 0);
-  return clamp((done / total) * 100, 0, 100);
+  if (!total) return clamp(projectProgress, 0, 100);
+  const done = tasks.reduce((s: number, t: any) => s + taskWeight(t) * (realTaskProgressAtDate(t, date, now) / 100), 0);
+  const calculated = clamp((done / total) * 100, 0, 100);
+  return startOfDay(date).getTime() === startOfDay(now).getTime() ? Math.max(projectProgress, calculated) : calculated;
+}
+
+function plannedTaskProgressAtDate(task: any, date: Date) {
+  const start = new Date(task.plannedStart ?? task.plannedEnd).getTime();
+  const end = new Date(task.plannedEnd ?? task.plannedStart).getTime();
+  const point = date.getTime();
+  if (!Number.isFinite(start) || !Number.isFinite(end)) return 0;
+  if (point <= start) return 0;
+  if (point >= end || end <= start) return 100;
+  return clamp(((point - start) / (end - start)) * 100, 0, 100);
+}
+
+function realTaskProgressAtDate(task: any, date: Date, now: Date) {
+  const currentProgress = clamp(Number(task.progressPercent ?? (task.status === "DONE" ? 100 : 0)), 0, 100);
+  const completionDate = task.actualEnd ? new Date(task.actualEnd) : task.status === "DONE" ? new Date(task.plannedEnd) : null;
+  const point = date.getTime();
+  const current = now.getTime();
+
+  if (completionDate && point >= completionDate.getTime()) return 100;
+  if (point >= current) return currentProgress;
+
+  const start = new Date(task.actualStart ?? task.plannedStart ?? task.plannedEnd);
+  if (!Number.isFinite(start.getTime()) || point <= start.getTime()) return 0;
+
+  const end = completionDate?.getTime() ?? current;
+  if (end <= start.getTime()) return currentProgress;
+
+  const ratio = clamp((point - start.getTime()) / (end - start.getTime()), 0, 1);
+  const targetProgress = completionDate ? 100 : currentProgress;
+  return clamp(targetProgress * ratio, 0, targetProgress);
 }
 
 function taskWeight(task: any) {
@@ -2205,6 +2335,10 @@ function monthYear(value: Date | string) {
 
 function formatDateTime(value: Date) {
   return value.toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" });
+}
+
+function formatPercent(value: number) {
+  return `${Number(value).toLocaleString("pt-BR", { maximumFractionDigits: 1 })}%`;
 }
 
 function truncate(value: string, length: number) {

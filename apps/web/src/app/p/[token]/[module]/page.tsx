@@ -1,10 +1,15 @@
+import { unstable_noStore as noStore } from "next/cache";
 import { cookies, headers } from "next/headers";
 import { notFound, redirect } from "next/navigation";
 import { PublicPortalModule, PublicPortalShell } from "@/features/portal/public-portal";
 import { portalModuleByKey, portalModules } from "@/features/portal/modules";
 import { prisma } from "@/lib/prisma/client";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export default async function PublicProjectModulePage({ params }: { params: { token: string; module: string } }) {
+  noStore();
   const requestedModule = portalModuleByKey(params.module);
   if (!requestedModule) notFound();
 

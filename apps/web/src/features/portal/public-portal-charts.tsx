@@ -184,7 +184,7 @@ export function StatusCurveChart({
             strokeWidth={2.5}
             dot={{ r: 4, fill: "white", stroke: "#1e3a5f", strokeWidth: 2 }}
             connectNulls
-            name="Progresso Realizado"
+            name="Progresso Feito"
           />
         </AreaChart>
       </ResponsiveContainer>
@@ -195,7 +195,7 @@ export function StatusCurveChart({
         </span>
         <span className="flex items-center gap-2 text-[11px] font-semibold text-slate-600">
           <span className="inline-block h-0 w-6 border-b-2 border-dashed border-[#1e3a5f]" />
-          Progresso Realizado
+          Progresso Feito
         </span>
       </div>
     </div>

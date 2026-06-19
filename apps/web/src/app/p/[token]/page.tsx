@@ -1,9 +1,14 @@
+import { unstable_noStore as noStore } from "next/cache";
 import { cookies } from "next/headers";
 import { notFound, redirect } from "next/navigation";
 import { portalModuleByKey, portalModules } from "@/features/portal/modules";
 import { prisma } from "@/lib/prisma/client";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export default async function PublicProjectIndexPage({ params }: { params: { token: string } }) {
+  noStore();
   const shareLink = await prisma.projectShareLink.findUnique({
     where: { token: params.token },
     include: {
