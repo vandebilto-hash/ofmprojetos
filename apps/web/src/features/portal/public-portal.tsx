@@ -329,14 +329,22 @@ function ModulePage({
 }) {
   return (
     <div className="space-y-5">
-      <section className="rounded-2xl border border-slate-100 bg-white p-6 shadow-sm">
-        <p className="flex items-center gap-1.5 text-xs font-black uppercase tracking-[0.2em] text-brand-600">
-          {Icon ? <Icon size={13} className="shrink-0" /> : null}
-          {eyebrow}
-        </p>
-        <div className="mt-2">
-          <h2 className="text-3xl font-black text-slate-950">{title}</h2>
-          <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-500">{description}</p>
+      <section className="relative overflow-hidden rounded-2xl border border-slate-100 bg-white px-6 py-5 shadow-sm">
+        {/* Top gradient accent */}
+        <div className="absolute inset-x-0 top-0 h-[3px] bg-gradient-to-r from-blue-600 via-cyan-400 to-indigo-500" />
+        <div className="flex items-start gap-3.5">
+          {Icon ? (
+            <div className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-50 shadow-sm">
+              <Icon size={18} className="text-blue-600" />
+            </div>
+          ) : null}
+          <div>
+            <p className="text-[10px] font-black uppercase tracking-[0.24em] text-blue-500">{eyebrow}</p>
+            <h2 className="mt-0.5 text-2xl font-black text-slate-950">{title}</h2>
+            {description ? (
+              <p className="mt-1.5 max-w-3xl text-sm leading-6 text-slate-500">{description}</p>
+            ) : null}
+          </div>
         </div>
       </section>
       {children}
@@ -346,9 +354,13 @@ function ModulePage({
 
 function Panel({ title, children, className }: { title?: string; children: React.ReactNode; className?: string }) {
   return (
-    <section className={`rounded-2xl border border-slate-100 bg-white p-5 shadow-sm ${className ?? ""}`}>
-      {title ? <h3 className="mb-4 text-base font-black text-slate-900">{title}</h3> : null}
-      {children}
+    <section className={`overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm ${className ?? ""}`}>
+      {title ? (
+        <div className="border-b border-slate-100 bg-slate-50/50 px-5 py-3.5">
+          <h3 className="text-sm font-black text-slate-900">{title}</h3>
+        </div>
+      ) : null}
+      <div className="p-5">{children}</div>
     </section>
   );
 }
@@ -364,18 +376,19 @@ function Metric({
   detail?: string;
   tone?: "slate" | "green" | "amber" | "red" | "blue";
 }) {
-  const tones = {
-    slate: "bg-slate-50 text-slate-950 border-slate-100",
-    green: "bg-emerald-50 text-emerald-800 border-emerald-100",
-    amber: "bg-amber-50 text-amber-800 border-amber-100",
-    red: "bg-red-50 text-red-800 border-red-100",
-    blue: "bg-blue-50 text-blue-800 border-blue-100",
-  };
+  const cfg = {
+    slate: { card: "bg-white border-slate-100", text: "text-slate-950", label: "text-slate-400", accent: "bg-slate-300" },
+    green: { card: "bg-white border-emerald-100", text: "text-emerald-700", label: "text-emerald-500", accent: "bg-emerald-400" },
+    amber: { card: "bg-white border-amber-100", text: "text-amber-700", label: "text-amber-500", accent: "bg-amber-400" },
+    red:   { card: "bg-white border-red-100",   text: "text-red-700",   label: "text-red-400",   accent: "bg-red-400" },
+    blue:  { card: "bg-white border-blue-100",  text: "text-blue-700",  label: "text-blue-500",  accent: "bg-blue-400" },
+  }[tone];
   return (
-    <div className={`rounded-xl border p-4 ${tones[tone]}`}>
-      <p className="text-[10px] font-black uppercase tracking-[0.16em] opacity-55">{label}</p>
-      <p className="mt-2 text-3xl font-black">{value}</p>
-      {detail ? <p className="mt-1 text-xs font-semibold opacity-60">{detail}</p> : null}
+    <div className={`relative overflow-hidden rounded-xl border p-4 ${cfg.card}`}>
+      <div className={`absolute left-0 top-0 h-full w-1 ${cfg.accent}`} />
+      <p className={`pl-1.5 text-[10px] font-black uppercase tracking-[0.16em] ${cfg.label}`}>{label}</p>
+      <p className={`mt-2 pl-1.5 text-3xl font-black ${cfg.text}`}>{value}</p>
+      {detail ? <p className={`mt-1 pl-1.5 text-xs font-semibold opacity-60 ${cfg.text}`}>{detail}</p> : null}
     </div>
   );
 }
@@ -413,12 +426,21 @@ function HomeModule({ project }: { project: any }) {
         </Panel>
         <Panel title="Parceiros e frentes envolvidas">
           <div className="grid gap-3">
-            {project.partners.map((partner: any) => (
-              <div key={partner.id} className="rounded-xl border border-slate-100 bg-slate-50 p-4">
-                <p className="font-black text-slate-950">{partner.name}</p>
-                <p className="mt-1 text-sm leading-6 text-slate-500">{partner.description ?? "Parceiro do projeto"}</p>
-              </div>
-            ))}
+            {project.partners.map((partner: any, i: number) => {
+              const colors = ["bg-blue-500","bg-violet-500","bg-teal-500","bg-indigo-500","bg-cyan-500"];
+              const initials = partner.name.split(" ").map((w: string) => w[0]).join("").slice(0,2).toUpperCase();
+              return (
+                <div key={partner.id} className="flex items-start gap-3 rounded-xl border border-slate-100 bg-white p-4 shadow-[0_1px_3px_rgba(0,0,0,.04)] transition-shadow hover:shadow-md">
+                  <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-xs font-black text-white ${colors[i % colors.length]}`}>
+                    {initials}
+                  </div>
+                  <div>
+                    <p className="text-sm font-black text-slate-900">{partner.name}</p>
+                    <p className="mt-0.5 text-xs leading-5 text-slate-500">{partner.description ?? "Parceiro do projeto"}</p>
+                  </div>
+                </div>
+              );
+            })}
             {!project.partners.length ? <Empty label="Nenhum parceiro cadastrado." icon={Users} /> : null}
           </div>
         </Panel>
@@ -429,9 +451,9 @@ function HomeModule({ project }: { project: any }) {
 
 function InfoBlock({ title, text }: { title: string; text: string }) {
   return (
-    <div className="rounded-xl border border-slate-100 bg-slate-50 p-4">
-      <p className="text-xs font-black uppercase tracking-[0.16em] text-slate-400">{title}</p>
-      <p className="mt-2 leading-7 text-slate-700">{text}</p>
+    <div className="rounded-xl border border-l-[3px] border-slate-100 border-l-blue-400 bg-white p-4 shadow-[0_1px_3px_rgba(0,0,0,.04)]">
+      <p className="text-[10px] font-black uppercase tracking-[0.18em] text-slate-400">{title}</p>
+      <p className="mt-2 text-sm leading-7 text-slate-700">{text}</p>
     </div>
   );
 }
@@ -1351,52 +1373,83 @@ function DashboardModule({ project }: { project: any }) {
       </div>
 
       {/* ── GANTT ── */}
-      <div className="rounded-2xl border border-slate-100 bg-white shadow-sm">
-        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 px-6 py-4">
-          <div className="flex items-center gap-3">
-            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-50">
-              <CalendarDays size={15} className="text-indigo-600" />
-            </span>
-            <h2 className="text-sm font-black text-slate-900">Cronograma por Fase (Gantt)</h2>
-          </div>
-          <p className="text-[11px] text-slate-400">
-            {monthYear(project.plannedStart)} → {monthYear(project.currentEnd ?? project.plannedEnd)} · {businessDays(project.plannedStart, project.currentEnd ?? project.plannedEnd)} dias úteis
-          </p>
-        </div>
-        <div className="overflow-x-auto px-6 py-5">
-          <div className="relative min-w-[760px] space-y-3">
-            {/* Hoje marker */}
-            <div
-              className="pointer-events-none absolute bottom-0 top-0 z-10"
-              style={{ left: `calc(${timelinePosition(now, project.plannedStart, project.currentEnd ?? project.plannedEnd)}% + 140px)` }}
-            >
-              <div className="h-full w-px border-l-2 border-dashed border-red-400" />
-              <span className="absolute -top-1 -translate-x-1/2 whitespace-nowrap rounded-md bg-red-500 px-2 py-0.5 text-[10px] font-black text-white shadow">Hoje</span>
+      {(() => {
+        const ganttLabelW = 160;
+        const ganttStart = project.plannedStart;
+        const ganttEnd = project.currentEnd ?? project.plannedEnd;
+        const todayPct = timelinePosition(now, ganttStart, ganttEnd);
+        const startLabel = monthYear(ganttStart);
+        const midPt = new Date((new Date(ganttStart).getTime() + new Date(ganttEnd).getTime()) / 2);
+        const midLabel = monthYear(midPt);
+        const endLabel = monthYear(ganttEnd);
+        return (
+          <div className="rounded-2xl border border-slate-100 bg-white shadow-sm">
+            <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 px-6 py-4">
+              <div className="flex items-center gap-3">
+                <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-50">
+                  <CalendarDays size={15} className="text-indigo-600" />
+                </span>
+                <h2 className="text-sm font-black text-slate-900">Cronograma por Fase (Gantt)</h2>
+              </div>
+              <p className="text-[11px] text-slate-400">
+                {startLabel} → {endLabel} · {businessDays(ganttStart, ganttEnd)} dias úteis
+              </p>
             </div>
-            <GanttBar
-              label={baseline ? `Progresso Planejado (${baseline.name})` : "Progresso Planejado Geral"}
-              start={project.plannedStart}
-              end={project.currentEnd ?? project.plannedEnd}
-              project={project}
-              progress={plannedProgress}
-              color="bg-blue-700"
-              labelWidth={140}
-            />
-            {phaseTasks.map((task: any, i: number) => (
-              <GanttBar
-                key={task.id}
-                label={`${task.wbsCode ? `${task.wbsCode} ` : ""}${task.name}`}
-                start={task.plannedStart}
-                end={task.plannedEnd}
-                project={project}
-                progress={Number(task.progressPercent ?? 0)}
-                color={["bg-cyan-500","bg-violet-500","bg-teal-500","bg-indigo-500","bg-blue-400"][i % 5]}
-                labelWidth={140}
-              />
-            ))}
+            <div className="overflow-x-auto px-6 py-5">
+              <div className="min-w-[860px] space-y-1.5">
+
+                {/* Time-axis header — Hoje lives here, correctly inside the bar area */}
+                <div className="flex items-end pb-2">
+                  <div className="shrink-0 pr-3" style={{ width: ganttLabelW }} />
+                  <div className="relative flex-1">
+                    {/* Axis labels */}
+                    <div className="flex justify-between text-[10px] font-bold text-slate-400 mb-1">
+                      <span>{startLabel}</span>
+                      <span>{midLabel}</span>
+                      <span>{endLabel}</span>
+                    </div>
+                    {/* Thin axis line */}
+                    <div className="h-px w-full bg-slate-200" />
+                    {/* Hoje marker — correctly within bar area */}
+                    <div
+                      className="pointer-events-none absolute bottom-0 z-20"
+                      style={{ left: `${todayPct}%`, top: 0 }}
+                    >
+                      <div className="h-full border-l-2 border-dashed border-red-400" style={{ minHeight: 24 }} />
+                      <span className="absolute -top-5 -translate-x-1/2 whitespace-nowrap rounded-md bg-red-500 px-2 py-0.5 text-[10px] font-black text-white shadow">
+                        Hoje
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Gantt rows */}
+                <GanttBar
+                  label={baseline ? `Planejado (${baseline.name})` : "Progresso Planejado"}
+                  start={ganttStart}
+                  end={ganttEnd}
+                  project={project}
+                  progress={plannedProgress}
+                  color="bg-blue-700"
+                  labelWidth={ganttLabelW}
+                />
+                {phaseTasks.map((task: any, i: number) => (
+                  <GanttBar
+                    key={task.id}
+                    label={`${task.wbsCode ? `${task.wbsCode} ` : ""}${task.name}`}
+                    start={task.plannedStart}
+                    end={task.plannedEnd}
+                    project={project}
+                    progress={Number(task.progressPercent ?? 0)}
+                    color={["bg-cyan-500","bg-violet-500","bg-teal-500","bg-indigo-500","bg-blue-400"][i % 5]}
+                    labelWidth={ganttLabelW}
+                  />
+                ))}
+              </div>
+            </div>
           </div>
-        </div>
-      </div>
+        );
+      })()}
 
       {/* ── MARCOS ── */}
       <div className="rounded-2xl border border-slate-100 bg-white shadow-sm">
@@ -1632,33 +1685,36 @@ function GanttBar({
   const projectEnd = project.currentEnd ?? project.plannedEnd;
   const left = timelinePosition(start, projectStart, projectEnd);
   const right = timelinePosition(end, projectStart, projectEnd);
-  const width = Math.max(3, right - left);
-  const barLeft = `calc(${labelWidth}px + ${left}% * ((100% - ${labelWidth}px) / 100))`;
-  const barWidth = `calc(${width}% * ((100% - ${labelWidth}px) / 100))`;
+  const width = Math.max(2, right - left);
+  const filled = clamp(progress, 0, 100);
+  const showInline = filled > 18 && width > 15;
   return (
-    <div className="flex items-center gap-0" style={{ minHeight: "36px" }}>
-      <span className="shrink-0 truncate pr-3 text-[11px] font-semibold text-slate-600" style={{ width: labelWidth }}>
+    <div className="flex items-center" style={{ minHeight: "32px" }}>
+      <span className="shrink-0 truncate pr-3 text-[11px] font-medium text-slate-600" style={{ width: labelWidth }}>
         {label}
       </span>
       <div className="relative flex-1">
-        <div className="h-5 w-full rounded-sm bg-slate-100" />
+        {/* Track */}
+        <div className="h-6 w-full rounded-md bg-slate-100" />
+        {/* Bar segment */}
         <div
-          className="absolute top-0 h-5 rounded-sm bg-slate-200"
+          className="absolute top-0 h-6 overflow-hidden rounded-md bg-slate-200"
           style={{ left: `${left}%`, width: `${width}%` }}
         >
           <div
-            className={`h-full rounded-sm ${color} flex items-center justify-end overflow-hidden`}
-            style={{ width: `${clamp(progress, 3, 100)}%` }}
+            className={`h-full rounded-md ${color} flex items-center justify-end`}
+            style={{ width: `${filled}%` }}
           >
-            {progress > 20 ? (
-              <span className="pr-1.5 text-[10px] font-black text-white/90">{Math.round(progress)}%</span>
+            {showInline ? (
+              <span className="pr-2 text-[10px] font-black text-white drop-shadow">{Math.round(progress)}%</span>
             ) : null}
           </div>
         </div>
-        {progress <= 20 ? (
+        {/* Label outside when bar is too small */}
+        {!showInline ? (
           <span
-            className="absolute top-0 flex h-5 items-center text-[10px] font-bold text-slate-500"
-            style={{ left: `calc(${left}% + ${width}% + 4px)` }}
+            className="absolute top-0 flex h-6 items-center pl-1 text-[10px] font-bold text-slate-500"
+            style={{ left: `${Math.min(left + width, 98)}%` }}
           >
             {Math.round(progress)}%
           </span>
@@ -1864,28 +1920,22 @@ function RiskScore({ label, value, high }: { label: string; value: number; high?
 
 function FilterStrip({ search, selects, button }: { search: string; selects: string[]; button?: string }) {
   return (
-    <section className="rounded-xl border border-slate-100 bg-white p-4 shadow-sm">
-      <div className="mb-3 flex items-center justify-between gap-3">
-        <div>
-          <h3 className="text-sm font-black text-slate-800">Filtros de acompanhamento</h3>
-          <p className="text-xs text-slate-400">Refine a visão por texto, responsável, status, categoria ou tipo.</p>
-        </div>
-        {button ? (
-          <button type="button" className="rounded-lg bg-blue-50 px-3 py-1.5 text-xs font-black text-blue-700 hover:bg-blue-100">
-            {button}
-          </button>
-        ) : null}
-      </div>
-      <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-4">
+    <section className="rounded-xl border border-slate-100 bg-white px-4 py-3 shadow-sm">
+      <div className="flex flex-wrap items-center gap-2">
         <input
           placeholder={search}
-          className="h-10 rounded-lg border border-slate-200 px-3 text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 lg:col-span-2"
+          className="h-9 min-w-[200px] flex-1 rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm text-slate-700 outline-none placeholder:text-slate-400 focus:border-blue-400 focus:bg-white focus:ring-2 focus:ring-blue-100"
         />
         {selects.map((select) => (
-          <select key={select} className="h-10 rounded-lg border border-slate-200 px-3 text-sm text-slate-600 outline-none focus:border-blue-400">
+          <select key={select} className="h-9 rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm text-slate-600 outline-none focus:border-blue-400 focus:bg-white">
             <option>{select}</option>
           </select>
         ))}
+        {button ? (
+          <button type="button" className="h-9 rounded-lg border border-slate-200 px-3 text-xs font-bold text-slate-500 hover:border-slate-300 hover:bg-slate-50 hover:text-slate-700">
+            {button}
+          </button>
+        ) : null}
       </div>
     </section>
   );
@@ -1901,26 +1951,31 @@ function HeroDetail({ label, value }: { label: string; value: string }) {
 }
 
 function StatusPill({ tone, children }: { tone: "red" | "amber" | "green" | "blue" | "slate"; children: React.ReactNode }) {
-  const classes = {
-    red: "border-red-200 bg-red-50 text-red-700",
-    amber: "border-amber-200 bg-amber-50 text-amber-700",
-    green: "border-emerald-200 bg-emerald-50 text-emerald-700",
-    blue: "border-blue-200 bg-blue-50 text-blue-700",
-    slate: "border-slate-200 bg-slate-50 text-slate-600",
+  const cfg = {
+    red:   { card: "border-red-200 bg-red-50 text-red-700",         dot: "bg-red-500" },
+    amber: { card: "border-amber-200 bg-amber-50 text-amber-700",   dot: "bg-amber-400" },
+    green: { card: "border-emerald-200 bg-emerald-50 text-emerald-700", dot: "bg-emerald-500" },
+    blue:  { card: "border-blue-200 bg-blue-50 text-blue-700",      dot: "bg-blue-500" },
+    slate: { card: "border-slate-200 bg-slate-50 text-slate-600",   dot: "bg-slate-400" },
   }[tone];
-  return <span className={`inline-flex rounded-md border px-2 py-0.5 text-[11px] font-bold ${classes}`}>{children}</span>;
+  return (
+    <span className={`inline-flex items-center gap-1.5 rounded-md border px-2 py-0.5 text-[11px] font-bold ${cfg.card}`}>
+      <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${cfg.dot}`} />
+      {children}
+    </span>
+  );
 }
 
 function InlineProgress({ value, tone = "blue" }: { value: number; tone?: "blue" | "red" }) {
   return (
     <div className="flex items-center gap-2">
-      <div className="h-1.5 w-20 rounded-full bg-slate-200">
+      <div className="h-2 w-24 overflow-hidden rounded-full bg-slate-100">
         <div
           className={`h-full rounded-full ${tone === "red" ? "bg-red-500" : "bg-cyan-500"}`}
           style={{ width: `${clamp(value, 0, 100)}%` }}
         />
       </div>
-      <span className="text-[11px] text-slate-500">{Math.round(value)}%</span>
+      <span className="text-[11px] font-semibold text-slate-500">{Math.round(value)}%</span>
     </div>
   );
 }
@@ -2041,8 +2096,22 @@ function weightedRealProgress(tasks: any[], date: Date, now: Date) {
   if (!total) return 0;
   const done = tasks.reduce((s: number, t: any) => {
     const w = taskWeight(t);
+    // Task finished before this date point
     if (t.status === "DONE" && t.actualEnd && new Date(t.actualEnd) <= date) return s + w;
+    // Task finished but without actualEnd — use plannedEnd as proxy
+    if (t.status === "DONE" && !t.actualEnd && new Date(t.plannedEnd) <= date) return s + w;
+    // Current snapshot (date = today): count in-progress by progressPercent
     if (date >= now && t.status !== "DONE") return s + w * (Number(t.progressPercent ?? 0) / 100);
+    // Historical point: prorate current progressPercent back in time linearly
+    const pct = Number(t.progressPercent ?? 0);
+    if (pct > 0 && t.status !== "DONE") {
+      const taskStart = t.plannedStart ? new Date(t.plannedStart).getTime() : 0;
+      const nowMs = now.getTime();
+      if (date.getTime() >= taskStart && nowMs > taskStart) {
+        const ratio = Math.min(1, (date.getTime() - taskStart) / (nowMs - taskStart));
+        return s + w * (pct / 100) * ratio;
+      }
+    }
     return s;
   }, 0);
   return clamp((done / total) * 100, 0, 100);
