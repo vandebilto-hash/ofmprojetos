@@ -1,11 +1,13 @@
 import Link from "next/link";
 import {
+  Activity,
   AlertOctagon,
   AlertTriangle,
   BarChart3,
   BookOpen,
   CalendarCheck,
   CalendarDays,
+  CheckCheck,
   CheckCircle2,
   ChevronDown,
   Clock,
@@ -18,8 +20,11 @@ import {
   Milestone,
   ScrollText,
   ShieldAlert,
+  Target,
+  TrendingDown,
   TrendingUp,
   Users,
+  Zap,
 } from "lucide-react";
 import { EdtExpandControls } from "@/features/portal/edt-expand-controls";
 import { ExecutiveBarChart, MiniPieChart, ProgressLineChart, StatusCurveChart } from "@/features/portal/public-portal-charts";
@@ -1135,184 +1140,283 @@ function DashboardModule({ project }: { project: any }) {
     },
   ];
 
+  const deviationPct = Math.round(progress) - Math.round(plannedProgress);
+
   return (
-    <div className="mx-auto max-w-[1180px] space-y-8 text-[#00143d]">
-      {/* Report header */}
-      <section className="overflow-hidden rounded-2xl bg-[#17254c] shadow-lg">
-        <div className="flex flex-wrap items-center justify-between gap-4 px-6 py-5 text-white">
-          <div className="flex items-center gap-5">
-            <div className="text-3xl font-black leading-none tracking-tight">
-              OFM
-              <div className="text-[9px] font-semibold tracking-normal opacity-70">Systems</div>
-            </div>
-            <div className="h-8 w-px bg-white/20" />
-            <div>
-              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-blue-200">Status Report</p>
-              <h1 className="text-xl font-black">{project.name}</h1>
-            </div>
-          </div>
-          <p className="text-xs font-semibold text-white/60">Gerado em {formatDateTime(now)}</p>
-        </div>
-        {/* Project meta strip */}
-        <div className="border-t border-white/10 bg-[#0f1b3d] px-6 py-3">
-          <div className="flex flex-wrap items-center gap-x-6 gap-y-1.5 text-xs font-semibold text-white/70">
-            <span>Cliente: <strong className="text-white">{project.client?.name ?? "-"}</strong></span>
-            <span>Gerente: <strong className="text-white">{project.manager?.name ?? "Não informado"}</strong></span>
-            <span>Período: <strong className="text-white">{formatDate(project.plannedStart)} – {formatDate(project.currentEnd ?? project.plannedEnd)}</strong></span>
-            <span>Fase: <strong className="text-white">{phaseTasks[0]?.name ?? "Não informada"}</strong></span>
-            <Link href={`/api/export?projectId=${project.id}&format=pdf&reportType=client-executive`} target="_blank" className="ml-auto rounded-lg bg-blue-600 px-3 py-1.5 text-[11px] font-black text-white hover:bg-blue-700">
-              ↓ PDF
-            </Link>
-          </div>
-        </div>
-      </section>
+    <div className="mx-auto max-w-[1200px] space-y-6 text-[#00143d]">
 
-      {/* Semáforo executivo */}
-      <section className="rounded-xl border border-slate-100 bg-white p-5 shadow-sm">
-        <p className="mb-4 text-xs font-black uppercase tracking-[0.18em] text-slate-400">Semáforo executivo</p>
-        <div className="flex flex-wrap gap-4">
-          {semaphore.map((item) => {
-            const colorMap = {
-              green: { bg: "bg-emerald-100", circle: "bg-emerald-500", text: "text-emerald-700", ring: "ring-emerald-200" },
-              amber: { bg: "bg-amber-100", circle: "bg-amber-400", text: "text-amber-700", ring: "ring-amber-200" },
-              red: { bg: "bg-red-100", circle: "bg-red-500", text: "text-red-700", ring: "ring-red-200" },
-            }[item.tone as "green" | "amber" | "red"];
-            return (
-              <div key={item.label} className={`flex items-center gap-3 rounded-xl px-4 py-3 ring-1 ${colorMap.bg} ${colorMap.ring}`}>
-                <span className={`h-3.5 w-3.5 rounded-full shadow-sm ${colorMap.circle}`} />
-                <div>
-                  <p className={`text-sm font-black ${colorMap.text}`}>{item.label}</p>
-                  <p className={`text-[11px] font-semibold ${colorMap.text} opacity-75`}>{item.detail}</p>
-                </div>
+      {/* ── HEADER ── */}
+      <header className="overflow-hidden rounded-2xl shadow-xl">
+        <div className="bg-[#0d1f45] px-7 py-5 text-white">
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <div className="flex items-center gap-4">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/10">
+                <BarChart3 size={20} className="text-cyan-300" />
               </div>
-            );
-          })}
+              <div>
+                <p className="text-[10px] font-black uppercase tracking-[0.25em] text-cyan-300/80">Status Report · OFM Systems</p>
+                <h1 className="text-xl font-black leading-tight">{project.name}</h1>
+              </div>
+            </div>
+            <div className="flex items-center gap-3">
+              <p className="text-[11px] text-white/50">Gerado em {formatDateTime(now)}</p>
+              <Link
+                href={`/api/export?projectId=${project.id}&format=pdf&reportType=client-executive`}
+                target="_blank"
+                className="flex items-center gap-1.5 rounded-lg bg-blue-600 px-3 py-1.5 text-[11px] font-black text-white hover:bg-blue-700"
+              >
+                <Download size={12} />
+                PDF
+              </Link>
+            </div>
+          </div>
+        </div>
+        <div className="bg-[#091630] px-7 py-3">
+          <div className="flex flex-wrap items-center gap-x-6 gap-y-1 text-[11px] font-medium text-white/50">
+            <span>Cliente: <strong className="text-white/90">{project.client?.name ?? "-"}</strong></span>
+            <span className="text-white/20">|</span>
+            <span>Gerente: <strong className="text-white/90">{project.manager?.name ?? "—"}</strong></span>
+            <span className="text-white/20">|</span>
+            <span>Período: <strong className="text-white/90">{formatDate(project.plannedStart)} – {formatDate(project.currentEnd ?? project.plannedEnd)}</strong></span>
+            <span className="text-white/20">|</span>
+            <span>{businessDays(project.plannedStart, project.currentEnd ?? project.plannedEnd)} dias úteis</span>
+            {phaseTasks[0] ? (
+              <>
+                <span className="text-white/20">|</span>
+                <span>Fase atual: <strong className="text-white/90">{phaseTasks[0].name}</strong></span>
+              </>
+            ) : null}
+          </div>
+        </div>
+      </header>
+
+      {/* ── 4 KPI CARDS ── */}
+      <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        {/* Progresso */}
+        <div className="relative overflow-hidden rounded-2xl bg-[#1a3a7a] p-5 text-white shadow-lg">
+          <div className="absolute -right-4 -top-4 h-24 w-24 rounded-full bg-white/5" />
+          <p className="text-[10px] font-black uppercase tracking-[0.18em] text-blue-200/70">Progresso realizado</p>
+          <p className="mt-3 text-5xl font-black leading-none">{Math.round(progress)}<span className="text-2xl">%</span></p>
+          <p className="mt-1.5 text-xs font-semibold text-blue-200/60">{doneTasks} de {leafTasks.length} tarefas concluídas</p>
+          <div className="mt-4">
+            <div className="flex justify-between text-[10px] font-bold text-white/40 mb-1">
+              <span>Planejado: {Math.round(plannedProgress)}%</span>
+              {deviationPct >= 0
+                ? <span className="text-emerald-300">+{deviationPct}% adiantado</span>
+                : <span className="text-red-300">{deviationPct}% atraso</span>}
+            </div>
+            <div className="relative h-2 w-full overflow-hidden rounded-full bg-white/15">
+              <div className="absolute h-full rounded-full bg-white/30" style={{ width: `${plannedProgress}%` }} />
+              <div className="absolute h-full rounded-full bg-cyan-400" style={{ width: `${progress}%` }} />
+            </div>
+          </div>
+          <div className="mt-3 flex items-center gap-1 text-[11px] font-semibold text-cyan-300/80">
+            <TrendingUp size={13} />
+            {deviationPct >= 0 ? "Acima do planejado" : "Abaixo do planejado"}
+          </div>
+        </div>
+
+        {/* Saúde */}
+        {(() => {
+          const bg = scheduleTone === "green" ? "bg-emerald-600" : scheduleTone === "amber" ? "bg-amber-500" : "bg-red-600";
+          const soft = scheduleTone === "green" ? "text-emerald-100" : scheduleTone === "amber" ? "text-amber-100" : "text-red-100";
+          const TrendIcon = scheduleTone === "green" ? CheckCircle2 : scheduleTone === "amber" ? Activity : TrendingDown;
+          return (
+            <div className={`relative overflow-hidden rounded-2xl p-5 text-white shadow-lg ${bg}`}>
+              <div className="absolute -right-4 -top-4 h-24 w-24 rounded-full bg-white/10" />
+              <p className={`text-[10px] font-black uppercase tracking-[0.18em] ${soft}/70`}>Saúde do cronograma</p>
+              <p className="mt-3 text-4xl font-black leading-none">{health.label}</p>
+              <p className={`mt-1.5 text-xs font-semibold ${soft}/60`}>{delayedTasks.length} {delayedTasks.length === 1 ? "tarefa atrasada" : "tarefas atrasadas"}</p>
+              <div className={`mt-4 flex items-center gap-1.5 text-[11px] font-semibold ${soft}/80`}>
+                <TrendIcon size={13} />
+                {scheduleTone === "green" ? "Projeto no prazo" : scheduleTone === "amber" ? "Requer atenção" : "Cronograma crítico"}
+              </div>
+            </div>
+          );
+        })()}
+
+        {/* Atrasos */}
+        <div className={`relative overflow-hidden rounded-2xl p-5 text-white shadow-lg ${delayedTasks.length > 0 ? "bg-amber-600" : "bg-slate-600"}`}>
+          <div className="absolute -right-4 -top-4 h-24 w-24 rounded-full bg-white/10" />
+          <p className="text-[10px] font-black uppercase tracking-[0.18em] text-white/60">Tarefas atrasadas</p>
+          <p className="mt-3 text-5xl font-black leading-none">{delayedTasks.length}</p>
+          <p className="mt-1.5 text-xs font-semibold text-white/60">de {leafTasks.length} atividades totais</p>
+          <div className="mt-4 flex items-center gap-1.5 text-[11px] font-semibold text-white/70">
+            <Clock size={13} />
+            {delayedTasks.length === 0 ? "Todas no prazo" : `${Math.round((delayedTasks.length / Math.max(leafTasks.length, 1)) * 100)}% em desvio`}
+          </div>
+        </div>
+
+        {/* Riscos & Bloqueios */}
+        <div className={`relative overflow-hidden rounded-2xl p-5 text-white shadow-lg ${(criticalRisks.length + openBlockers.length) > 0 ? "bg-red-700" : "bg-slate-600"}`}>
+          <div className="absolute -right-4 -top-4 h-24 w-24 rounded-full bg-white/10" />
+          <p className="text-[10px] font-black uppercase tracking-[0.18em] text-white/60">Riscos & bloqueios</p>
+          <p className="mt-3 text-5xl font-black leading-none">{criticalRisks.length + openBlockers.length}</p>
+          <p className="mt-1.5 text-xs font-semibold text-white/60">{openBlockers.length} bloqueio(s) · {criticalRisks.length} risco(s) crítico(s)</p>
+          <div className="mt-4 flex items-center gap-1.5 text-[11px] font-semibold text-white/70">
+            <ShieldAlert size={13} />
+            {(criticalRisks.length + openBlockers.length) === 0 ? "Sem impedimentos ativos" : "Requer ação imediata"}
+          </div>
         </div>
       </section>
 
-      {/* Progress geral */}
-      <section className="rounded-xl border border-slate-100 bg-white p-5 shadow-sm">
-        <div className="flex flex-wrap items-center justify-between gap-4">
-          <div>
-            <p className="text-[10px] font-black uppercase tracking-wide text-slate-400">Progresso geral do projeto</p>
-            <p className="mt-1 text-4xl font-black text-[#00143d]">{Math.round(progress)}%</p>
-            <p className="text-xs text-slate-400">Planejado para hoje: <strong className="text-slate-600">{Math.round(plannedProgress)}%</strong></p>
+      {/* ── SEMÁFORO + BARRA DE PROGRESSO ── */}
+      <section className="grid gap-4 lg:grid-cols-[1fr_auto]">
+        <div className="rounded-2xl border border-slate-100 bg-white p-5 shadow-sm">
+          <p className="mb-4 flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
+            <Activity size={12} />
+            Semáforo executivo
+          </p>
+          <div className="grid gap-3 sm:grid-cols-3">
+            {semaphore.map((item) => {
+              const cfg = {
+                green: { bar: "bg-emerald-500", bg: "bg-emerald-50", text: "text-emerald-800", sub: "text-emerald-600", border: "border-emerald-200" },
+                amber: { bar: "bg-amber-400", bg: "bg-amber-50", text: "text-amber-800", sub: "text-amber-600", border: "border-amber-200" },
+                red: { bar: "bg-red-500", bg: "bg-red-50", text: "text-red-800", sub: "text-red-600", border: "border-red-200" },
+              }[item.tone as "green" | "amber" | "red"];
+              return (
+                <div key={item.label} className={`rounded-xl border p-4 ${cfg.bg} ${cfg.border}`}>
+                  <div className="flex items-center gap-2.5">
+                    <span className={`h-3 w-3 shrink-0 rounded-full ${cfg.bar} shadow-sm`} />
+                    <p className={`text-sm font-black ${cfg.text}`}>{item.label}</p>
+                  </div>
+                  <p className={`mt-1.5 text-xs font-semibold ${cfg.sub}`}>{item.detail}</p>
+                  <div className={`mt-3 h-1.5 w-full overflow-hidden rounded-full ${cfg.bg} ring-1 ${cfg.border}`}>
+                    <div className={`h-full rounded-full ${cfg.bar}`} style={{ width: item.tone === "green" ? "100%" : item.tone === "amber" ? "50%" : "25%" }} />
+                  </div>
+                </div>
+              );
+            })}
           </div>
-          <div className="flex-1 max-w-sm">
-            <div className="flex justify-between text-[10px] font-bold text-slate-400 mb-1">
-              <span>Planejado: {Math.round(plannedProgress)}%</span>
-              <span>Realizado: {Math.round(progress)}%</span>
-            </div>
-            <div className="relative h-3 w-full overflow-hidden rounded-full bg-slate-100">
-              <div className="h-full rounded-full bg-slate-300" style={{ width: `${plannedProgress}%` }} />
-              <div className="absolute top-0 h-full rounded-full bg-cyan-500" style={{ width: `${progress}%` }} />
-            </div>
+        </div>
+
+        <div className="flex min-w-[240px] flex-col justify-center rounded-2xl border border-slate-100 bg-white p-6 shadow-sm">
+          <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Desvio do planejado</p>
+          <p className={`mt-2 text-5xl font-black leading-none ${deviationPct >= 0 ? "text-emerald-600" : "text-red-600"}`}>
+            {deviationPct >= 0 ? "+" : ""}{deviationPct}%
+          </p>
+          <p className="mt-1 text-xs text-slate-400">
+            {Math.round(progress)}% real vs. {Math.round(plannedProgress)}% planejado
+          </p>
+          <div className="mt-3 flex items-center gap-1.5 text-xs font-semibold">
+            {deviationPct >= 0
+              ? <><TrendingUp size={14} className="text-emerald-500" /><span className="text-emerald-600">Adiantado</span></>
+              : <><TrendingDown size={14} className="text-red-500" /><span className="text-red-600">Em atraso</span></>}
           </div>
         </div>
       </section>
 
       <StatusReportFilters />
 
-      {/* KPI cards */}
-      <section className="grid gap-4 md:grid-cols-3">
-        <StatusCard
-          title="Progresso realizado"
-          value={`${Math.round(progress)}%`}
-          detail={`${doneTasks} de ${leafTasks.length} tarefas`}
-          footer={`Planejado hoje: ${Math.round(plannedProgress)}%`}
-          icon={TrendingUp}
-          tone="blue"
-        />
-        <StatusCard
-          title="Saúde do cronograma"
-          value={health.label}
-          detail={`${delayedTasks.length} tarefas atrasadas`}
-          footer="Pontos de risco mapeados"
-          icon={CalendarCheck}
-          tone={scheduleTone as "blue" | "green" | "amber" | "red"}
-        />
-        <StatusCard
-          title="Riscos e bloqueios críticos"
-          value={criticalRisks.length + openBlockers.length}
-          detail="Ativos no momento"
-          icon={AlertOctagon}
-          tone={(criticalRisks.length + openBlockers.length) > 0 ? "red" : "green"}
-        />
-      </section>
-
-      {/* Resumo executivo + panorama ágil */}
-      <section className="grid gap-5 lg:grid-cols-2">
-        <ReportSection title="Resumo Executivo" icon={FileText}>
-          <p className="min-h-[180px] text-sm leading-7 text-slate-600">{executiveSummary}</p>
-        </ReportSection>
-        <ReportSection title="Panorama Ágil" icon={Flag}>
-          <div className="max-h-[230px] space-y-4 overflow-y-auto pr-2 text-sm">
-            <AgileGroup title="Entregas realizadas (últimos 15 dias):" tone="green" items={delivered.map((t: any) => t.name)} empty="Sem informações no momento." />
-            <AgileGroup title="Foco da próxima quinzena:" tone="slate" items={nextFocus.map((t: any) => t.name)} empty="Sem informações no momento." />
-            <AgileGroup title="Bloqueio crítico:" tone="red" items={openBlockers.map((b: any) => `${b.title}${b.responsiblePerson ? ` — Resp.: ${b.responsiblePerson}` : ""}`)} empty="Sem bloqueios ativos." />
+      {/* ── RESUMO EXECUTIVO + PANORAMA ÁGIL ── */}
+      <section className="grid gap-5 lg:grid-cols-[3fr_2fr]">
+        <div className="rounded-2xl border border-slate-100 bg-white shadow-sm">
+          <div className="flex items-center gap-3 border-b border-slate-100 px-6 py-4">
+            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-50">
+              <FileText size={15} className="text-blue-600" />
+            </span>
+            <h2 className="text-sm font-black text-slate-900">Resumo Executivo</h2>
           </div>
-        </ReportSection>
+          <p className="px-6 py-5 text-sm leading-7 text-slate-600">{executiveSummary}</p>
+        </div>
+
+        <div className="rounded-2xl border border-slate-100 bg-white shadow-sm">
+          <div className="flex items-center gap-3 border-b border-slate-100 px-6 py-4">
+            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-violet-50">
+              <Zap size={15} className="text-violet-600" />
+            </span>
+            <h2 className="text-sm font-black text-slate-900">Panorama Ágil</h2>
+          </div>
+          <div className="divide-y divide-slate-100">
+            <AgileGroup icon={CheckCheck} tone="green" title="Entregas (últimos 15 dias)" items={delivered.map((t: any) => t.name)} empty="Sem entregas no período." />
+            <AgileGroup icon={Target} tone="blue" title="Foco da próxima quinzena" items={nextFocus.map((t: any) => t.name)} empty="Sem atividades programadas." />
+            <AgileGroup icon={AlertOctagon} tone="red" title="Bloqueios críticos" items={openBlockers.map((b: any) => `${b.title}${b.responsiblePerson ? ` · ${b.responsiblePerson}` : ""}`)} empty="Sem bloqueios ativos." />
+          </div>
+        </div>
       </section>
 
-      <ReportSection title="Progresso Planejado vs. Realizado" icon={TrendingUp}>
-        <div className="overflow-x-auto pb-2">
-          <div className="min-w-[700px]">
+      {/* ── CURVA S ── */}
+      <div className="rounded-2xl border border-slate-100 bg-white shadow-sm">
+        <div className="flex items-center gap-3 border-b border-slate-100 px-6 py-4">
+          <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-sky-50">
+            <TrendingUp size={15} className="text-sky-600" />
+          </span>
+          <h2 className="text-sm font-black text-slate-900">Curva S — Progresso Planejado vs. Realizado</h2>
+        </div>
+        <div className="overflow-x-auto px-4 pb-4 pt-2">
+          <div className="min-w-[680px]">
             <StatusCurveChart data={curveData} />
           </div>
         </div>
-      </ReportSection>
+      </div>
 
-      <ReportSection title="Cronograma e Avanço por Fase (Gantt)" icon={CalendarDays}>
-        <div className="rounded-xl border border-slate-100 bg-slate-50 p-4">
-          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 pb-3">
-            <h3 className="text-sm font-black">Visão do Projeto no Tempo</h3>
-            <p className="text-xs text-slate-500">
-              Contrato: <strong>{monthYear(project.plannedStart)} a {monthYear(project.currentEnd ?? project.plannedEnd)}</strong>
-              · {businessDays(project.plannedStart, project.currentEnd ?? project.plannedEnd)} dias úteis
-            </p>
+      {/* ── GANTT ── */}
+      <div className="rounded-2xl border border-slate-100 bg-white shadow-sm">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 px-6 py-4">
+          <div className="flex items-center gap-3">
+            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-50">
+              <CalendarDays size={15} className="text-indigo-600" />
+            </span>
+            <h2 className="text-sm font-black text-slate-900">Cronograma por Fase (Gantt)</h2>
           </div>
-          <div className="relative mt-5 max-h-[300px] min-w-[820px] space-y-5 overflow-auto pb-2 pr-2">
+          <p className="text-[11px] text-slate-400">
+            {monthYear(project.plannedStart)} → {monthYear(project.currentEnd ?? project.plannedEnd)} · {businessDays(project.plannedStart, project.currentEnd ?? project.plannedEnd)} dias úteis
+          </p>
+        </div>
+        <div className="overflow-x-auto px-6 py-5">
+          <div className="relative min-w-[760px] space-y-3">
+            {/* Hoje marker */}
             <div
-              className="absolute bottom-0 top-0 w-px border-l border-dashed border-red-500"
-              style={{ left: `${timelinePosition(now, project.plannedStart, project.currentEnd ?? project.plannedEnd)}%` }}
+              className="pointer-events-none absolute bottom-0 top-0 z-10"
+              style={{ left: `calc(${timelinePosition(now, project.plannedStart, project.currentEnd ?? project.plannedEnd)}% + 140px)` }}
             >
-              <span className="absolute -top-1 -translate-x-1/2 rounded-md bg-red-500 px-2 py-0.5 text-[10px] font-black text-white">Hoje</span>
+              <div className="h-full w-px border-l-2 border-dashed border-red-400" />
+              <span className="absolute -top-1 -translate-x-1/2 whitespace-nowrap rounded-md bg-red-500 px-2 py-0.5 text-[10px] font-black text-white shadow">Hoje</span>
             </div>
             <GanttBar
-              label={baseline ? `Progresso Planejado Geral (${baseline.name})` : "Progresso Planejado Geral"}
+              label={baseline ? `Progresso Planejado (${baseline.name})` : "Progresso Planejado Geral"}
               start={project.plannedStart}
               end={project.currentEnd ?? project.plannedEnd}
               project={project}
               progress={plannedProgress}
               color="bg-blue-700"
+              labelWidth={140}
             />
             {phaseTasks.map((task: any, i: number) => (
               <GanttBar
                 key={task.id}
-                label={`${task.wbsCode ? `${task.wbsCode} – ` : ""}${task.name}`}
+                label={`${task.wbsCode ? `${task.wbsCode} ` : ""}${task.name}`}
                 start={task.plannedStart}
                 end={task.plannedEnd}
                 project={project}
                 progress={Number(task.progressPercent ?? 0)}
-                color={i % 2 === 0 ? "bg-cyan-500" : "bg-violet-500"}
+                color={["bg-cyan-500","bg-violet-500","bg-teal-500","bg-indigo-500","bg-blue-400"][i % 5]}
+                labelWidth={140}
               />
             ))}
           </div>
         </div>
-      </ReportSection>
+      </div>
 
-      <ReportSection title="Semáforo de Marcos" icon={Milestone}>
-        <div className="max-h-[360px] overflow-auto rounded-lg border border-slate-100">
-          <table id="status-report-milestones" className="w-full min-w-[840px] text-left text-xs">
-            <thead className="sticky top-0 z-10 bg-slate-50 uppercase tracking-wide text-slate-400">
+      {/* ── MARCOS ── */}
+      <div className="rounded-2xl border border-slate-100 bg-white shadow-sm">
+        <div className="flex items-center gap-3 border-b border-slate-100 px-6 py-4">
+          <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-50">
+            <Milestone size={15} className="text-amber-600" />
+          </span>
+          <h2 className="text-sm font-black text-slate-900">Semáforo de Marcos</h2>
+        </div>
+        <div className="overflow-auto">
+          <table id="status-report-milestones" className="w-full min-w-[800px] text-left text-xs">
+            <thead className="bg-slate-50 text-[10px] font-black uppercase tracking-[0.12em] text-slate-400">
               <tr>
-                <th className="px-4 py-3">Etapa</th>
-                <th>Previsão Ent.</th>
-                <th>Responsáveis</th>
-                <th>Horas Planejadas</th>
-                <th>Horas Trabalhadas</th>
-                <th>Status</th>
-                <th>Progresso</th>
+                <th className="px-6 py-3">Etapa / Marco</th>
+                <th className="py-3">Previsão</th>
+                <th className="py-3">Responsável</th>
+                <th className="py-3">H. Planejadas</th>
+                <th className="py-3">H. Realizadas</th>
+                <th className="py-3">Status</th>
+                <th className="py-3 pr-6">Progresso</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
@@ -1320,59 +1424,75 @@ function DashboardModule({ project }: { project: any }) {
             </tbody>
           </table>
         </div>
-        <StatusReportTablePager tableId="status-report-milestones" pageSize={8} />
-      </ReportSection>
-
-      <ReportSection title="Resumo de Atividades (Semana Atual)" icon={Clock}>
-        <div className="max-h-[400px] overflow-auto rounded-lg border border-slate-100">
-          <table id="status-report-activities" className="w-full min-w-[850px] text-left text-xs">
-            <thead className="sticky top-0 z-10 bg-slate-50 uppercase tracking-wide text-slate-400">
-              <tr>
-                <th className="px-3 py-3">Status</th>
-                <th>Atividade Operacional</th>
-                <th>Responsável</th>
-                <th>Prazo</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100">
-              {currentActivities.map((task: any) => <ActivityReportRow key={task.id} task={task} now={now} />)}
-            </tbody>
-          </table>
+        <div className="border-t border-slate-100 px-6 py-3">
+          <StatusReportTablePager tableId="status-report-milestones" pageSize={8} />
         </div>
-        <StatusReportTablePager tableId="status-report-activities" pageSize={10} />
-        <p className="mt-2 text-[11px] text-slate-400">Exportar PDF inclui todas as atividades.</p>
-      </ReportSection>
+      </div>
 
-      <ReportSection title="Esforço e Alocação por Recurso (Horas)" icon={Users}>
-        <div className="max-h-[340px] overflow-auto rounded-lg border border-slate-100">
-          <table id="status-report-resources" className="w-full min-w-[850px] text-left text-xs">
-            <thead className="sticky top-0 z-10 bg-slate-50 uppercase tracking-wide text-slate-400">
-              <tr>
-                <th className="px-3 py-3">Recurso / Frente</th>
-                <th>Planejado</th>
-                <th>Realizado</th>
-                <th>Consumo do Orçamento</th>
-                <th>Saúde</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100">
-              {resourceRows.map((row) => <ResourceReportRow key={row.name} row={row} />)}
-            </tbody>
-          </table>
+      {/* ── ATIVIDADES + RECURSOS (lado a lado) ── */}
+      <div className="grid gap-5 xl:grid-cols-[3fr_2fr]">
+        {/* Atividades */}
+        <div className="rounded-2xl border border-slate-100 bg-white shadow-sm">
+          <div className="flex items-center gap-3 border-b border-slate-100 px-6 py-4">
+            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-teal-50">
+              <Clock size={15} className="text-teal-600" />
+            </span>
+            <h2 className="text-sm font-black text-slate-900">Atividades da Semana</h2>
+          </div>
+          <div className="overflow-auto max-h-[420px]">
+            <table id="status-report-activities" className="w-full min-w-[560px] text-left text-xs">
+              <thead className="sticky top-0 z-10 bg-slate-50 text-[10px] font-black uppercase tracking-[0.12em] text-slate-400">
+                <tr>
+                  <th className="px-6 py-3">Status</th>
+                  <th className="py-3">Atividade</th>
+                  <th className="py-3">Responsável</th>
+                  <th className="py-3 pr-6">Prazo</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {currentActivities.map((task: any) => <ActivityReportRow key={task.id} task={task} now={now} />)}
+              </tbody>
+            </table>
+          </div>
+          <div className="border-t border-slate-100 px-6 py-3">
+            <StatusReportTablePager tableId="status-report-activities" pageSize={10} />
+          </div>
         </div>
-        <StatusReportTablePager tableId="status-report-resources" pageSize={6} />
-      </ReportSection>
 
-      <ReportSection title="Matriz de Riscos e Bloqueios" icon={ShieldAlert}>
-        <div className="max-h-[420px] overflow-auto rounded-lg border border-slate-100">
-          <table id="status-report-risks" className="w-full min-w-[980px] text-left text-xs">
-            <thead className="sticky top-0 z-10 bg-slate-50 uppercase tracking-wide text-slate-400">
+        {/* Recursos */}
+        <div className="rounded-2xl border border-slate-100 bg-white shadow-sm">
+          <div className="flex items-center gap-3 border-b border-slate-100 px-6 py-4">
+            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-purple-50">
+              <Users size={15} className="text-purple-600" />
+            </span>
+            <h2 className="text-sm font-black text-slate-900">Alocação de Recursos</h2>
+          </div>
+          <div className="divide-y divide-slate-100 overflow-auto max-h-[420px]">
+            {resourceRows.map((row) => <ResourceReportRow key={row.name} row={row} />)}
+          </div>
+          <div className="border-t border-slate-100 px-6 py-3">
+            <StatusReportTablePager tableId="status-report-resources" pageSize={6} />
+          </div>
+        </div>
+      </div>
+
+      {/* ── MATRIZ RISCOS & BLOQUEIOS ── */}
+      <div className="rounded-2xl border border-slate-100 bg-white shadow-sm">
+        <div className="flex items-center gap-3 border-b border-slate-100 px-6 py-4">
+          <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-red-50">
+            <ShieldAlert size={15} className="text-red-600" />
+          </span>
+          <h2 className="text-sm font-black text-slate-900">Matriz de Riscos e Bloqueios</h2>
+        </div>
+        <div className="overflow-auto">
+          <table id="status-report-risks" className="w-full min-w-[900px] text-left text-xs">
+            <thead className="bg-slate-50 text-[10px] font-black uppercase tracking-[0.12em] text-slate-400">
               <tr>
-                <th className="px-3 py-3">Descrição</th>
-                <th>Impacto no Projeto</th>
-                <th>Nível</th>
-                <th>Ação Planejada / To-do</th>
-                <th>Resp.</th>
+                <th className="px-6 py-3">Descrição</th>
+                <th className="py-3">Impacto</th>
+                <th className="py-3">Nível</th>
+                <th className="py-3">Ação planejada</th>
+                <th className="py-3 pr-6">Responsável</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
@@ -1380,8 +1500,11 @@ function DashboardModule({ project }: { project: any }) {
             </tbody>
           </table>
         </div>
-        <StatusReportTablePager tableId="status-report-risks" pageSize={8} />
-      </ReportSection>
+        <div className="border-t border-slate-100 px-6 py-3">
+          <StatusReportTablePager tableId="status-report-risks" pageSize={8} />
+        </div>
+      </div>
+
     </div>
   );
 }
@@ -1446,17 +1569,43 @@ function ReportSection({ title, icon: Icon, children }: { title: string; icon: R
   );
 }
 
-function AgileGroup({ title, tone, items, empty }: { title: string; tone: "green" | "slate" | "red"; items: string[]; empty: string }) {
-  const color = tone === "green" ? "text-emerald-700" : tone === "red" ? "text-red-700" : "text-slate-600";
+function AgileGroup({
+  icon: Icon,
+  title,
+  tone,
+  items,
+  empty,
+}: {
+  icon: React.ElementType;
+  title: string;
+  tone: "green" | "blue" | "red";
+  items: string[];
+  empty: string;
+}) {
+  const cfg = {
+    green: { icon: "bg-emerald-100 text-emerald-600", dot: "bg-emerald-400", title: "text-emerald-800" },
+    blue:  { icon: "bg-blue-100 text-blue-600",   dot: "bg-blue-400",   title: "text-blue-800" },
+    red:   { icon: "bg-red-100 text-red-600",     dot: "bg-red-400",    title: "text-red-800" },
+  }[tone];
   return (
-    <div className="border-b border-slate-100 pb-3 last:border-b-0">
-      <p className={`text-[11px] font-black uppercase ${color}`}>{title}</p>
+    <div className="px-6 py-4">
+      <div className="flex items-center gap-2 mb-3">
+        <span className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-md ${cfg.icon}`}>
+          <Icon size={13} />
+        </span>
+        <p className={`text-[11px] font-black uppercase tracking-wide ${cfg.title}`}>{title}</p>
+      </div>
       {items.length ? (
-        <ul className="mt-2 list-disc space-y-1.5 pl-5 text-xs font-medium text-slate-600">
-          {items.map((item) => <li key={item}>{item}</li>)}
+        <ul className="space-y-2">
+          {items.map((item) => (
+            <li key={item} className="flex items-start gap-2 text-xs font-medium text-slate-600">
+              <span className={`mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full ${cfg.dot}`} />
+              {item}
+            </li>
+          ))}
         </ul>
       ) : (
-        <p className="mt-2 text-xs text-slate-400">{empty}</p>
+        <p className="text-xs text-slate-400">{empty}</p>
       )}
     </div>
   );
@@ -1469,6 +1618,7 @@ function GanttBar({
   project,
   progress,
   color,
+  labelWidth = 160,
 }: {
   label: string;
   start: Date | string;
@@ -1476,17 +1626,43 @@ function GanttBar({
   project: any;
   progress: number;
   color: string;
+  labelWidth?: number;
 }) {
-  const left = timelinePosition(start, project.plannedStart, project.currentEnd ?? project.plannedEnd);
-  const right = timelinePosition(end, project.plannedStart, project.currentEnd ?? project.plannedEnd);
-  const width = Math.max(4, right - left);
+  const projectStart = project.plannedStart;
+  const projectEnd = project.currentEnd ?? project.plannedEnd;
+  const left = timelinePosition(start, projectStart, projectEnd);
+  const right = timelinePosition(end, projectStart, projectEnd);
+  const width = Math.max(3, right - left);
+  const barLeft = `calc(${labelWidth}px + ${left}% * ((100% - ${labelWidth}px) / 100))`;
+  const barWidth = `calc(${width}% * ((100% - ${labelWidth}px) / 100))`;
   return (
-    <div className="relative h-9 text-[11px] font-semibold">
-      <span className="absolute -top-1 left-0 max-w-[220px] truncate text-slate-600">
-        {label} ({Math.round(progress)}%)
+    <div className="flex items-center gap-0" style={{ minHeight: "36px" }}>
+      <span className="shrink-0 truncate pr-3 text-[11px] font-semibold text-slate-600" style={{ width: labelWidth }}>
+        {label}
       </span>
-      <div className="absolute bottom-0 h-2 rounded-full bg-slate-200" style={{ left: `${left}%`, width: `${width}%` }}>
-        <div className={`h-full rounded-full ${color}`} style={{ width: `${clamp(progress, 4, 100)}%` }} />
+      <div className="relative flex-1">
+        <div className="h-5 w-full rounded-sm bg-slate-100" />
+        <div
+          className="absolute top-0 h-5 rounded-sm bg-slate-200"
+          style={{ left: `${left}%`, width: `${width}%` }}
+        >
+          <div
+            className={`h-full rounded-sm ${color} flex items-center justify-end overflow-hidden`}
+            style={{ width: `${clamp(progress, 3, 100)}%` }}
+          >
+            {progress > 20 ? (
+              <span className="pr-1.5 text-[10px] font-black text-white/90">{Math.round(progress)}%</span>
+            ) : null}
+          </div>
+        </div>
+        {progress <= 20 ? (
+          <span
+            className="absolute top-0 flex h-5 items-center text-[10px] font-bold text-slate-500"
+            style={{ left: `calc(${left}% + ${width}% + 4px)` }}
+          >
+            {Math.round(progress)}%
+          </span>
+        ) : null}
       </div>
     </div>
   );
@@ -1498,18 +1674,22 @@ function MilestoneReportRow({ item }: { item: any }) {
   const progress = isTask ? Number(item.progressPercent ?? 0) : item.status === "COMPLETED" ? 100 : 0;
   const owner = isTask ? item.owner?.name ?? "-" : item.owner ?? "-";
   const text = `${item.name} ${owner} ${status.label}`;
+  const rowBg =
+    status.tone === "red" ? "bg-red-50/50 hover:bg-red-50" :
+    status.tone === "amber" ? "bg-amber-50/30 hover:bg-amber-50/60" :
+    "hover:bg-slate-50";
   return (
-    <tr data-status-report-row data-report-text={text} data-report-status={status.label} data-report-owner={owner} data-report-level={status.label} className="hover:bg-slate-50">
-      <td className="px-4 py-3 font-semibold">
-        {isTask && item.wbsCode ? `${item.wbsCode} – ` : ""}
+    <tr data-status-report-row data-report-text={text} data-report-status={status.label} data-report-owner={owner} data-report-level={status.label} className={rowBg}>
+      <td className="px-6 py-3 font-semibold text-slate-800">
+        {isTask && item.wbsCode ? <span className="mr-1.5 text-slate-400">{item.wbsCode}</span> : null}
         {item.name}
       </td>
-      <td className="text-slate-500">{formatDate(isTask ? item.plannedEnd : item.plannedDate)}</td>
-      <td className="text-slate-500">{owner}</td>
-      <td className="text-slate-500">{isTask ? formatHours(item.estimatedHours) : "-"}</td>
-      <td className="text-slate-500">{isTask ? formatHours(item.actualHours) : "-"}</td>
-      <td><StatusPill tone={status.tone}>{status.label}</StatusPill></td>
-      <td><InlineProgress value={progress} /></td>
+      <td className="py-3 text-slate-500">{formatDate(isTask ? item.plannedEnd : item.plannedDate)}</td>
+      <td className="py-3 text-slate-500">{owner}</td>
+      <td className="py-3 text-slate-500">{isTask ? formatHours(item.estimatedHours) : "-"}</td>
+      <td className="py-3 text-slate-500">{isTask ? formatHours(item.actualHours) : "-"}</td>
+      <td className="py-3"><StatusPill tone={status.tone}>{status.label}</StatusPill></td>
+      <td className="py-3 pr-6"><InlineProgress value={progress} /></td>
     </tr>
   );
 }
@@ -1519,13 +1699,18 @@ function ActivityReportRow({ task, now }: { task: any; now: Date }) {
   const days = Math.ceil((new Date(task.plannedEnd).getTime() - startOfDay(now).getTime()) / 86_400_000);
   const owner = task.owner?.name ?? "-";
   const text = `${task.legacyItemCode ?? ""} ${task.name} ${owner} ${status.label}`;
+  const rowBg =
+    status.tone === "red" ? "bg-red-50/60 hover:bg-red-50" :
+    status.tone === "amber" ? "bg-amber-50/40 hover:bg-amber-50" :
+    status.tone === "green" ? "hover:bg-emerald-50/40" :
+    "hover:bg-slate-50";
   return (
-    <tr data-status-report-row data-report-text={text} data-report-status={status.label} data-report-owner={owner} data-report-level={status.label} className="hover:bg-slate-50">
-      <td className="px-3 py-2"><StatusPill tone={status.tone}>{status.label}</StatusPill></td>
-      <td className="font-semibold">{task.legacyItemCode ? `${task.legacyItemCode} – ` : ""}{truncate(task.name, 62)}</td>
-      <td className="text-slate-500">{owner}</td>
-      <td className={days < 0 ? "font-black text-red-600" : "text-slate-500"}>
-        {days < 0 ? `${Math.abs(days)} dias em atraso` : `${days} dias`}
+    <tr data-status-report-row data-report-text={text} data-report-status={status.label} data-report-owner={owner} data-report-level={status.label} className={rowBg}>
+      <td className="px-6 py-2.5"><StatusPill tone={status.tone}>{status.label}</StatusPill></td>
+      <td className="py-2.5 font-semibold text-slate-800">{task.legacyItemCode ? `${task.legacyItemCode} – ` : ""}{truncate(task.name, 62)}</td>
+      <td className="py-2.5 text-slate-500">{owner}</td>
+      <td className={`py-2.5 pr-6 font-semibold ${days < 0 ? "text-red-600" : days <= 3 ? "text-amber-600" : "text-slate-500"}`}>
+        {days < 0 ? `${Math.abs(days)}d em atraso` : `${days}d`}
       </td>
     </tr>
   );
@@ -1534,28 +1719,40 @@ function ActivityReportRow({ task, now }: { task: any; now: Date }) {
 function ResourceReportRow({ row }: { row: { name: string; planned: number; actual: number; role?: string } }) {
   const consumption = row.planned > 0 ? (row.actual / row.planned) * 100 : 0;
   const over = consumption > 100;
+  const pct = Math.min(Math.round(consumption), 100);
   const status = over ? "Estourado" : "Dentro da Meta";
   return (
-    <tr
+    <div
       data-status-report-row
       data-report-text={`${row.name} ${row.role ?? ""} ${status}`}
       data-report-status={status}
       data-report-owner={row.name}
       data-report-level={status}
-      className="hover:bg-slate-50"
+      className={`px-6 py-4 ${over ? "bg-red-50/40 hover:bg-red-50" : "hover:bg-slate-50"}`}
     >
-      <td className="px-3 py-3">
-        <strong>{row.name}</strong>
-        <p className="text-[11px] text-slate-400">{row.role ?? "Recurso do projeto"}</p>
-      </td>
-      <td className="text-slate-500">{row.planned.toFixed(2)}</td>
-      <td className="font-black">{row.actual.toFixed(2)}</td>
-      <td>
-        <p className={over ? "font-black text-red-600" : "text-slate-500"}>{Math.round(consumption)}% consumido</p>
-        <InlineProgress value={Math.min(consumption, 100)} tone={over ? "red" : "blue"} />
-      </td>
-      <td><StatusPill tone={over ? "red" : "green"}>{status}</StatusPill></td>
-    </tr>
+      <div className="flex items-center justify-between gap-3 mb-2">
+        <div>
+          <p className="text-xs font-black text-slate-800">{row.name}</p>
+          <p className="text-[11px] text-slate-400">{row.role ?? "Recurso do projeto"}</p>
+        </div>
+        <StatusPill tone={over ? "red" : "green"}>{status}</StatusPill>
+      </div>
+      <div className="flex items-center gap-3">
+        <div className="relative flex-1 h-3 overflow-hidden rounded-full bg-slate-100">
+          <div
+            className={`h-full rounded-full ${over ? "bg-red-500" : "bg-blue-500"}`}
+            style={{ width: `${pct}%` }}
+          />
+        </div>
+        <span className={`shrink-0 text-xs font-black ${over ? "text-red-600" : "text-slate-700"}`}>
+          {Math.round(consumption)}%
+        </span>
+      </div>
+      <div className="mt-1.5 flex gap-4 text-[11px] text-slate-400">
+        <span>Planejado: <strong className="text-slate-600">{row.planned.toFixed(0)}h</strong></span>
+        <span>Realizado: <strong className={over ? "text-red-600" : "text-slate-600"}>{row.actual.toFixed(0)}h</strong></span>
+      </div>
+    </div>
   );
 }
 
@@ -1574,18 +1771,21 @@ function RiskReportRow({ row, index }: { row: { type: string; item: any }; index
       data-report-level={level}
       className={isBlocker ? "bg-red-50/50 hover:bg-red-50" : "hover:bg-slate-50"}
     >
-      <td className="px-3 py-3 font-semibold">
+      <td className="px-6 py-3 font-semibold text-slate-800">
+        <span className={`mr-2 rounded-full px-2 py-0.5 text-[10px] font-black ${isBlocker ? "bg-red-100 text-red-700" : "bg-slate-100 text-slate-600"}`}>
+          {isBlocker ? "BLOQUEIO" : "RISCO"}
+        </span>
         {isBlocker ? item.title : item.name}
         <p className="mt-0.5 text-[11px] text-red-500">{isBlocker ? `${daysOpen(item.openedAt, item.resolvedAt)} dias em aberto` : riskStatusPt(item.status)}</p>
       </td>
-      <td className="text-slate-500">{isBlocker ? item.impactDescription ?? `${item.scheduleImpactDays} dias` : item.impact ?? item.description ?? "Impacto a monitorar"}</td>
-      <td>
+      <td className="py-3 text-xs text-slate-500">{isBlocker ? item.impactDescription ?? `${item.scheduleImpactDays} dias` : item.impact ?? item.description ?? "Impacto a monitorar"}</td>
+      <td className="py-3">
         <StatusPill tone={isBlocker || item.classification === "CRITICAL" ? "red" : item.classification === "HIGH" ? "amber" : "slate"}>
           {level}
         </StatusPill>
       </td>
-      <td className="text-slate-500">{isBlocker ? item.nextAction ?? "Definir plano de ação" : item.preventiveActions ?? item.contingencyPlan ?? "Monitorar e revisar"}</td>
-      <td className="font-black">{owner}</td>
+      <td className="py-3 text-xs text-slate-500">{isBlocker ? item.nextAction ?? "Definir plano de ação" : item.preventiveActions ?? item.contingencyPlan ?? "Monitorar e revisar"}</td>
+      <td className="py-3 pr-6 font-semibold text-slate-700">{owner}</td>
     </tr>
   );
 }
