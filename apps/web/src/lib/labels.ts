@@ -11,7 +11,10 @@ export const statusLabels: Record<string, string> = {
   OPEN: "Aberto",
   RESOLVED: "Resolvido",
   ACTIVE: "Ativo",
-  INACTIVE: "Inativo"
+  INACTIVE: "Inativo",
+  FECHADO: "Fechado",
+  EXECUTAR: "Executar",
+  PENDENTE: "Pendente"
 };
 
 export const priorityLabels: Record<string, string> = {
@@ -29,4 +32,9 @@ export function statusLabel(value: string | null | undefined) {
 export function priorityLabel(value: string | null | undefined) {
   if (!value) return "";
   return priorityLabels[value] ?? value.replaceAll("_", " ");
+}
+
+export function occurSituationLabel(value: string | null | undefined) {
+  if (!value) return "";
+  return statusLabels[value] ?? value;
 }

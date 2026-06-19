@@ -37,7 +37,10 @@ const taskSchema = z.object({
   priority: z.enum(["LOW", "MEDIUM", "HIGH", "CRITICAL"]),
   plannedStart: dateField,
   plannedEnd: dateField,
-  estimatedHours: z.coerce.number().min(0)
+  estimatedHours: z.coerce.number().min(0),
+  occurNumber: z.string().optional(),
+  occurType: z.string().optional(),
+  occurSituation: z.string().optional()
 });
 
 const taskDependencySchema = z.object({
@@ -1192,6 +1195,9 @@ async function applyImportedSchedule({
             legacySource,
             legacyOccurrenceId: importedTask.legacyOccurrenceId ?? importedTask.externalId ?? null,
             legacyItemCode: importedTask.legacyItemCode ?? wbsCode,
+            occurNumber: importedTask.occurNumber ?? null,
+            occurType: importedTask.occurType ?? null,
+            occurSituation: importedTask.occurSituation ?? null,
             name: importedTask.name,
             description: importedTask.externalId ? `Importado de ${sourceLabel} | ID externo: ${importedTask.externalId}` : `Importado de ${sourceLabel}`,
             ownerId: owner?.id ?? null,
@@ -1221,6 +1227,9 @@ async function applyImportedSchedule({
           data.wbsCode = wbsCode;
           data.name = importedTask.name;
           data.description = importedTask.externalId ? `Importado de ${sourceLabel} | ID externo: ${importedTask.externalId}` : `Importado de ${sourceLabel}`;
+          data.occurNumber = importedTask.occurNumber ?? null;
+          data.occurType = importedTask.occurType ?? null;
+          data.occurSituation = importedTask.occurSituation ?? null;
         }
         if (importOptions.deadlines) {
           data.plannedStart = importedTask.start;
@@ -1235,6 +1244,7 @@ async function applyImportedSchedule({
         if (importOptions.progress) {
           data.progressPercent = importedTask.percentComplete;
           data.status = importedTask.status ?? taskStatusFromPercent(importedTask.percentComplete);
+          data.occurSituation = importedTask.occurSituation ?? null;
         }
         if (importOptions.resources) {
           data.ownerId = owner?.id ?? null;
@@ -1365,7 +1375,10 @@ function importedTaskFieldChanges(existing: any, importedTask: NormalizedImporte
   const importedOwner = importedTask.assignments?.[0]?.resourceName ?? "";
   const checks = [
     ["EDT", existing.wbsCode ?? "", wbsCode],
+    ["Ocorrencia", existing.occurNumber ?? "", importedTask.occurNumber ?? ""],
     ["Nome", existing.name ?? "", importedTask.name],
+    ["Tipo Ocorrencia", existing.occurType ?? "", importedTask.occurType ?? ""],
+    ["Situacao Ocorrencia", existing.occurSituation ?? "", importedTask.occurSituation ?? ""],
     ["Inicio", dateTimeKey(existing.plannedStart), dateTimeKey(importedTask.start)],
     ["Fim planejado", dateTimeKey(existing.plannedEnd), dateTimeKey(importedTask.finish)],
     ["Fim real", dateKey(existing.actualEnd), dateKey(importedTask.actualEnd)],
@@ -1446,7 +1459,10 @@ export async function createTaskAction(formData: FormData) {
       plannedEnd: data.plannedEnd,
       plannedDuration,
       estimatedHours: data.estimatedHours,
-      progressPercent: data.status === "DONE" ? 100 : 0
+      progressPercent: data.status === "DONE" ? 100 : 0,
+      occurNumber: data.occurNumber || null,
+      occurType: data.occurType || null,
+      occurSituation: data.occurSituation || null
     }
   });
 
@@ -1512,7 +1528,10 @@ export async function updateTaskAction(formData: FormData) {
       plannedDuration,
       estimatedHours: data.estimatedHours,
       actualHours: data.actualHours ?? before.actualHours,
-      progressPercent: data.status === "DONE" ? 100 : (data.progressPercent ?? before.progressPercent)
+      progressPercent: data.status === "DONE" ? 100 : (data.progressPercent ?? before.progressPercent),
+      occurNumber: data.occurNumber || null,
+      occurType: data.occurType || null,
+      occurSituation: data.occurSituation || null
     }
   });
 
@@ -1852,6 +1871,9 @@ type ImportedMppTask = {
   percentComplete?: number;
   actualHours?: number;
   outlineLevel?: number;
+  occurNumber?: string | null;
+  occurType?: string | null;
+  occurSituation?: string | null;
   status?: "TODO" | "IN_PROGRESS" | "IN_REVIEW" | "BLOCKED" | "DONE";
   assignments?: Array<{ resourceName: string; workHours?: number | null }>;
   predecessors?: Array<{ externalId: string; type?: string | null; lagDays?: number | null }>;
@@ -1882,6 +1904,9 @@ function normalizeImportedTasks(tasks: ImportedMppTask[] | undefined): Normalize
         percentComplete: Math.min(100, Math.max(0, Number(task.percentComplete ?? 0))),
         outlineLevel: Number(task.outlineLevel ?? 1),
         actualHours: Number(task.actualHours ?? 0),
+        occurNumber: task.occurNumber ?? null,
+        occurType: task.occurType ?? null,
+        occurSituation: task.occurSituation ?? null,
         assignments: task.assignments ?? [],
         predecessors: task.predecessors ?? []
       };
@@ -1893,29 +1918,41 @@ function parseCsvProject(content: string, fileName: string): ImportedMppProject 
   if (rows.length < 2) throw new Error("CSV sem linhas suficientes para importacao.");
 
   const headers = rows[0].map(normalizeCsvHeader);
-  const tasks = rows.slice(1).flatMap((row, index) => {
-    const record = Object.fromEntries(headers.map((header, columnIndex) => [header, row[columnIndex]?.trim() ?? ""]));
-    const name = firstCsvValue(record, ["descricao", "descrição", "descrio", "tarefa", "nome", "name", "task", "atividade", "taskname"]) || row[2]?.trim() || "";
-    if (!name) return [];
+  const headerMap = new Map(headers.map((header, index) => [header, index]));
 
-    const wbs = firstCsvValue(record, ["item", "edt", "wbs", "eap", "codigoedt", "codigowbs"]) || row[1]?.trim() || "";
-    const occurrence = firstCsvValue(record, ["ocorrencia", "ocorrência", "ocorrncia", "id", "externalid", "idexterno", "uid"]) || row[0]?.trim() || "";
-    const externalId = occurrence || wbs || String(index + 1);
-    const start = parseCsvDate(firstCsvValue(record, ["datainicio", "data início", "dataincio", "inicio", "incio", "start", "plannedstart", "inicioplanejado"]) || row[3]?.trim() || "");
-    const finish = parseCsvDate(firstCsvValue(record, ["datafimplanejada", "data fim planejada", "fim", "finish", "termino", "datafim", "plannedend", "fimplanejado"]) || row[7]?.trim() || "");
-    const actualEnd = parseCsvDate(firstCsvValue(record, ["datafimreal", "data fim real", "actualend", "fimreal"]) || row[11]?.trim() || "");
-    const percentComplete = parseCsvNumber(firstCsvValue(record, ["avanco", "progresso", "percentual", "percentcomplete", "percentualconclusao"]) || row[6]?.trim() || "");
-    const hours = parseCsvNumber(firstCsvValue(record, ["horasplanejadas", "horas planejadas", "horas", "estimatedhours", "trabalho", "work"]) || row[4]?.trim() || "");
-    const actualHours = parseCsvNumber(firstCsvValue(record, ["horastrabalhadas", "horas trabalhadas", "actualhours", "horasrealizadas"]) || row[5]?.trim() || "");
-    const resources = firstCsvValue(record, ["responsavel", "responsável", "responsvel", "responsaveis", "responsáveis", "responsveis", "recurso", "recursos", "owner", "resource"]) || row[8]?.trim() || "";
-    const legacyStatus = firstCsvValue(record, ["situacaoocorrencia", "situação ocorrência", "situaoocorrncia", "situacao", "situação", "situao", "status"]) || row[10]?.trim() || "";
-    const predecessors = firstCsvValue(record, ["predecessoras", "predecessores", "predecessors", "pred"]);
-    const outlineLevel = parseCsvNumber(firstCsvValue(record, ["nivel", "outlinelevel", "outline", "level"])) || outlineLevelFromWbs(wbs);
+  function col(row: string[], ...aliases: string[]): string {
+    for (const alias of aliases) {
+      const idx = headerMap.get(normalizeCsvHeader(alias));
+      if (idx !== undefined) return row[idx]?.trim() ?? "";
+    }
+    return "";
+  }
 
-    return [{
-      externalId,
-      legacyOccurrenceId: occurrence || null,
-      legacyItemCode: wbs || externalId,
+  const tasks: ImportedMppTask[] = [];
+  for (let rowIndex = 1; rowIndex < rows.length; rowIndex += 1) {
+    const row = rows[rowIndex];
+    if (!row?.some((cell) => cell.trim())) continue;
+
+    const occurNumber = col(row, "ocorrência", "ocorrencia", "ocorrncia");
+    const wbs = col(row, "item", "edt", "wbs", "eap", "hierarquiadatarefa");
+    const name = col(row, "descrição", "descricao", "descrio", "tarefa", "nome", "name", "task", "atividade");
+    if (!name) continue;
+
+    const start = parseCsvDate(col(row, "datainício", "datainicio", "dataincio", "início", "inicio", "start"));
+    const finish = parseCsvDate(col(row, "datafimplanejada", "datafimplanejada", "fim", "finish", "datafim"));
+    const actualEnd = parseCsvDate(col(row, "datafimreal", "fimreal", "actualend"));
+    const hours = parseCsvNumber(col(row, "horasplanejadas", "horasplanejadas"));
+    const actualHours = parseCsvNumber(col(row, "horastrabalhadas", "horastrabalhadas"));
+    const percentComplete = parseCsvNumber(col(row, "progresso", "avanco", "percentual"));
+    const resources = col(row, "responsável", "responsavel", "responsvel", "recurso", "recursos", "owner");
+    const occurType = col(row, "tipoocorrência", "tipoocorrencia", "tipoocorrncia");
+    const occurSituation = col(row, "situaçãoocorrência", "situacaoocorrencia", "situaoocorrncia", "situacao", "situação", "situao");
+    const outlineLevel = outlineLevelFromWbs(wbs);
+
+    tasks.push({
+      externalId: occurNumber || wbs || String(rowIndex),
+      legacyOccurrenceId: occurNumber || null,
+      legacyItemCode: wbs || occurNumber || null,
       wbsCode: wbs || null,
       name,
       start,
@@ -1924,18 +1961,17 @@ function parseCsvProject(content: string, fileName: string): ImportedMppProject 
       percentComplete,
       actualHours,
       outlineLevel,
-      status: legacyTaskStatus(legacyStatus, percentComplete),
+      occurNumber: occurNumber || null,
+      occurType: occurType || null,
+      occurSituation: occurSituation || null,
+      status: legacyTaskStatus(occurSituation, percentComplete),
       assignments: splitCsvList(resources).map((resourceName) => ({
         resourceName,
         workHours: hours > 0 ? hours : null
       })),
-      predecessors: splitCsvList(predecessors).map((predecessor) => ({
-        externalId: predecessor,
-        type: "FS",
-        lagDays: 0
-      }))
-    }];
-  });
+      predecessors: []
+    });
+  }
 
   return {
     name: fileName.replace(/\.[^.]+$/i, ""),

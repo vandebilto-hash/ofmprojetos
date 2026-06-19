@@ -30,6 +30,9 @@ type ManagedTask = {
   estimatedHours: unknown;
   actualHours: unknown;
   progressPercent: unknown;
+  occurNumber?: string | null;
+  occurType?: string | null;
+  occurSituation?: string | null;
   predecessors?: Array<{ predecessorId: string; predecessor: { id: string; name: string } }>;
   project?: { name: string } | null;
 };
@@ -210,13 +213,16 @@ export function TaskManagementTable({
           </div>
         </div>
       ) : null}
-      <table className="min-w-[1160px] w-full text-left text-sm">
+      <table className="min-w-[1400px] w-full text-left text-sm">
         <thead className="bg-slate-50 text-xs uppercase text-slate-500">
           <tr>
             <th className="w-24 px-3 py-3">EDT</th>
+            <th className="px-3 py-3">Ocorrencia</th>
             <th className="px-3 py-3">Tarefa</th>
             {showProject ? <th className="px-3 py-3">Projeto</th> : null}
             <th className="px-3 py-3">Responsavel</th>
+            <th className="px-3 py-3">Tipo</th>
+            <th className="px-3 py-3">Situacao</th>
             <th className="px-3 py-3">Status</th>
             <th className="px-3 py-3">Prioridade</th>
             <th className="px-3 py-3">Inicio</th>
@@ -250,6 +256,9 @@ export function TaskManagementTable({
                 <td className="px-3 py-3 font-mono text-xs text-slate-500">
                   {task.wbsCode ?? "-"}
                 </td>
+                <td className="px-3 py-3 font-mono text-xs text-slate-500">
+                  {task.occurNumber ?? "-"}
+                </td>
                 <td className="px-3 py-3">
                   <div className="flex items-center gap-2" style={{ paddingLeft: `${Math.max(0, level - 1) * 22}px` }}>
                     {isSummary ? (
@@ -276,6 +285,8 @@ export function TaskManagementTable({
                 </td>
                 {showProject ? <td className="px-3 py-3">{task.project?.name ?? "-"}</td> : null}
                 <td className="px-3 py-3">{task.owner?.name ?? "-"}</td>
+                <td className="px-3 py-3 text-xs">{task.occurType ?? "-"}</td>
+                <td className="px-3 py-3 text-xs">{task.occurSituation ?? "-"}</td>
                 <td className="px-3 py-3"><StatusBadge status={task.status} /></td>
                 <td className="px-3 py-3"><StatusBadge status={task.priority} /></td>
                 <td className="px-3 py-3">{formatDate(task.plannedStart)}</td>
@@ -298,6 +309,20 @@ export function TaskManagementTable({
                           Descricao
                           <textarea name="description" defaultValue={task.description ?? ""} rows={3} className="rounded-md border border-line px-3 py-2" />
                         </label>
+                        <div className="grid grid-cols-3 gap-3">
+                          <label className="grid gap-1 text-sm font-medium">
+                            Ocorrencia
+                            <input name="occurNumber" defaultValue={task.occurNumber ?? ""} className="h-10 rounded-md border border-line px-3" />
+                          </label>
+                          <label className="grid gap-1 text-sm font-medium">
+                            Tipo
+                            <input name="occurType" defaultValue={task.occurType ?? ""} className="h-10 rounded-md border border-line px-3" />
+                          </label>
+                          <label className="grid gap-1 text-sm font-medium">
+                            Situacao
+                            <input name="occurSituation" defaultValue={task.occurSituation ?? ""} className="h-10 rounded-md border border-line px-3" />
+                          </label>
+                        </div>
                         <div className="grid grid-cols-2 gap-3">
                           <label className="grid gap-1 text-sm font-medium">
                             Responsavel

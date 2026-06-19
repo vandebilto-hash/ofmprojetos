@@ -134,8 +134,8 @@ function buildLegacyCsv(project: any) {
   const rows = [...project.tasks].sort((left: any, right: any) => compareWbsCodes(left.wbsCode, right.wbsCode)).map((task: any) => {
     const rollup = legacyTaskRollup(task, taskById, directChildren);
     return [
-      task.legacyOccurrenceId ?? "",
-      task.legacyItemCode ?? task.wbsCode ?? "",
+      task.occurNumber ?? task.legacyOccurrenceId ?? "",
+      task.wbsCode ?? task.legacyItemCode ?? "",
       task.name,
       formatLegacyDateTime(task.plannedStart),
       formatLegacyNumber(rollup.estimatedHours),
@@ -143,8 +143,8 @@ function buildLegacyCsv(project: any) {
       formatLegacyNumber(rollup.progressPercent),
       formatLegacyDateTime(task.plannedEnd),
       task.owner?.name ?? "",
-      task.owner ? "IMPLANTAÇÃO" : "",
-      legacySituation(task.status),
+      task.occurType ?? "IMPLANTAÇÃO",
+      task.occurSituation ?? legacySituation(task.status),
       task.actualEnd ? formatLegacyDate(task.actualEnd) : ""
     ];
   });

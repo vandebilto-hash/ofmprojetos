@@ -529,6 +529,9 @@ model Task {
   legacySource       String?
   legacyOccurrenceId String?
   legacyItemCode     String?
+  occurNumber        String?
+  occurType          String?
+  occurSituation     String?
   name               String
   description        String?
   ownerId            String?

@@ -65,6 +65,20 @@ export function TaskForm({
       </label>
       <div className="grid grid-cols-3 gap-3">
         <label className="grid gap-1 text-sm font-medium">
+          Ocorrencia
+          <input name="occurNumber" placeholder="Ex: 142637" className="h-10 rounded-md border border-line px-3" />
+        </label>
+        <label className="grid gap-1 text-sm font-medium">
+          Tipo Ocorrencia
+          <input name="occurType" placeholder="Ex: IMPLANTACAO" className="h-10 rounded-md border border-line px-3" />
+        </label>
+        <label className="grid gap-1 text-sm font-medium">
+          Situacao Ocorrencia
+          <input name="occurSituation" placeholder="Ex: PENDENTE" className="h-10 rounded-md border border-line px-3" />
+        </label>
+      </div>
+      <div className="grid grid-cols-2 gap-3">
+        <label className="grid gap-1 text-sm font-medium">
           Status
           <select name="status" defaultValue="TODO" className="h-10 min-w-0 rounded-md border border-line px-3">
             <option value="TODO">A fazer</option>
@@ -83,8 +97,10 @@ export function TaskForm({
             <option value="CRITICAL">Critica</option>
           </select>
         </label>
+      </div>
+      <div className="grid grid-cols-2 gap-3">
         <label className="grid gap-1 text-sm font-medium">
-          Horas
+          Horas estimadas
           <input name="estimatedHours" type="number" step="0.5" min="0" placeholder="Horas" className="h-10 min-w-0 rounded-md border border-line px-3" />
         </label>
       </div>

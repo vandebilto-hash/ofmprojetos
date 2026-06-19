@@ -16,7 +16,10 @@ export const DEFAULT_IMPORT_OPTIONS: ImportOptions = {
 
 export const FIELD_CATEGORY_MAP: Record<string, keyof ImportOptions> = {
   "EDT": "activities",
+  "Ocorrencia": "activities",
   "Nome": "activities",
+  "Tipo Ocorrencia": "activities",
+  "Situacao Ocorrencia": "progress",
   "Inicio": "deadlines",
   "Fim planejado": "deadlines",
   "Fim real": "deadlines",
@@ -29,9 +32,9 @@ export const FIELD_CATEGORY_MAP: Record<string, keyof ImportOptions> = {
 };
 
 export const CATEGORIES: Array<{ key: keyof ImportOptions; label: string; description: string }> = [
-  { key: "activities", label: "Atividades", description: "Nomes, EDT/WBS, novas tarefas" },
+  { key: "activities", label: "Atividades", description: "Nomes, EDT/WBS, ocorrencia, tipo, novas tarefas" },
   { key: "deadlines", label: "Prazos", description: "Inicio, fim, duracao" },
   { key: "hours", label: "Horas", description: "Estimadas e executadas" },
-  { key: "progress", label: "Progresso", description: "Avanco e status" },
+  { key: "progress", label: "Progresso", description: "Avanco, situacao e status" },
   { key: "resources", label: "Responsaveis", description: "Alocacao de recursos" }
 ];
