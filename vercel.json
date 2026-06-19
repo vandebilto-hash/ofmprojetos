@@ -1,0 +1,6 @@
+{
+  "buildCommand": "npx prisma generate --schema prisma/schema.prisma && npm run build -w apps/web",
+  "installCommand": "npm install",
+  "outputDirectory": "apps/web/.next",
+  "framework": "nextjs"
+}

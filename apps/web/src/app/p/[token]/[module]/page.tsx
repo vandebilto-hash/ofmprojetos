@@ -31,11 +31,16 @@ export default async function PublicProjectModulePage({ params }: { params: { to
           tasks: {
             include: {
               owner: true,
+              allocations: { include: { user: true } },
               predecessors: { include: { predecessor: true } }
             },
             orderBy: [{ wbsCode: "asc" }, { plannedStart: "asc" }]
           },
-          blockers: { orderBy: { openedAt: "desc" } }
+          blockers: { orderBy: { openedAt: "desc" } },
+          baselines: { include: { tasks: true }, orderBy: [{ isActive: "desc" }, { createdAt: "desc" }] },
+          allocations: { include: { user: true, task: true }, orderBy: { startDate: "asc" } },
+          delays: { include: { task: true }, orderBy: { createdAt: "desc" } },
+          replannings: { include: { task: true }, orderBy: { createdAt: "desc" } }
         }
       }
     }
@@ -67,7 +72,7 @@ export default async function PublicProjectModulePage({ params }: { params: { to
       const setting = settingsByKey.get(module.key);
       if (hasSavedSettings && !setting) return null;
       if (setting && (!setting.enabled || !setting.visibleToClient)) return null;
-      return { key: module.key, label: setting?.label ?? module.label };
+      return { key: module.key, label: module.key === "dashboard" ? module.label : setting?.label ?? module.label };
     })
     .filter(Boolean) as Array<{ key: string; label: string }>;
   const activeModule = visibleModules.find((module) => module.key === params.module);

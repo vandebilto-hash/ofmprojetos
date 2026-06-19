@@ -1,4 +1,5 @@
 import { getServerSession } from "next-auth";
+import { Search, SlidersHorizontal } from "lucide-react";
 import { DialogAction } from "@/components/ui/dialog-action";
 import { PageHeader } from "@/components/ui/page-header";
 import { ImportProjectForm } from "@/features/projects/import-project-form";
@@ -14,6 +15,7 @@ export default async function ProjectsPage({
 }) {
   const session = await getServerSession(authOptions);
   const canManage = canManageProject(session?.user.role);
+
   const [projects, clients, managers] = await Promise.all([
     prisma.project.findMany({
       where: {
@@ -35,32 +37,74 @@ export default async function ProjectsPage({
     <>
       <PageHeader
         title="Projetos"
-        description="Filtro por cliente, status, responsavel, atraso e conclusao."
-        action={canManage ? { href: "/projects/new", label: "Novo projeto" } : undefined}
+        description={`${projects.length} projeto${projects.length !== 1 ? "s" : ""} encontrado${projects.length !== 1 ? "s" : ""}`}
+        actions={
+          canManage ? (
+            <div className="flex items-center gap-2">
+              <DialogAction
+                title="Importar projeto"
+                description="Importe arquivos MS Project ou CSV para criar projeto, tarefas, predecessoras e recursos."
+                trigger="create"
+                triggerLabel="Importar"
+              >
+                <ImportProjectForm
+                  projects={projects}
+                  clients={clients}
+                  managers={managers}
+                  defaultManagerId={session?.user.id ?? ""}
+                />
+              </DialogAction>
+              <a
+                href="/projects/new"
+                className="inline-flex h-9 items-center gap-2 rounded-md bg-brand-500 px-4 text-sm font-semibold text-white transition-colors hover:bg-brand-600"
+              >
+                Novo projeto
+              </a>
+            </div>
+          ) : undefined
+        }
       />
-      {canManage ? (
-        <div className="mb-4 flex justify-end">
-          <DialogAction title="Importar projeto" description="Importe arquivos MS Project ou CSV para criar projeto, tarefas, predecessoras e recursos reconhecidos." trigger="create" triggerLabel="Importar projeto">
-            <ImportProjectForm
-              projects={projects}
-              clients={clients}
-              managers={managers}
-              defaultManagerId={session?.user.id ?? ""}
-            />
-          </DialogAction>
+
+      {/* Filters */}
+      <form className="mb-4 flex flex-wrap items-center gap-2 rounded-lg border border-line bg-white p-3 shadow-soft dark:bg-[#111c31]">
+        <div className="relative min-w-[220px] flex-1">
+          <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" aria-hidden="true" />
+          <input
+            name="q"
+            defaultValue={searchParams.q ?? ""}
+            placeholder="Buscar projeto..."
+            className="h-9 w-full rounded-md border border-line bg-white pl-9 pr-3 text-sm text-ink outline-none transition-colors focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white dark:placeholder-slate-500"
+          />
         </div>
-      ) : null}
-      <form className="mb-4 grid grid-cols-[1fr_220px_auto] gap-3 rounded-lg border border-line bg-white p-3 shadow-soft">
-        <input name="q" placeholder="Buscar projeto" className="h-10 rounded-md border border-line px-3" />
-        <select name="status" className="h-10 rounded-md border border-line px-3">
-          <option value="">Todos os status</option>
-          <option value="PLANNED">Planejado</option>
-          <option value="IN_PROGRESS">Em andamento</option>
-          <option value="BLOCKED">Bloqueado</option>
-          <option value="COMPLETED">Concluido</option>
-        </select>
-        <button className="rounded-md bg-ink px-4 text-sm font-semibold text-white">Filtrar</button>
+        <div className="relative">
+          <SlidersHorizontal size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" aria-hidden="true" />
+          <select
+            name="status"
+            defaultValue={searchParams.status ?? ""}
+            className="h-9 appearance-none rounded-md border border-line bg-white pl-9 pr-8 text-sm text-ink outline-none transition-colors focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white"
+          >
+            <option value="">Todos os status</option>
+            <option value="PLANNED">Planejado</option>
+            <option value="IN_PROGRESS">Em andamento</option>
+            <option value="ON_HOLD">Pausado</option>
+            <option value="BLOCKED">Bloqueado</option>
+            <option value="COMPLETED">Concluído</option>
+            <option value="CANCELED">Cancelado</option>
+          </select>
+        </div>
+        <button
+          type="submit"
+          className="h-9 rounded-md bg-brand-500 px-4 text-sm font-semibold text-white transition-colors hover:bg-brand-600"
+        >
+          Filtrar
+        </button>
+        {(searchParams.q || searchParams.status) && (
+          <a href="/projects" className="h-9 rounded-md border border-line px-4 text-sm font-medium text-slate-600 leading-9 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800">
+            Limpar
+          </a>
+        )}
       </form>
+
       <ProjectTable projects={projects} canManage={canManage} />
     </>
   );

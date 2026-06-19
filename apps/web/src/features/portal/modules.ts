@@ -61,8 +61,8 @@ export const portalModules = [
   },
   {
     key: "dashboard",
-    label: "Dashboard",
-    description: "Indicadores executivos consolidados.",
+    label: "Status Report",
+    description: "Relatorio executivo com progresso, cronograma, riscos, bloqueios e alocacao.",
     href: "dashboard"
   }
 ] as const;
