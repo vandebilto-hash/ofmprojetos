@@ -36,6 +36,8 @@ type Dependency = {
 };
 
 const dayMs = 86400000;
+const defaultDayWidth = 20;
+const defaultEdtWidth = 260;
 
 export function GanttView({
   tasks,
@@ -46,9 +48,9 @@ export function GanttView({
   baselines?: Baseline[];
   dependencies?: Dependency[];
 }) {
-  const [dayWidth, setDayWidth] = useState(28);
+  const [dayWidth, setDayWidth] = useState(defaultDayWidth);
   const [showEdt, setShowEdt] = useState(true);
-  const [edtWidth, setEdtWidth] = useState(320);
+  const [edtWidth, setEdtWidth] = useState(defaultEdtWidth);
   const [collapsedIds, setCollapsedIds] = useState<Set<string>>(() => new Set());
 
   const normalized = useMemo(
@@ -157,8 +159,8 @@ export function GanttView({
             Largura EDT
             <input
               type="range"
-              min="220"
-              max="440"
+              min="180"
+              max="320"
               value={edtWidth}
               onChange={(event) => setEdtWidth(Number(event.target.value))}
               className="w-32 accent-brand-600"
@@ -167,7 +169,7 @@ export function GanttView({
           </label>
         ) : null}
       </div>
-      <div className="max-h-[560px] min-h-[320px] resize-y overflow-auto border-b border-line">
+      <div className="h-[420px] max-h-[520px] min-h-[280px] resize-y overflow-auto border-b border-line">
         <div className="grid min-w-max" style={{ gridTemplateColumns: showEdt ? `${edtWidth}px 1fr` : "0px 1fr" }}>
           {showEdt ? (
             <div className="sticky left-0 z-10 border-r border-line bg-slate-50 px-3 py-3 text-xs font-semibold uppercase text-slate-500">
@@ -182,7 +184,7 @@ export function GanttView({
           {visibleTasks.map((task) => {
             const delayed = task.plannedEnd < now && task.status !== "DONE";
             const isCritical = critical.has(task.id);
-            const rowHeight = 52 + baselines.length * 14;
+            const rowHeight = 44 + baselines.length * 12;
             const hasChildren = Boolean(task.children?.length);
             const isCollapsed = collapsedIds.has(task.id);
 
@@ -190,10 +192,10 @@ export function GanttView({
               <div key={task.id} className="contents">
                 {showEdt ? (
                   <div
-                    className="sticky left-0 z-10 border-r border-t border-line bg-white px-3 py-3"
+                    className="sticky left-0 z-10 border-r border-t border-line bg-white px-2 py-2"
                     style={{ minHeight: rowHeight }}
                   >
-                    <div className="flex items-start gap-1" style={{ paddingLeft: `${Math.max(0, (task.outlineLevel ?? 1) - 1) * 14}px` }}>
+                    <div className="flex items-start gap-1" style={{ paddingLeft: `${Math.max(0, (task.outlineLevel ?? 1) - 1) * 10}px` }}>
                       {hasChildren ? (
                         <button
                           type="button"
@@ -207,9 +209,9 @@ export function GanttView({
                         <span className="h-5 w-5 shrink-0" />
                       )}
                       <div className="min-w-0">
-                        {task.wbsCode ? <p className="text-[10px] font-black uppercase tracking-wide text-slate-400">{task.wbsCode}</p> : null}
-                        <p className="truncate font-medium text-ink" title={task.name}>{task.name}</p>
-                        <p className="mt-1 text-xs text-slate-500">{formatDate(task.plannedStart)} - {formatDate(task.plannedEnd)}</p>
+                        {task.wbsCode ? <p className="text-[9px] font-black uppercase tracking-wide text-slate-400">{task.wbsCode}</p> : null}
+                        <p className="truncate text-sm font-medium text-ink" title={task.name}>{task.name}</p>
+                        <p className="mt-0.5 text-[11px] text-slate-500">{formatDate(task.plannedStart)} - {formatDate(task.plannedEnd)}</p>
                       </div>
                     </div>
                   </div>
@@ -226,7 +228,7 @@ export function GanttView({
                         key={baseline.id}
                         className={`absolute h-2 rounded ${baseline.isActive ? "bg-slate-500" : "bg-slate-300"}`}
                         style={{
-                          top: 10 + index * 13,
+                          top: 8 + index * 11,
                           left: leftFor(baselineTask.plannedStart),
                           width: widthFor(baselineTask.plannedStart, baselineTask.plannedEnd)
                         }}
@@ -237,7 +239,7 @@ export function GanttView({
                   <div
                     className={`absolute h-6 rounded ${delayed ? "bg-red-500" : isCritical ? "bg-amber-500" : "bg-brand-600"}`}
                     style={{
-                      top: 18 + baselines.length * 13,
+                      top: 14 + baselines.length * 11,
                       left: leftFor(task.plannedStart),
                       width: widthFor(task.plannedStart, task.plannedEnd)
                     }}
