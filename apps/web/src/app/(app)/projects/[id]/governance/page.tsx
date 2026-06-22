@@ -12,11 +12,9 @@ export default async function ProjectGovernancePage({ params }: { params: { id: 
   });
   if (!project) notFound();
 
-  const critical = project.stakeholders.filter((item) => item.influence === "HIGH" && item.interest === "HIGH").length;
-
   return (
     <>
-      <PageHeader title={`Governanca | ${project.name}`} description="Stakeholders, mapa de influencia/interesse e indicadores analiticos." />
+      <PageHeader title={`Governanca | ${project.name}`} description="Stakeholders, mapa de influencia/interesse e indicadores." />
       <ProjectTabs projectId={project.id} />
       <div className="mb-4 flex justify-end">
         <DialogAction title="Cadastrar stakeholder" description="Adicione um novo stakeholder ao mapa de governanca." trigger="create" triggerLabel="Novo stakeholder">
@@ -32,8 +30,8 @@ export default async function ProjectGovernancePage({ params }: { params: { id: 
             </div>
             <div className="grid grid-cols-3 gap-3">
               <label className="grid gap-1 text-sm font-medium">Tipo<select name="type" defaultValue="CLIENT" className="h-10 rounded-md border border-line px-3"><option value="INTERNAL">Interno</option><option value="CLIENT">Cliente</option><option value="PARTNER">Parceiro</option><option value="SUPPLIER">Fornecedor</option><option value="SPONSOR">Sponsor</option></select></label>
-              <label className="grid gap-1 text-sm font-medium">Influencia<select name="influence" defaultValue="MEDIUM" className="h-10 rounded-md border border-line px-3"><option value="LOW">Baixa</option><option value="MEDIUM">Media</option><option value="HIGH">Alta</option></select></label>
-              <label className="grid gap-1 text-sm font-medium">Interesse<select name="interest" defaultValue="MEDIUM" className="h-10 rounded-md border border-line px-3"><option value="LOW">Baixo</option><option value="MEDIUM">Medio</option><option value="HIGH">Alto</option></select></label>
+              <label className="grid gap-1 text-sm font-medium">Influencia<select name="influence" defaultValue="LOW" className="h-10 rounded-md border border-line px-3"><option value="LOW">Baixa</option><option value="HIGH">Alta</option></select></label>
+              <label className="grid gap-1 text-sm font-medium">Interesse<select name="interest" defaultValue="LOW" className="h-10 rounded-md border border-line px-3"><option value="LOW">Baixo</option><option value="HIGH">Alto</option></select></label>
             </div>
             <div className="grid grid-cols-2 gap-3">
               <label className="grid gap-1 text-sm font-medium">E-mail<input name="email" type="email" className="h-10 rounded-md border border-line px-3" /></label>
@@ -45,9 +43,8 @@ export default async function ProjectGovernancePage({ params }: { params: { id: 
           </form>
         </DialogAction>
       </div>
-      <section className="grid gap-4 md:grid-cols-4">
+      <section className="grid gap-4 md:grid-cols-3">
         <div className="rounded-lg border border-line bg-white p-4 shadow-soft"><p className="text-sm text-slate-500">Stakeholders</p><p className="mt-2 text-2xl font-bold">{project.stakeholders.length}</p></div>
-        <div className="rounded-lg border border-line bg-white p-4 shadow-soft"><p className="text-sm text-slate-500">Criticos</p><p className="mt-2 text-2xl font-bold">{critical}</p></div>
         <div className="rounded-lg border border-line bg-white p-4 shadow-soft"><p className="text-sm text-slate-500">Alta influencia</p><p className="mt-2 text-2xl font-bold">{project.stakeholders.filter((item) => item.influence === "HIGH").length}</p></div>
         <div className="rounded-lg border border-line bg-white p-4 shadow-soft"><p className="text-sm text-slate-500">Ativos</p><p className="mt-2 text-2xl font-bold">{project.stakeholders.filter((item) => item.active).length}</p></div>
       </section>
@@ -82,7 +79,7 @@ export default async function ProjectGovernancePage({ params }: { params: { id: 
                       <input type="hidden" name="projectId" value={project.id} />
                       <div className="grid grid-cols-2 gap-3"><label className="grid gap-1 text-sm font-medium">Nome<input name="name" required defaultValue={item.name} className="h-10 rounded-md border border-line px-3" /></label><label className="grid gap-1 text-sm font-medium">Empresa/Area<input name="company" defaultValue={item.company ?? ""} className="h-10 rounded-md border border-line px-3" /></label></div>
                       <div className="grid grid-cols-2 gap-3"><label className="grid gap-1 text-sm font-medium">Cargo<input name="jobTitle" defaultValue={item.jobTitle ?? ""} className="h-10 rounded-md border border-line px-3" /></label><label className="grid gap-1 text-sm font-medium">Papel no projeto<input name="projectRole" defaultValue={item.projectRole ?? ""} className="h-10 rounded-md border border-line px-3" /></label></div>
-                      <div className="grid grid-cols-3 gap-3"><label className="grid gap-1 text-sm font-medium">Tipo<select name="type" defaultValue={item.type} className="h-10 rounded-md border border-line px-3"><option value="INTERNAL">Interno</option><option value="CLIENT">Cliente</option><option value="PARTNER">Parceiro</option><option value="SUPPLIER">Fornecedor</option><option value="SPONSOR">Sponsor</option></select></label><label className="grid gap-1 text-sm font-medium">Influencia<select name="influence" defaultValue={item.influence} className="h-10 rounded-md border border-line px-3"><option value="LOW">Baixa</option><option value="MEDIUM">Media</option><option value="HIGH">Alta</option></select></label><label className="grid gap-1 text-sm font-medium">Interesse<select name="interest" defaultValue={item.interest} className="h-10 rounded-md border border-line px-3"><option value="LOW">Baixo</option><option value="MEDIUM">Medio</option><option value="HIGH">Alto</option></select></label></div>
+                      <div className="grid grid-cols-3 gap-3"><label className="grid gap-1 text-sm font-medium">Tipo<select name="type" defaultValue={item.type} className="h-10 rounded-md border border-line px-3"><option value="INTERNAL">Interno</option><option value="CLIENT">Cliente</option><option value="PARTNER">Parceiro</option><option value="SUPPLIER">Fornecedor</option><option value="SPONSOR">Sponsor</option></select></label><label className="grid gap-1 text-sm font-medium">Influencia<select name="influence" defaultValue={item.influence} className="h-10 rounded-md border border-line px-3"><option value="LOW">Baixa</option><option value="HIGH">Alta</option></select></label><label className="grid gap-1 text-sm font-medium">Interesse<select name="interest" defaultValue={item.interest} className="h-10 rounded-md border border-line px-3"><option value="LOW">Baixo</option><option value="HIGH">Alto</option></select></label></div>
                       <div className="grid grid-cols-2 gap-3"><label className="grid gap-1 text-sm font-medium">E-mail<input name="email" type="email" defaultValue={item.email ?? ""} className="h-10 rounded-md border border-line px-3" /></label><label className="grid gap-1 text-sm font-medium">Telefone<input name="phone" defaultValue={item.phone ?? ""} className="h-10 rounded-md border border-line px-3" /></label></div>
                       <label className="grid gap-1 text-sm font-medium">Classificacao<input name="classification" defaultValue={item.classification ?? ""} className="h-10 rounded-md border border-line px-3" /></label>
                       <label className="grid gap-1 text-sm font-medium">Observacoes<textarea name="notes" defaultValue={item.notes ?? ""} rows={3} className="rounded-md border border-line px-3 py-2" /></label>

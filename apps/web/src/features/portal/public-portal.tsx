@@ -475,7 +475,6 @@ function GovernanceModule({ project }: { project: any }) {
     ["LOW", "HIGH", "Manter informado", "blue"],
     ["LOW", "LOW", "Monitorar", "slate"],
   ];
-  const byType = countBy(project.stakeholders, "type");
 
   return (
     <ModulePage
@@ -529,17 +528,6 @@ function GovernanceModule({ project }: { project: any }) {
                 </div>
               );
             })}
-          </div>
-        </Panel>
-        <Panel title="Analytics de stakeholders">
-          <div className="grid gap-3">
-            <Metric label="Total" value={project.stakeholders.length} tone="blue" />
-            <Metric
-              label="Críticos"
-              value={project.stakeholders.filter((s: any) => s.influence === "HIGH" && s.interest === "HIGH").length}
-              tone="red"
-            />
-            <MiniPieChart data={Object.entries(byType).map(([name, value]) => ({ name, value: Number(value) }))} />
           </div>
         </Panel>
       </div>
