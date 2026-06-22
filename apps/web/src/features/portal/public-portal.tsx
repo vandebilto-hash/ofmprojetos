@@ -771,6 +771,10 @@ function MinutesModule({ project }: { project: any }) {
 }
 
 function MilestonesModule({ project }: { project: any }) {
+  const now = new Date();
+  const milestones = project.milestones ?? [];
+  const milestoneRollup = milestoneStatusRollup(milestones, now);
+
   return (
     <ModulePage
       eyebrow="Marcos do projeto"
@@ -778,10 +782,18 @@ function MilestonesModule({ project }: { project: any }) {
       title="Timeline executiva dos marcos"
       description="Principais entregas, aprovações, decisões e eventos do projeto."
     >
+      <Panel title="Semáforo de Marcos">
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <MilestoneRollupCard label="Total" value={milestoneRollup.total} detail={`${milestoneRollup.progress}% de avanço`} tone="slate" />
+          <MilestoneRollupCard label="Concluídos" value={milestoneRollup.done} detail={`${milestoneRollup.donePct}% dos marcos`} tone="green" />
+          <MilestoneRollupCard label="Atenção" value={milestoneRollup.attention} detail="em andamento/no prazo" tone="amber" />
+          <MilestoneRollupCard label="Atrasados" value={milestoneRollup.late} detail="fora da previsão" tone="red" />
+        </div>
+      </Panel>
       <Panel>
         <div className="overflow-x-auto pb-4">
           <div className="relative flex min-w-[900px] items-start justify-between gap-4 px-8 pt-6 before:absolute before:left-14 before:right-14 before:top-[27px] before:h-[3px] before:rounded-full before:bg-gradient-to-r before:from-blue-300 before:via-blue-500 before:to-blue-300">
-            {project.milestones.map((milestone: any) => {
+            {milestones.map((milestone: any) => {
               const isDone = milestone.status === "COMPLETED";
               const isLate = !isDone && new Date(milestone.plannedDate) < new Date();
               const circleClass = isDone
@@ -818,7 +830,7 @@ function MilestonesModule({ project }: { project: any }) {
                 </div>
               );
             })}
-            {!project.milestones.length ? (
+            {!milestones.length ? (
               <div className="w-full"><Empty label="Nenhum marco cadastrado." icon={Milestone} /></div>
             ) : null}
           </div>
