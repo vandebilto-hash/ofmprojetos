@@ -7,6 +7,7 @@ import {
   BarChart,
   CartesianGrid,
   Cell,
+  ComposedChart,
   Line,
   Pie,
   PieChart,
@@ -150,7 +151,7 @@ export function StatusCurveChart({
   return (
     <div>
       <ResponsiveContainer width="100%" height={280}>
-        <AreaChart data={data} margin={{ top: 18, right: 18, left: -12, bottom: 0 }}>
+        <ComposedChart data={data} margin={{ top: 18, right: 18, left: -12, bottom: 0 }}>
           <defs>
             <linearGradient id="gradCurvePlan" x1="0" y1="0" x2="0" y2="1">
               <stop offset="5%" stopColor="#0ea5e9" stopOpacity={0.22} />
@@ -186,7 +187,7 @@ export function StatusCurveChart({
             connectNulls
             name="Progresso Feito"
           />
-        </AreaChart>
+        </ComposedChart>
       </ResponsiveContainer>
       <div className="mt-3 flex justify-center gap-6">
         <span className="flex items-center gap-2 text-[11px] font-semibold text-slate-600">
