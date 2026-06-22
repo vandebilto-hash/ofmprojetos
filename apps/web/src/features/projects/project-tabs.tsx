@@ -7,7 +7,7 @@ const tabs = [
   ["minutes", "Atas"],
   ["documents", "Planos"],
   ["milestones", "Marcos"],
-  ["gantt", "Planejamento & To-do"],
+  ["gantt", "Planejamento"],
   ["blockers", "Riscos e pendencias"],
   ["dashboard", "Dashboard"],
   ["portal", "Portal cliente"],
