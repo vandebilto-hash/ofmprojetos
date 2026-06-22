@@ -432,11 +432,20 @@ function HomeModule({ project }: { project: any }) {
               const initials = partner.name.split(" ").map((w: string) => w[0]).join("").slice(0,2).toUpperCase();
               return (
                 <div key={partner.id} className="flex items-start gap-3 rounded-xl border border-slate-100 bg-white p-4 shadow-[0_1px_3px_rgba(0,0,0,.04)] transition-shadow hover:shadow-md">
-                  <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-xs font-black text-white ${colors[i % colors.length]}`}>
-                    {initials}
-                  </div>
+                  {partner.logoUrl ? (
+                    <img src={partner.logoUrl} alt={partner.name} className="h-10 w-10 shrink-0 rounded-lg object-contain" />
+                  ) : (
+                    <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-xs font-black text-white ${colors[i % colors.length]}`}>
+                      {initials}
+                    </div>
+                  )}
                   <div>
-                    <p className="text-sm font-black text-slate-900">{partner.name}</p>
+                    <div className="flex items-center gap-2">
+                      <p className="text-sm font-black text-slate-900">{partner.name}</p>
+                      <span className={`rounded px-1.5 py-0.5 text-[10px] font-semibold ${partner.type === "CLIENT" ? "bg-blue-100 text-blue-700" : "bg-violet-100 text-violet-700"}`}>
+                        {partner.type === "CLIENT" ? "Cliente" : "Parceiro Técnico"}
+                      </span>
+                    </div>
                     <p className="mt-0.5 text-xs leading-5 text-slate-500">{partner.description ?? "Parceiro do projeto"}</p>
                   </div>
                 </div>

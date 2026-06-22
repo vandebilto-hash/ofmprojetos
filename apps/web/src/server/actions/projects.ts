@@ -119,8 +119,10 @@ const partnerSchema = z.object({
   partnerId: z.string().optional(),
   projectId: z.string().min(1),
   name: z.string().min(2),
+  type: z.enum(["TECHNICAL_PARTNER", "CLIENT"]).default("TECHNICAL_PARTNER"),
   description: z.string().optional(),
-  website: z.string().optional()
+  website: z.string().optional(),
+  logoUrl: z.string().optional()
 });
 
 const stakeholderSchema = z.object({
@@ -486,7 +488,7 @@ export async function createPartnerAction(formData: FormData) {
   const session = await getServerSession(authOptions);
   if (!canManageProject(session?.user.role)) throw new Error("Sem permissao para criar parceiro.");
   const data = partnerSchema.parse(Object.fromEntries(formData));
-  const partner = await prisma.partner.create({ data: { projectId: data.projectId, name: data.name, description: data.description || null, website: data.website || null } });
+  const partner = await prisma.partner.create({ data: { projectId: data.projectId, name: data.name, type: data.type, description: data.description || null, website: data.website || null, logoUrl: data.logoUrl || null } });
   await logProjectChange({ actorId: session?.user.id, projectId: data.projectId, entityType: "Partner", entityId: partner.id, action: "CREATE", description: `Adicionou o parceiro ${partner.name}.`, after: partner });
   revalidateProjectModule(data.projectId);
 }
@@ -497,7 +499,7 @@ export async function updatePartnerAction(formData: FormData) {
   const data = partnerSchema.parse(Object.fromEntries(formData));
   if (!data.partnerId) throw new Error("Parceiro invalido.");
   const before = await prisma.partner.findUniqueOrThrow({ where: { id: data.partnerId } });
-  const partner = await prisma.partner.update({ where: { id: data.partnerId }, data: { name: data.name, description: data.description || null, website: data.website || null } });
+  const partner = await prisma.partner.update({ where: { id: data.partnerId }, data: { name: data.name, type: data.type, description: data.description || null, website: data.website || null, logoUrl: data.logoUrl || null } });
   await logProjectChange({ actorId: session?.user.id, projectId: data.projectId, entityType: "Partner", entityId: partner.id, action: "UPDATE", description: `Atualizou o parceiro ${partner.name}.`, before, after: partner });
   revalidateProjectModule(data.projectId);
 }

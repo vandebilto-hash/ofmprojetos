@@ -55,8 +55,10 @@ export default async function ProjectDetailPage({ params }: { params: { id: stri
               <form action={createPartnerAction} className="grid gap-3">
                 <input type="hidden" name="projectId" value={project.id} />
                 <label className="grid gap-1 text-sm font-medium">Nome<input name="name" required className="h-10 rounded-md border border-line px-3" /></label>
+                <label className="grid gap-1 text-sm font-medium">Tipo<select name="type" defaultValue="TECHNICAL_PARTNER" className="h-10 rounded-md border border-line px-3"><option value="TECHNICAL_PARTNER">Parceiro Técnico</option><option value="CLIENT">Cliente</option></select></label>
                 <label className="grid gap-1 text-sm font-medium">Descricao<textarea name="description" rows={3} className="rounded-md border border-line px-3 py-2" /></label>
                 <label className="grid gap-1 text-sm font-medium">Website<input name="website" className="h-10 rounded-md border border-line px-3" /></label>
+                <label className="grid gap-1 text-sm font-medium">URL da Logo<input name="logoUrl" placeholder="https://..." className="h-10 rounded-md border border-line px-3" /></label>
                 <button className="w-fit rounded-md bg-brand-600 px-4 py-2 text-sm font-semibold text-white">Adicionar</button>
               </form>
             </DialogAction>
@@ -64,9 +66,19 @@ export default async function ProjectDetailPage({ params }: { params: { id: stri
           <div className="mt-4 grid gap-2">
             {project.partners.map((partner) => (
               <div key={partner.id} className="flex items-start justify-between gap-3 rounded-md border border-line p-3 text-sm">
-                <div>
-                  <strong>{partner.name}</strong>
-                  <p className="text-slate-500">{partner.description}</p>
+                <div className="flex items-start gap-3">
+                  {partner.logoUrl ? (
+                    <img src={partner.logoUrl} alt={partner.name} className="h-10 w-10 shrink-0 rounded-md object-contain" />
+                  ) : null}
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <strong>{partner.name}</strong>
+                      <span className={`rounded px-1.5 py-0.5 text-[10px] font-semibold ${partner.type === "CLIENT" ? "bg-blue-100 text-blue-700" : "bg-violet-100 text-violet-700"}`}>
+                        {partner.type === "CLIENT" ? "Cliente" : "Parceiro Técnico"}
+                      </span>
+                    </div>
+                    <p className="text-slate-500">{partner.description}</p>
+                  </div>
                 </div>
                 <div className="flex gap-2">
                   <DialogAction title="Editar parceiro" description={partner.name} trigger="edit">
@@ -74,8 +86,10 @@ export default async function ProjectDetailPage({ params }: { params: { id: stri
                       <input type="hidden" name="partnerId" value={partner.id} />
                       <input type="hidden" name="projectId" value={project.id} />
                       <label className="grid gap-1 text-sm font-medium">Nome<input name="name" required defaultValue={partner.name} className="h-10 rounded-md border border-line px-3" /></label>
+                      <label className="grid gap-1 text-sm font-medium">Tipo<select name="type" defaultValue={partner.type} className="h-10 rounded-md border border-line px-3"><option value="TECHNICAL_PARTNER">Parceiro Técnico</option><option value="CLIENT">Cliente</option></select></label>
                       <label className="grid gap-1 text-sm font-medium">Descricao<textarea name="description" defaultValue={partner.description ?? ""} rows={3} className="rounded-md border border-line px-3 py-2" /></label>
                       <label className="grid gap-1 text-sm font-medium">Website<input name="website" defaultValue={partner.website ?? ""} className="h-10 rounded-md border border-line px-3" /></label>
+                      <label className="grid gap-1 text-sm font-medium">URL da Logo<input name="logoUrl" defaultValue={partner.logoUrl ?? ""} placeholder="https://..." className="h-10 rounded-md border border-line px-3" /></label>
                       <button className="w-fit rounded-md bg-brand-600 px-4 py-2 text-sm font-semibold text-white">Salvar</button>
                     </form>
                   </DialogAction>
