@@ -105,7 +105,7 @@ export default async function ProjectsPage({
         )}
       </form>
 
-      <ProjectTable projects={projects} canManage={canManage} />
+      <ProjectTable projects={projects} canManage={canManage} clients={clients} managers={managers} />
     </>
   );
 }

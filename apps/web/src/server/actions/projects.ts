@@ -296,6 +296,53 @@ export async function createProjectAction(formData: FormData) {
   redirect(`/projects/${project.id}`);
 }
 
+const updateProjectSchema = z.object({
+  projectId: z.string().min(1),
+  name: z.string().min(3),
+  description: z.string().optional(),
+  clientId: z.string().min(1),
+  managerId: z.string().min(1),
+  status: z.enum(["PLANNED", "IN_PROGRESS", "ON_HOLD", "BLOCKED", "COMPLETED", "CANCELED"]),
+  plannedStart: dateField,
+  plannedEnd: dateField,
+  currentEnd: dateField,
+  notes: z.string().optional()
+});
+
+export async function updateProjectAction(formData: FormData) {
+  const session = await getServerSession(authOptions);
+  if (!canManageProject(session?.user.role)) throw new Error("Sem permissao para editar projetos.");
+
+  const data = updateProjectSchema.parse(Object.fromEntries(formData));
+  const { projectId, ...updateData } = data;
+
+  const before = await prisma.project.findUnique({ where: { id: projectId } });
+  if (!before) throw new Error("Projeto nao encontrado.");
+
+  const updated = await prisma.project.update({
+    where: { id: projectId },
+    data: {
+      ...updateData,
+      description: updateData.description || null,
+      notes: updateData.notes || null
+    }
+  });
+
+  await logProjectChange({
+    actorId: session?.user.id,
+    projectId,
+    entityType: "Project",
+    entityId: projectId,
+    action: "UPDATE",
+    description: `Atualizou o projeto ${updated.name}.`,
+    before,
+    after: updated
+  });
+
+  revalidatePath("/projects");
+  revalidatePath(`/projects/${projectId}`);
+}
+
 export async function updateProjectPortalModulesAction(formData: FormData) {
   const session = await getServerSession(authOptions);
   if (!canManageProject(session?.user.role)) throw new Error("Sem permissao para configurar o portal do cliente.");

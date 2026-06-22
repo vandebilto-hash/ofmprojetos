@@ -5,20 +5,28 @@ import { StatusBadge } from "@/components/ui/status-badge";
 import { ProgressBar } from "@/components/ui/progress-bar";
 import { EmptyState } from "@/components/ui/empty-state";
 import { formatDate, formatHours, formatMoney } from "@/lib/format";
-import { deleteProjectAction } from "@/server/actions/projects";
+import { deleteProjectAction, updateProjectAction } from "@/server/actions/projects";
 
 type ProjectRow = {
   id: string;
   name: string;
   status: string;
+  plannedStart: Date;
+  plannedEnd: Date;
   currentEnd: Date;
   progressPercent: unknown;
   plannedHours: unknown;
   actualHours: unknown;
   financialCost: unknown;
-  client: { name: string };
-  manager: { name: string };
+  description: string | null;
+  notes: string | null;
+  clientId: string;
+  managerId: string;
+  client: { id: string; name: string };
+  manager: { id: string; name: string };
 };
+
+type PickerItem = { id: string; name: string };
 
 function ManagerAvatar({ name }: { name: string }) {
   const initials = name
@@ -38,7 +46,17 @@ function ManagerAvatar({ name }: { name: string }) {
   );
 }
 
-export function ProjectTable({ projects, canManage = false }: { projects: ProjectRow[]; canManage?: boolean }) {
+export function ProjectTable({
+  projects,
+  canManage = false,
+  clients = [],
+  managers = []
+}: {
+  projects: ProjectRow[];
+  canManage?: boolean;
+  clients?: PickerItem[];
+  managers?: PickerItem[];
+}) {
   if (projects.length === 0) {
     return (
       <EmptyState
@@ -120,12 +138,135 @@ export function ProjectTable({ projects, canManage = false }: { projects: Projec
                   {canManage && (
                     <td className="px-3 py-3">
                       <div className="flex justify-end gap-2">
-                        <Link
-                          href={`/projects/${project.id}`}
-                          className="rounded-md border border-line px-2.5 py-1 text-xs font-medium text-slate-600 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
+                        <DialogAction
+                          title={`Editar projeto`}
+                          description={`Altere as informações gerais de "${project.name}".`}
+                          trigger="edit"
                         >
-                          Abrir
-                        </Link>
+                          <form action={updateProjectAction} className="grid gap-4">
+                            <input type="hidden" name="projectId" value={project.id} />
+
+                            <label className="grid gap-1.5">
+                              <span className="text-xs font-medium text-slate-600">Nome *</span>
+                              <input
+                                name="name"
+                                defaultValue={project.name}
+                                required
+                                minLength={3}
+                                className="h-9 rounded-md border border-line bg-white px-3 text-sm text-ink outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white"
+                              />
+                            </label>
+
+                            <label className="grid gap-1.5">
+                              <span className="text-xs font-medium text-slate-600">Descrição</span>
+                              <textarea
+                                name="description"
+                                defaultValue={project.description ?? ""}
+                                rows={2}
+                                className="rounded-md border border-line bg-white px-3 py-2 text-sm text-ink outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white"
+                              />
+                            </label>
+
+                            <div className="grid grid-cols-2 gap-4">
+                              <label className="grid gap-1.5">
+                                <span className="text-xs font-medium text-slate-600">Cliente *</span>
+                                <select
+                                  name="clientId"
+                                  defaultValue={project.clientId}
+                                  required
+                                  className="h-9 rounded-md border border-line bg-white px-3 text-sm text-ink outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white"
+                                >
+                                  {clients.map((c) => (
+                                    <option key={c.id} value={c.id}>{c.name}</option>
+                                  ))}
+                                </select>
+                              </label>
+
+                              <label className="grid gap-1.5">
+                                <span className="text-xs font-medium text-slate-600">Gestor *</span>
+                                <select
+                                  name="managerId"
+                                  defaultValue={project.managerId}
+                                  required
+                                  className="h-9 rounded-md border border-line bg-white px-3 text-sm text-ink outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white"
+                                >
+                                  {managers.map((m) => (
+                                    <option key={m.id} value={m.id}>{m.name}</option>
+                                  ))}
+                                </select>
+                              </label>
+                            </div>
+
+                            <label className="grid gap-1.5">
+                              <span className="text-xs font-medium text-slate-600">Status *</span>
+                              <select
+                                name="status"
+                                defaultValue={project.status}
+                                required
+                                className="h-9 rounded-md border border-line bg-white px-3 text-sm text-ink outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white"
+                              >
+                                <option value="PLANNED">Planejado</option>
+                                <option value="IN_PROGRESS">Em andamento</option>
+                                <option value="ON_HOLD">Pausado</option>
+                                <option value="BLOCKED">Bloqueado</option>
+                                <option value="COMPLETED">Concluído</option>
+                                <option value="CANCELED">Cancelado</option>
+                              </select>
+                            </label>
+
+                            <div className="grid grid-cols-3 gap-4">
+                              <label className="grid gap-1.5">
+                                <span className="text-xs font-medium text-slate-600">Início *</span>
+                                <input
+                                  type="date"
+                                  name="plannedStart"
+                                  defaultValue={project.plannedStart ? new Date(project.plannedStart).toISOString().split("T")[0] : ""}
+                                  required
+                                  className="h-9 rounded-md border border-line bg-white px-3 text-sm text-ink outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white"
+                                />
+                              </label>
+                              <label className="grid gap-1.5">
+                                <span className="text-xs font-medium text-slate-600">Fim planejado *</span>
+                                <input
+                                  type="date"
+                                  name="plannedEnd"
+                                  defaultValue={project.plannedEnd ? new Date(project.plannedEnd).toISOString().split("T")[0] : ""}
+                                  required
+                                  className="h-9 rounded-md border border-line bg-white px-3 text-sm text-ink outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white"
+                                />
+                              </label>
+                              <label className="grid gap-1.5">
+                                <span className="text-xs font-medium text-slate-600">Fim atual *</span>
+                                <input
+                                  type="date"
+                                  name="currentEnd"
+                                  defaultValue={project.currentEnd ? new Date(project.currentEnd).toISOString().split("T")[0] : ""}
+                                  required
+                                  className="h-9 rounded-md border border-line bg-white px-3 text-sm text-ink outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white"
+                                />
+                              </label>
+                            </div>
+
+                            <label className="grid gap-1.5">
+                              <span className="text-xs font-medium text-slate-600">Notas</span>
+                              <textarea
+                                name="notes"
+                                defaultValue={project.notes ?? ""}
+                                rows={2}
+                                className="rounded-md border border-line bg-white px-3 py-2 text-sm text-ink outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white"
+                              />
+                            </label>
+
+                            <div className="flex justify-end gap-2 border-t border-line pt-4">
+                              <button
+                                type="submit"
+                                className="rounded-md bg-brand-600 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-700"
+                              >
+                                Salvar alterações
+                              </button>
+                            </div>
+                          </form>
+                        </DialogAction>
                         <DialogAction
                           title="Excluir projeto"
                           description={`Deseja realmente excluir "${project.name}"? Essa ação remove tarefas, baselines, bloqueios e todo o histórico vinculado.`}
