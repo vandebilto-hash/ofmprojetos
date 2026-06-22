@@ -1492,7 +1492,6 @@ function DashboardModule({ project }: { project: any }) {
                 <th className="py-3">Previsão</th>
                 <th className="py-3">Responsável</th>
                 <th className="py-3">H. Planejadas</th>
-                <th className="py-3">H. Realizadas</th>
                 <th className="py-3">Status</th>
                 <th className="py-3 pr-6">Progresso</th>
               </tr>
@@ -1789,7 +1788,6 @@ function MilestoneReportRow({ item }: { item: any }) {
       <td className="py-3 text-slate-500">{formatDate(isTask ? item.plannedEnd : item.plannedDate)}</td>
       <td className="py-3 text-slate-500">{owner}</td>
       <td className="py-3 text-slate-500">{isTask ? formatHours(item.estimatedHours) : "-"}</td>
-      <td className="py-3 text-slate-500">{isTask ? formatHours(item.actualHours) : "-"}</td>
       <td className="py-3"><StatusPill tone={status.tone}>{status.label}</StatusPill></td>
       <td className="py-3 pr-6"><InlineProgress value={progress} /></td>
     </tr>
