@@ -1148,7 +1148,7 @@ function DashboardModule({ project }: { project: any }) {
     ...openBlockers.map((b: any) => ({ type: "blocker", item: b })),
     ...activeRisks.map((r: any) => ({ type: "risk", item: r })),
   ];
-  const milestoneRows = project.milestones?.length ? project.milestones : phaseTasks;
+  const milestoneRows = leafTasks;
   const milestoneRollup = milestoneStatusRollup(milestoneRows, now);
   const executiveSummary = statusExecutiveSummary(project, leafTasks, delayedTasks, openBlockers, progress, plannedProgress);
   const delivered = leafTasks.filter((t: any) => t.status === "DONE" && t.actualEnd && daysBetween(t.actualEnd, now) <= 15).slice(0, 3);
@@ -1479,7 +1479,7 @@ function DashboardModule({ project }: { project: any }) {
         </div>
         <div className="grid gap-3 border-b border-slate-100 px-6 py-4 sm:grid-cols-2 lg:grid-cols-4">
           <MilestoneRollupCard label="Total" value={milestoneRollup.total} detail={`${milestoneRollup.progress}% de avanço`} tone="slate" />
-          <MilestoneRollupCard label="Concluídos" value={milestoneRollup.done} detail={`${milestoneRollup.donePct}% dos marcos`} tone="green" />
+          <MilestoneRollupCard label="Concluídos" value={milestoneRollup.done} detail={`${milestoneRollup.donePct}% das atividades`} tone="green" />
           <MilestoneRollupCard label="Atenção" value={milestoneRollup.attention} detail="em andamento/no prazo" tone="amber" />
           <MilestoneRollupCard label="Atrasados" value={milestoneRollup.late} detail="fora da previsão" tone="red" />
         </div>
@@ -1487,7 +1487,7 @@ function DashboardModule({ project }: { project: any }) {
           <table id="status-report-milestones" className="w-full min-w-[800px] text-left text-xs">
             <thead className="bg-slate-50 text-[10px] font-black uppercase tracking-[0.12em] text-slate-400">
               <tr>
-                <th className="px-6 py-3">Etapa / Marco</th>
+                <th className="px-6 py-3">Atividade</th>
                 <th className="py-3">Previsão</th>
                 <th className="py-3">Responsável</th>
                 <th className="py-3">H. Planejadas</th>
@@ -1502,7 +1502,7 @@ function DashboardModule({ project }: { project: any }) {
           </table>
         </div>
         <div className="border-t border-slate-100 px-6 py-3">
-          <StatusReportTablePager tableId="status-report-milestones" pageSize={8} />
+          <StatusReportTablePager tableId="status-report-milestones" pageSize={Math.max(milestoneRows.length, 1)} />
         </div>
       </div>
 
