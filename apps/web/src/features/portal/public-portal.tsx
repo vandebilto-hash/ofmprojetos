@@ -1148,9 +1148,8 @@ function DashboardModule({ project }: { project: any }) {
     ...openBlockers.map((b: any) => ({ type: "blocker", item: b })),
     ...activeRisks.map((r: any) => ({ type: "risk", item: r })),
   ];
-  const milestoneRollupRows = leafTasks;
-  const milestoneRows = statusReportMilestoneRows(leafTasks, now);
-  const milestoneRollup = milestoneStatusRollup(milestoneRollupRows, now);
+  const milestoneRows = leafTasks;
+  const milestoneRollup = milestoneStatusRollup(milestoneRows, now);
   const executiveSummary = statusExecutiveSummary(project, leafTasks, delayedTasks, openBlockers, progress, plannedProgress);
   const delivered = leafTasks.filter((t: any) => t.status === "DONE" && t.actualEnd && daysBetween(t.actualEnd, now) <= 15).slice(0, 3);
   const nextFocus = leafTasks.filter((t: any) => t.status !== "DONE" && daysBetween(now, t.plannedEnd) <= 15 && new Date(t.plannedEnd) >= startOfDay(now)).slice(0, 3);
@@ -1486,10 +1485,10 @@ function DashboardModule({ project }: { project: any }) {
         </div>
         <div className="border-b border-slate-100 px-6 py-3">
           <p className="text-[11px] font-semibold text-slate-500">
-            Roll-up calculado sobre todas as atividades. A lista abaixo destaca somente os itens mais críticos e próximos.
+            Roll-up calculado sobre todas as atividades. Use os filtros dinâmicos acima para localizar atividade, responsável ou status nesta lista.
           </p>
         </div>
-        <div className="overflow-auto">
+        <div className="max-h-[520px] overflow-auto">
           <table id="status-report-milestones" className="w-full min-w-[800px] text-left text-xs">
             <thead className="bg-slate-50 text-[10px] font-black uppercase tracking-[0.12em] text-slate-400">
               <tr>
@@ -1508,7 +1507,7 @@ function DashboardModule({ project }: { project: any }) {
           </table>
         </div>
         <div className="border-t border-slate-100 px-6 py-3">
-          <StatusReportTablePager tableId="status-report-milestones" pageSize={8} />
+          <StatusReportTablePager tableId="status-report-milestones" pageSize={Math.max(milestoneRows.length, 1)} />
         </div>
       </div>
 
@@ -2118,32 +2117,6 @@ function statusReportActivities(tasks: any[], now: Date) {
   return [...tasks]
     .filter((t) => t.status !== "DONE" && (new Date(t.plannedEnd) <= weekAhead || t.status === "BLOCKED"))
     .sort((a, b) => Number(a.status !== "BLOCKED") - Number(b.status !== "BLOCKED") || new Date(a.plannedEnd).getTime() - new Date(b.plannedEnd).getTime());
-}
-
-function statusReportMilestoneRows(tasks: any[], now: Date) {
-  const maxRows = 12;
-  const rows = new Map<string, any>();
-  const add = (items: any[]) => {
-    for (const item of items) {
-      if (rows.size >= maxRows) break;
-      rows.set(item.id, item);
-    }
-  };
-
-  const delayed = [...tasks]
-    .filter((task) => task.status !== "DONE" && new Date(task.plannedEnd) < now)
-    .sort((a, b) => new Date(a.plannedEnd).getTime() - new Date(b.plannedEnd).getTime());
-  const activeOrNext = [...tasks]
-    .filter((task) => task.status !== "DONE" && new Date(task.plannedEnd) >= now)
-    .sort((a, b) => new Date(a.plannedEnd).getTime() - new Date(b.plannedEnd).getTime());
-  const recentlyDone = [...tasks]
-    .filter((task) => task.status === "DONE")
-    .sort((a, b) => new Date(b.actualEnd ?? b.plannedEnd).getTime() - new Date(a.actualEnd ?? a.plannedEnd).getTime());
-
-  add(delayed);
-  add(activeOrNext);
-  add(recentlyDone);
-  return [...rows.values()];
 }
 
 function resourceConsumptionRows(project: any, tasks: any[]) {
