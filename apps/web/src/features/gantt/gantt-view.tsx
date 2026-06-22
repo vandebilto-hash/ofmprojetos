@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { ChevronDown, ChevronRight, Minus, PanelLeftClose, PanelLeftOpen, Plus } from "lucide-react";
+import { ChevronDown, ChevronRight, Minus, Plus } from "lucide-react";
 import { criticalPath } from "@/lib/scheduling/critical-path";
 import { formatDate } from "@/lib/format";
 
@@ -49,7 +49,6 @@ export function GanttView({
   dependencies?: Dependency[];
 }) {
   const [dayWidth, setDayWidth] = useState(defaultDayWidth);
-  const [showEdt, setShowEdt] = useState(true);
   const [edtWidth, setEdtWidth] = useState(defaultEdtWidth);
   const [collapsedIds, setCollapsedIds] = useState<Set<string>>(() => new Set());
 
@@ -82,6 +81,8 @@ export function GanttView({
     dependencies ?? []
   );
   const taskById = new Map(normalized.map((task) => [task.id, task]));
+  const summaryTaskIds = normalized.filter((task) => task.children?.length).map((task) => task.id);
+  const allSummaryTasksCollapsed = summaryTaskIds.length > 0 && summaryTaskIds.every((taskId) => collapsedIds.has(taskId));
   const visibleTasks = normalized.filter((task) => {
     let currentParentId = task.parentTaskId;
     while (currentParentId) {
@@ -109,6 +110,10 @@ export function GanttView({
     });
   }
 
+  function toggleAllCollapsed() {
+    setCollapsedIds(allSummaryTasksCollapsed ? new Set() : new Set(summaryTaskIds));
+  }
+
   return (
     <div className="w-full max-w-full overflow-hidden rounded-lg border border-line bg-white shadow-soft">
       <div className="flex items-center justify-between border-b border-line px-4 py-3">
@@ -119,15 +124,17 @@ export function GanttView({
           </p>
         </div>
         <div className="flex flex-wrap items-center justify-end gap-2">
-          <button
-            type="button"
-            onClick={() => setShowEdt((value) => !value)}
-            className="inline-flex h-9 items-center gap-2 rounded-md border border-line bg-white px-3 text-xs font-semibold text-slate-600 hover:bg-slate-50"
-            title={showEdt ? "Ocultar EDT" : "Mostrar EDT"}
-          >
-            {showEdt ? <PanelLeftClose size={15} /> : <PanelLeftOpen size={15} />}
-            {showEdt ? "Ocultar EDT" : "Mostrar EDT"}
-          </button>
+          {summaryTaskIds.length ? (
+            <button
+              type="button"
+              onClick={toggleAllCollapsed}
+              className="inline-flex h-9 items-center gap-2 rounded-md border border-line bg-white px-3 text-xs font-semibold text-slate-600 hover:bg-slate-50"
+              title={allSummaryTasksCollapsed ? "Mostrar todas as atividades" : "Recolher toda a EDT"}
+            >
+              {allSummaryTasksCollapsed ? <ChevronDown size={15} /> : <ChevronRight size={15} />}
+              {allSummaryTasksCollapsed ? "Mostrar tudo" : "Recolher tudo"}
+            </button>
+          ) : null}
           <button
             type="button"
             onClick={() => setDayWidth((value) => Math.max(10, value - 6))}
@@ -154,30 +161,24 @@ export function GanttView({
           <span><span className="status-dot bg-amber-500" /> Caminho critico</span>
           <span><span className="status-dot bg-slate-300" /> Baselines</span>
         </div>
-        {showEdt ? (
-          <label className="flex items-center gap-2 font-semibold text-slate-500">
-            Largura EDT
-            <input
-              type="range"
-              min="180"
-              max="320"
-              value={edtWidth}
-              onChange={(event) => setEdtWidth(Number(event.target.value))}
-              className="w-32 accent-brand-600"
-            />
-            <span className="w-11 text-right tabular-nums">{edtWidth}px</span>
-          </label>
-        ) : null}
+        <label className="flex items-center gap-2 font-semibold text-slate-500">
+          Largura EDT
+          <input
+            type="range"
+            min="180"
+            max="320"
+            value={edtWidth}
+            onChange={(event) => setEdtWidth(Number(event.target.value))}
+            className="w-32 accent-brand-600"
+          />
+          <span className="w-11 text-right tabular-nums">{edtWidth}px</span>
+        </label>
       </div>
       <div className="h-[420px] max-h-[520px] min-h-[280px] w-full max-w-full resize-y overflow-auto border-b border-line">
-        <div className="grid min-w-max" style={{ gridTemplateColumns: showEdt ? `${edtWidth}px 1fr` : "0px 1fr" }}>
-          {showEdt ? (
-            <div className="sticky left-0 z-10 border-r border-line bg-slate-50 px-3 py-3 text-xs font-semibold uppercase text-slate-500">
-              EDT / Tarefa
-            </div>
-          ) : (
-            <div className="w-0 overflow-hidden" />
-          )}
+        <div className="grid min-w-max" style={{ gridTemplateColumns: `${edtWidth}px 1fr` }}>
+          <div className="sticky left-0 z-10 border-r border-line bg-slate-50 px-3 py-3 text-xs font-semibold uppercase text-slate-500">
+            EDT / Tarefa
+          </div>
           <div className="bg-slate-50 px-3 py-3 text-xs font-semibold uppercase text-slate-500" style={{ width: timelineWidth }}>
             Linha do tempo rolavel
           </div>
@@ -190,34 +191,30 @@ export function GanttView({
 
             return (
               <div key={task.id} className="contents">
-                {showEdt ? (
-                  <div
-                    className="sticky left-0 z-10 border-r border-t border-line bg-white px-2 py-2"
-                    style={{ minHeight: rowHeight }}
-                  >
-                    <div className="flex items-start gap-1" style={{ paddingLeft: `${Math.max(0, (task.outlineLevel ?? 1) - 1) * 10}px` }}>
-                      {hasChildren ? (
-                        <button
-                          type="button"
-                          onClick={() => toggleCollapsed(task.id)}
-                          className="mt-0.5 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded border border-line text-slate-500 hover:bg-slate-50"
-                          title={isCollapsed ? "Abrir EDT" : "Fechar EDT"}
-                        >
-                          {isCollapsed ? <ChevronRight size={13} /> : <ChevronDown size={13} />}
-                        </button>
-                      ) : (
-                        <span className="h-5 w-5 shrink-0" />
-                      )}
-                      <div className="min-w-0">
-                        {task.wbsCode ? <p className="text-[9px] font-black uppercase tracking-wide text-slate-400">{task.wbsCode}</p> : null}
-                        <p className="truncate text-sm font-medium text-ink" title={task.name}>{task.name}</p>
-                        <p className="mt-0.5 text-[11px] text-slate-500">{formatDate(task.plannedStart)} - {formatDate(task.plannedEnd)}</p>
-                      </div>
+                <div
+                  className="sticky left-0 z-10 border-r border-t border-line bg-white px-2 py-2"
+                  style={{ minHeight: rowHeight }}
+                >
+                  <div className="flex items-start gap-1" style={{ paddingLeft: `${Math.max(0, (task.outlineLevel ?? 1) - 1) * 10}px` }}>
+                    {hasChildren ? (
+                      <button
+                        type="button"
+                        onClick={() => toggleCollapsed(task.id)}
+                        className="mt-0.5 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded border border-line text-slate-500 hover:bg-slate-50"
+                        title={isCollapsed ? "Abrir EDT" : "Fechar EDT"}
+                      >
+                        {isCollapsed ? <ChevronRight size={13} /> : <ChevronDown size={13} />}
+                      </button>
+                    ) : (
+                      <span className="h-5 w-5 shrink-0" />
+                    )}
+                    <div className="min-w-0">
+                      {task.wbsCode ? <p className="text-[9px] font-black uppercase tracking-wide text-slate-400">{task.wbsCode}</p> : null}
+                      <p className="truncate text-sm font-medium text-ink" title={task.name}>{task.name}</p>
+                      <p className="mt-0.5 text-[11px] text-slate-500">{formatDate(task.plannedStart)} - {formatDate(task.plannedEnd)}</p>
                     </div>
                   </div>
-                ) : (
-                  <div className="w-0 overflow-hidden border-t border-line" style={{ minHeight: rowHeight }} />
-                )}
+                </div>
                 <div className="relative border-t border-line px-3" style={{ width: timelineWidth, minHeight: rowHeight }}>
                   <div className="absolute inset-x-3 top-1/2 h-px bg-slate-100" />
                   {baselines.map((baseline, index) => {
