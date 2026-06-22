@@ -1,6 +1,6 @@
 "use client";
 
-import { useId, useRef } from "react";
+import { useEffect, useId, useRef } from "react";
 import { Pencil, Plus, Trash2, X } from "lucide-react";
 
 type DialogActionProps = {
@@ -19,6 +19,18 @@ export function DialogAction({ title, description, trigger, triggerLabel, trigge
   const isEdit = trigger === "edit";
   const icon = isCreate ? <Plus size={16} /> : isEdit ? <Pencil size={16} /> : <Trash2 size={16} />;
   const label = triggerLabel ?? (isCreate ? "Criar" : isEdit ? "Editar" : "Excluir");
+
+  useEffect(() => {
+    const dialog = dialogRef.current;
+    if (!dialog) return;
+
+    function handleSubmit() {
+      setTimeout(() => dialog?.close(), 150);
+    }
+
+    dialog.addEventListener("submit", handleSubmit);
+    return () => dialog.removeEventListener("submit", handleSubmit);
+  }, []);
 
   return (
     <>
