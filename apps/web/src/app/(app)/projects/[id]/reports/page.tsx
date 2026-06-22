@@ -51,6 +51,7 @@ export default async function ProjectReportsPage({ params }: { params: { id: str
   const resourceRows = resourceEffortRows(leafTasks);
   const criticalRisks = delayedTasks.length + activeBlockers.length;
   const topLevelTasks = tasks.filter((task) => (task.wbsCode?.split(".").length ?? 1) <= 2).slice(0, 6);
+  const curveSData = buildCurveSData(leafTasks, project.plannedStart, project.currentEnd);
 
   const reports = [
     ["project-general", "Relatorio geral do projeto", "Resumo executivo, datas, horas, custos, tarefas e bloqueios"],
@@ -176,7 +177,7 @@ export default async function ProjectReportsPage({ params }: { params: { id: str
         </div>
 
         <ReportPanel title="Evolucao Macro do Projeto (Curva S)" className="mt-6" icon={<FileBarChart size={17} className="text-cyan-600" />}>
-          <CurveSChart planned={plannedProgress} actual={progress} />
+          <CurveSChart data={curveSData} planned={plannedProgress} actual={progress} />
         </ReportPanel>
 
         <ReportPanel title="Cronograma e Avanco por Fase (Gantt)" className="mt-6" icon={<FileBarChart size={17} className="text-cyan-600" />}>
@@ -296,25 +297,127 @@ function ReportPanel({ title, icon, className = "", children }: { title: string;
   );
 }
 
-function CurveSChart({ planned, actual }: { planned: number; actual: number }) {
-  const actualY = 170 - actual * 1.3;
-  const plannedY = 170 - planned * 1.3;
+type CurveSPoint = {
+  date: Date;
+  label: string;
+  planned: number;
+  actual: number;
+};
+
+function CurveSChart({ data, planned, actual }: { data: CurveSPoint[]; planned: number; actual: number }) {
+  const chart = { left: 70, right: 850, top: 24, bottom: 180 };
+  const width = chart.right - chart.left;
+  const height = chart.bottom - chart.top;
+  const points = data.length ? data : [{ date: new Date(), label: "Hoje", planned, actual }];
+  const xFor = (index: number) => chart.left + (points.length <= 1 ? 0 : (index / (points.length - 1)) * width);
+  const yFor = (value: number) => chart.bottom - (Math.max(0, Math.min(100, value)) / 100) * height;
+  const plannedPath = points.map((point, index) => `${index === 0 ? "M" : "L"}${xFor(index).toFixed(1)} ${yFor(point.planned).toFixed(1)}`).join(" ");
+  const actualPath = points.map((point, index) => `${index === 0 ? "M" : "L"}${xFor(index).toFixed(1)} ${yFor(point.actual).toFixed(1)}`).join(" ");
+  const todayIndex = points.findIndex((point) => point.label === "Hoje");
+  const last = points[points.length - 1];
+
   return (
-    <svg viewBox="0 0 900 230" className="h-72 w-full">
-      {[0, 25, 50, 75, 100].map((value) => (
-        <g key={value}>
-          <line x1="70" x2="850" y1={180 - value * 1.3} y2={180 - value * 1.3} stroke="#dbe4ef" />
-          <text x="28" y={184 - value * 1.3} fontSize="11" fill="#64748b">{value}%</text>
-        </g>
-      ))}
-      <path d="M70 178 C180 135 300 132 430 130 C600 128 750 95 850 30" fill="none" stroke="#16add3" strokeWidth="3" />
-      <path d={`M70 178 L240 ${plannedY} L380 ${actualY}`} fill="none" stroke="#64748b" strokeWidth="3" strokeDasharray="7 6" />
-      <circle cx="380" cy={actualY} r="4" fill="#64748b" />
-      <text x="390" y={actualY - 8} fontSize="12" fill="#64748b">Avanco realizado {actual}%</text>
-      <text x="70" y="210" fontSize="12" fill="#64748b">Inicio</text>
-      <text x="780" y="210" fontSize="12" fill="#64748b">Fim planejado</text>
-    </svg>
+    <div>
+      <div className="mb-4 flex flex-wrap items-center gap-4 text-xs font-bold text-slate-600">
+        <span className="inline-flex items-center gap-2"><span className="h-2 w-6 rounded-full bg-cyan-500" />Planejado acumulado</span>
+        <span className="inline-flex items-center gap-2"><span className="h-2 w-6 rounded-full bg-emerald-500" />Realizado acumulado</span>
+        <span className="ml-auto">Hoje: planejado {planned}% | realizado {actual}%</span>
+      </div>
+      <svg viewBox="0 0 900 230" className="h-72 w-full">
+        {[0, 25, 50, 75, 100].map((value) => (
+          <g key={value}>
+            <line x1={chart.left} x2={chart.right} y1={yFor(value)} y2={yFor(value)} stroke="#dbe4ef" />
+            <text x="28" y={yFor(value) + 4} fontSize="11" fill="#64748b">{value}%</text>
+          </g>
+        ))}
+        <line x1={chart.left} x2={chart.left} y1={chart.top} y2={chart.bottom} stroke="#cbd5e1" />
+        <line x1={chart.left} x2={chart.right} y1={chart.bottom} y2={chart.bottom} stroke="#cbd5e1" />
+        {todayIndex >= 0 ? <line x1={xFor(todayIndex)} x2={xFor(todayIndex)} y1={chart.top} y2={chart.bottom} stroke="#94a3b8" strokeDasharray="4 5" /> : null}
+        <path d={plannedPath} fill="none" stroke="#16add3" strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" />
+        <path d={actualPath} fill="none" stroke="#10b981" strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" />
+        {points.map((point, index) => (
+          <g key={`${point.label}-${index}`}>
+            <circle cx={xFor(index)} cy={yFor(point.planned)} r="2.5" fill="#16add3" />
+            <circle cx={xFor(index)} cy={yFor(point.actual)} r="2.5" fill="#10b981" />
+          </g>
+        ))}
+        <text x={chart.left} y="210" fontSize="12" fill="#64748b">{points[0]?.label ?? "Inicio"}</text>
+        <text x={chart.right - 90} y="210" fontSize="12" fill="#64748b">{last?.label ?? "Fim"}</text>
+        {todayIndex >= 0 ? <text x={xFor(todayIndex) + 6} y="42" fontSize="11" fill="#64748b">Hoje</text> : null}
+      </svg>
+      <p className="mt-2 text-xs text-slate-500">
+        Planejado: horas estimadas distribuidas entre inicio e fim planejados. Realizado: valor agregado atual por conclusao/progresso das tarefas.
+      </p>
+    </div>
   );
+}
+
+function buildCurveSData(tasks: ReportTask[], projectStart: Date, projectEnd: Date): CurveSPoint[] {
+  const validTasks = tasks.filter((task) => task.plannedStart && task.plannedEnd);
+  if (!validTasks.length) return [];
+
+  const today = new Date();
+  const start = new Date(Math.min(projectStart.getTime(), ...validTasks.map((task) => task.plannedStart.getTime())));
+  const end = new Date(Math.max(projectEnd.getTime(), today.getTime(), ...validTasks.map((task) => task.plannedEnd.getTime())));
+  const totalDays = Math.max(1, Math.ceil((end.getTime() - start.getTime()) / 86400000));
+  const stepDays = Math.max(1, Math.ceil(totalDays / 28));
+  const dates: Date[] = [];
+
+  for (const cursor = new Date(start); cursor <= end; cursor.setDate(cursor.getDate() + stepDays)) {
+    dates.push(new Date(cursor));
+  }
+  dates.push(today, end);
+
+  const uniqueDates = [...new Map(dates.map((date) => [date.toISOString().slice(0, 10), date])).values()]
+    .sort((left, right) => left.getTime() - right.getTime());
+  const totalWeight = validTasks.reduce((sum, task) => sum + taskWeight(task), 0) || validTasks.length || 1;
+
+  return uniqueDates.map((date) => {
+    const plannedValue = validTasks.reduce((sum, task) => sum + plannedEarnedForDate(task, date), 0);
+    const actualValue = validTasks.reduce((sum, task) => sum + actualEarnedForDate(task, date, today), 0);
+    return {
+      date,
+      label: sameDay(date, today) ? "Hoje" : formatDate(date),
+      planned: Math.round((plannedValue / totalWeight) * 100),
+      actual: Math.round((actualValue / totalWeight) * 100)
+    };
+  });
+}
+
+function plannedEarnedForDate(task: ReportTask, date: Date) {
+  const weight = taskWeight(task);
+  const start = task.plannedStart.getTime();
+  const end = Math.max(start + 1, task.plannedEnd.getTime());
+  const current = date.getTime();
+  if (current <= start) return 0;
+  if (current >= end) return weight;
+  return weight * ((current - start) / (end - start));
+}
+
+function actualEarnedForDate(task: ReportTask, date: Date, today: Date) {
+  const progress = actualProgressPercent(task);
+  if (progress <= 0) return 0;
+  const earned = taskWeight(task) * (progress / 100);
+  const recognitionDate = task.status === "DONE" ? (task.actualEnd ?? task.plannedEnd) : today;
+  return date.getTime() >= recognitionDate.getTime() ? earned : 0;
+}
+
+function taskWeight(task: ReportTask) {
+  const estimated = Number(task.estimatedHours ?? 0);
+  return estimated > 0 ? estimated : 1;
+}
+
+function actualProgressPercent(task: ReportTask) {
+  const progress = Number(task.progressPercent ?? 0);
+  const estimated = Number(task.estimatedHours ?? 0);
+  const actualHours = Number(task.actualHours ?? 0);
+  const hoursProgress = estimated > 0 ? (actualHours / estimated) * 100 : 0;
+  if (task.status === "DONE") return 100;
+  return Math.min(100, Math.max(0, progress, hoursProgress));
+}
+
+function sameDay(left: Date, right: Date) {
+  return left.toISOString().slice(0, 10) === right.toISOString().slice(0, 10);
 }
 
 function finalTasks(tasks: ReportTask[]) {
