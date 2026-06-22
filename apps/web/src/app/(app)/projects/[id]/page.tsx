@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { DialogAction } from "@/components/ui/dialog-action";
 import { PageHeader } from "@/components/ui/page-header";
+import { ImageUpload } from "@/components/ui/image-upload";
 import { ProjectPortal } from "@/features/projects/project-portal";
 import { ProjectTabs } from "@/features/projects/project-tabs";
 import { prisma } from "@/lib/prisma/client";
@@ -58,7 +59,7 @@ export default async function ProjectDetailPage({ params }: { params: { id: stri
                 <label className="grid gap-1 text-sm font-medium">Tipo<select name="type" defaultValue="TECHNICAL_PARTNER" className="h-10 rounded-md border border-line px-3"><option value="TECHNICAL_PARTNER">Parceiro Técnico</option><option value="CLIENT">Cliente</option></select></label>
                 <label className="grid gap-1 text-sm font-medium">Descricao<textarea name="description" rows={3} className="rounded-md border border-line px-3 py-2" /></label>
                 <label className="grid gap-1 text-sm font-medium">Website<input name="website" className="h-10 rounded-md border border-line px-3" /></label>
-                <label className="grid gap-1 text-sm font-medium">URL da Logo<input name="logoUrl" placeholder="https://..." className="h-10 rounded-md border border-line px-3" /></label>
+                <ImageUpload name="logoUrl" label="Logo do parceiro" />
                 <button className="w-fit rounded-md bg-brand-600 px-4 py-2 text-sm font-semibold text-white">Adicionar</button>
               </form>
             </DialogAction>
@@ -89,7 +90,7 @@ export default async function ProjectDetailPage({ params }: { params: { id: stri
                       <label className="grid gap-1 text-sm font-medium">Tipo<select name="type" defaultValue={partner.type} className="h-10 rounded-md border border-line px-3"><option value="TECHNICAL_PARTNER">Parceiro Técnico</option><option value="CLIENT">Cliente</option></select></label>
                       <label className="grid gap-1 text-sm font-medium">Descricao<textarea name="description" defaultValue={partner.description ?? ""} rows={3} className="rounded-md border border-line px-3 py-2" /></label>
                       <label className="grid gap-1 text-sm font-medium">Website<input name="website" defaultValue={partner.website ?? ""} className="h-10 rounded-md border border-line px-3" /></label>
-                      <label className="grid gap-1 text-sm font-medium">URL da Logo<input name="logoUrl" defaultValue={partner.logoUrl ?? ""} placeholder="https://..." className="h-10 rounded-md border border-line px-3" /></label>
+                      <ImageUpload name="logoUrl" defaultValue={partner.logoUrl} label="Logo do parceiro" />
                       <button className="w-fit rounded-md bg-brand-600 px-4 py-2 text-sm font-semibold text-white">Salvar</button>
                     </form>
                   </DialogAction>
