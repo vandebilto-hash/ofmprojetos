@@ -28,7 +28,7 @@ import {
 } from "lucide-react";
 import { EdtExpandControls } from "@/features/portal/edt-expand-controls";
 import { ExecutiveBarChart, MiniPieChart, ProgressLineChart, StatusCurveChart } from "@/features/portal/public-portal-charts";
-import { StatusReportFilters, StatusReportTablePager } from "@/features/portal/status-report-controls";
+import { StatusReportFilters, StatusReportTableFilters, StatusReportTablePager } from "@/features/portal/status-report-controls";
 import { formatDate, formatHours } from "@/lib/format";
 
 type PublicPortalShellProps = {
@@ -1483,11 +1483,7 @@ function DashboardModule({ project }: { project: any }) {
           <MilestoneRollupCard label="Atenção" value={milestoneRollup.attention} detail="em andamento/no prazo" tone="amber" />
           <MilestoneRollupCard label="Atrasados" value={milestoneRollup.late} detail="fora da previsão" tone="red" />
         </div>
-        <div className="border-b border-slate-100 px-6 py-3">
-          <p className="text-[11px] font-semibold text-slate-500">
-            Roll-up calculado sobre todas as atividades. Use os filtros dinâmicos acima para localizar atividade, responsável ou status nesta lista.
-          </p>
-        </div>
+        <StatusReportTableFilters tableId="status-report-milestones" />
         <div className="max-h-[520px] overflow-auto">
           <table id="status-report-milestones" className="w-full min-w-[800px] text-left text-xs">
             <thead className="bg-slate-50 text-[10px] font-black uppercase tracking-[0.12em] text-slate-400">
@@ -1505,9 +1501,6 @@ function DashboardModule({ project }: { project: any }) {
               {milestoneRows.map((item: any) => <MilestoneReportRow key={item.id} item={item} />)}
             </tbody>
           </table>
-        </div>
-        <div className="border-t border-slate-100 px-6 py-3">
-          <StatusReportTablePager tableId="status-report-milestones" pageSize={Math.max(milestoneRows.length, 1)} />
         </div>
       </div>
 

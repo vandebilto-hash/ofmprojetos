@@ -126,6 +126,68 @@ export function StatusReportTablePager({ tableId, pageSize = 8 }: { tableId: str
   );
 }
 
+export function StatusReportTableFilters({ tableId }: { tableId: string }) {
+  const [filters, setFilters] = useState(defaultFilters);
+  const [total, setTotal] = useState(0);
+
+  function updateFilter(key: keyof ReportFilters, value: string) {
+    setFilters((current) => ({ ...current, [key]: value }));
+  }
+
+  useEffect(() => {
+    const table = document.getElementById(tableId);
+    if (!table) return;
+
+    const rows = Array.from(table.querySelectorAll<HTMLElement>("[data-status-report-row]"));
+    const matchingRows = rows.filter((row) => rowMatchesFilters(row, filters));
+
+    rows.forEach((row) => {
+      row.hidden = true;
+    });
+    matchingRows.forEach((row) => {
+      row.hidden = false;
+    });
+
+    setTotal(matchingRows.length);
+  }, [filters, tableId]);
+
+  return (
+    <div className="border-b border-slate-100 px-6 py-4">
+      <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+        <h3 className="text-xs font-black uppercase tracking-[0.16em] text-slate-500">Filtros da tabela</h3>
+        <div className="flex items-center gap-3">
+          <span className="text-[11px] font-semibold text-slate-500">{total} registro(s)</span>
+          <button type="button" onClick={() => setFilters(defaultFilters)} className="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-[11px] font-black text-slate-700">
+            Limpar
+          </button>
+        </div>
+      </div>
+      <div className="grid gap-3 md:grid-cols-4">
+        <input
+          value={filters.query}
+          onChange={(event) => updateFilter("query", event.target.value)}
+          placeholder="Buscar atividade"
+          className="h-9 rounded-md border border-slate-300 bg-white px-3 text-xs outline-none md:col-span-2"
+        />
+        <select value={filters.status} onChange={(event) => updateFilter("status", event.target.value)} className="h-9 rounded-md border border-slate-300 bg-white px-3 text-xs">
+          <option value="">Todos os status</option>
+          <option value="atrasado">Atrasado</option>
+          <option value="no prazo">No Prazo</option>
+          <option value="concluido">Concluído</option>
+          <option value="bloqueado">Bloqueado</option>
+          <option value="planejado">Planejado</option>
+        </select>
+        <input
+          value={filters.owner}
+          onChange={(event) => updateFilter("owner", event.target.value)}
+          placeholder="Responsável"
+          className="h-9 rounded-md border border-slate-300 bg-white px-3 text-xs outline-none"
+        />
+      </div>
+    </div>
+  );
+}
+
 function rowMatchesFilters(row: HTMLElement, filters: ReportFilters) {
   const text = normalize(row.dataset.reportText ?? row.textContent ?? "");
   const status = normalize(row.dataset.reportStatus ?? "");
