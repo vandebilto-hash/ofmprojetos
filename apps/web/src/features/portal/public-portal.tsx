@@ -838,7 +838,7 @@ function PlanningModule({ project }: { project: any }) {
     value: tasks.filter((t: any) => t.status === s).length,
   }));
   const hoursData = tasks.slice(0, 8).map((t: any) => ({
-    name: t.wbsCode ?? t.name.slice(0, 8),
+    name: truncate(t.name, 18),
     planejadas: Number(t.estimatedHours),
     executadas: Number(t.actualHours),
   }));
@@ -1137,6 +1137,7 @@ function DashboardModule({ project }: { project: any }) {
     ...activeRisks.map((r: any) => ({ type: "risk", item: r })),
   ];
   const milestoneRows = project.milestones?.length ? project.milestones : phaseTasks;
+  const milestoneRollup = milestoneStatusRollup(milestoneRows, now);
   const executiveSummary = statusExecutiveSummary(project, leafTasks, delayedTasks, openBlockers, progress, plannedProgress);
   const delivered = leafTasks.filter((t: any) => t.status === "DONE" && t.actualEnd && daysBetween(t.actualEnd, now) <= 15).slice(0, 3);
   const nextFocus = leafTasks.filter((t: any) => t.status !== "DONE" && daysBetween(now, t.plannedEnd) <= 15 && new Date(t.plannedEnd) >= startOfDay(now)).slice(0, 3);
@@ -1373,40 +1374,6 @@ function DashboardModule({ project }: { project: any }) {
             <StatusCurveChart data={curveData} />
           </div>
         </div>
-        <div className="border-t border-slate-100 px-6 py-4">
-          <div className="mb-3 flex items-center justify-between gap-3">
-            <h3 className="text-xs font-black uppercase tracking-[0.16em] text-slate-500">Planilha da Curva S</h3>
-            <span className="rounded-full bg-slate-100 px-3 py-1 text-[10px] font-bold text-slate-500">Dados reais das atividades</span>
-          </div>
-          <div className="max-h-[260px] overflow-auto rounded-xl border border-slate-100">
-            <table className="w-full min-w-[560px] text-left text-xs">
-              <thead className="sticky top-0 z-10 bg-slate-50 text-[10px] font-black uppercase tracking-[0.12em] text-slate-400">
-                <tr>
-                  <th className="px-4 py-3">Data</th>
-                  <th className="py-3">Progresso Programado</th>
-                  <th className="py-3">Progresso Realizado</th>
-                  <th className="py-3 pr-4">Desvio</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100">
-                {curveData.map((point) => {
-                  const realized = point.realizado ?? null;
-                  const deviation = realized == null ? null : realized - point.planejado;
-                  return (
-                    <tr key={point.name} className="hover:bg-slate-50">
-                      <td className="px-4 py-2.5 font-bold text-slate-700">{point.name}</td>
-                      <td className="py-2.5 text-slate-600">{formatPercent(point.planejado)}</td>
-                      <td className="py-2.5 font-black text-[#1e3a5f]">{realized == null ? "-" : formatPercent(realized)}</td>
-                      <td className={`py-2.5 pr-4 font-bold ${deviation == null ? "text-slate-400" : deviation >= 0 ? "text-emerald-600" : "text-red-600"}`}>
-                        {deviation == null ? "-" : `${deviation >= 0 ? "+" : ""}${formatPercent(deviation)}`}
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        </div>
       </div>
 
       {/* ── GANTT ── */}
@@ -1497,6 +1464,12 @@ function DashboardModule({ project }: { project: any }) {
             <Milestone size={15} className="text-amber-600" />
           </span>
           <h2 className="text-sm font-black text-slate-900">Semáforo de Marcos</h2>
+        </div>
+        <div className="grid gap-3 border-b border-slate-100 px-6 py-4 sm:grid-cols-2 lg:grid-cols-4">
+          <MilestoneRollupCard label="Total" value={milestoneRollup.total} detail={`${milestoneRollup.progress}% de avanço`} tone="slate" />
+          <MilestoneRollupCard label="Concluídos" value={milestoneRollup.done} detail={`${milestoneRollup.donePct}% dos marcos`} tone="green" />
+          <MilestoneRollupCard label="Atenção" value={milestoneRollup.attention} detail="em andamento/no prazo" tone="amber" />
+          <MilestoneRollupCard label="Atrasados" value={milestoneRollup.late} detail="fora da previsão" tone="red" />
         </div>
         <div className="overflow-auto">
           <table id="status-report-milestones" className="w-full min-w-[800px] text-left text-xs">
@@ -1770,6 +1743,23 @@ function GanttBar({
   );
 }
 
+function MilestoneRollupCard({ label, value, detail, tone }: { label: string; value: number; detail: string; tone: "slate" | "green" | "amber" | "red" }) {
+  const styles = {
+    slate: "border-slate-100 bg-slate-50 text-slate-700",
+    green: "border-emerald-100 bg-emerald-50 text-emerald-700",
+    amber: "border-amber-100 bg-amber-50 text-amber-700",
+    red: "border-red-100 bg-red-50 text-red-700",
+  }[tone];
+
+  return (
+    <div className={`rounded-xl border px-4 py-3 ${styles}`}>
+      <p className="text-[10px] font-black uppercase tracking-[0.16em] opacity-70">{label}</p>
+      <p className="mt-1 text-3xl font-black leading-none">{value}</p>
+      <p className="mt-1 text-[11px] font-bold opacity-70">{detail}</p>
+    </div>
+  );
+}
+
 function MilestoneReportRow({ item }: { item: any }) {
   const isTask = "plannedEnd" in item;
   const status = isTask ? taskReportStatus(item) : milestoneReportStatus(item);
@@ -1794,6 +1784,31 @@ function MilestoneReportRow({ item }: { item: any }) {
       <td className="py-3 pr-6"><InlineProgress value={progress} /></td>
     </tr>
   );
+}
+
+function milestoneStatusRollup(items: any[], now: Date) {
+  const total = items.length;
+  let done = 0;
+  let late = 0;
+  let progressSum = 0;
+
+  for (const item of items) {
+    const isTask = "plannedEnd" in item;
+    const status = isTask ? taskReportStatus(item) : milestoneReportStatusAtDate(item, now);
+    const progress = isTask ? Number(item.progressPercent ?? 0) : item.status === "COMPLETED" ? 100 : 0;
+    if (status.tone === "green") done += 1;
+    if (status.tone === "red") late += 1;
+    progressSum += clamp(progress, 0, 100);
+  }
+
+  return {
+    total,
+    done,
+    late,
+    attention: Math.max(0, total - done - late),
+    donePct: total ? Math.round((done / total) * 100) : 0,
+    progress: total ? Math.round(progressSum / total) : 0,
+  };
 }
 
 function ActivityReportRow({ task, now }: { task: any; now: Date }) {
@@ -2302,8 +2317,12 @@ function taskReportStatus(task: any) {
 }
 
 function milestoneReportStatus(milestone: any) {
+  return milestoneReportStatusAtDate(milestone, new Date());
+}
+
+function milestoneReportStatusAtDate(milestone: any, date: Date) {
   if (milestone.status === "COMPLETED") return { label: "Concluído", tone: "green" as const };
-  if (new Date(milestone.plannedDate) < new Date()) return { label: "Atrasado", tone: "red" as const };
+  if (new Date(milestone.plannedDate) < date) return { label: "Atrasado", tone: "red" as const };
   return { label: "No Prazo", tone: "blue" as const };
 }
 
