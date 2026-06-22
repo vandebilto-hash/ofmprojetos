@@ -2,7 +2,6 @@ import { notFound } from "next/navigation";
 import { DialogAction } from "@/components/ui/dialog-action";
 import { PageHeader } from "@/components/ui/page-header";
 import { ImageUpload } from "@/components/ui/image-upload";
-import { ProjectPortal } from "@/features/projects/project-portal";
 import { ProjectTabs } from "@/features/projects/project-tabs";
 import { prisma } from "@/lib/prisma/client";
 import { createPartnerAction, deletePartnerAction, updatePartnerAction, updateProjectHomeAction } from "@/server/actions/projects";
@@ -15,17 +14,7 @@ export default async function ProjectDetailPage({ params }: { params: { id: stri
       manager: true,
       home: true,
       partners: { orderBy: { name: "asc" } },
-      stakeholders: { orderBy: { name: "asc" } },
-      milestones: { orderBy: { plannedDate: "asc" } },
-      documents: { where: { visibility: "CLIENT_VISIBLE" }, orderBy: { createdAt: "desc" } },
-      todos: { orderBy: [{ priority: "desc" }, { dueDate: "asc" }] },
-      risks: { orderBy: [{ classification: "desc" }, { registeredAt: "desc" }] },
-      shareLinks: { where: { active: true }, take: 1, orderBy: { createdAt: "desc" } },
-      tasks: {
-        include: { owner: true },
-        orderBy: { plannedStart: "asc" }
-      },
-      blockers: { orderBy: { openedAt: "desc" } }
+      shareLinks: { where: { active: true }, take: 1, orderBy: { createdAt: "desc" } }
     }
   });
   if (!project) notFound();
@@ -108,7 +97,6 @@ export default async function ProjectDetailPage({ params }: { params: { id: stri
           </div>
         </div>
       </section>
-      <ProjectPortal project={project} />
     </>
   );
 }
