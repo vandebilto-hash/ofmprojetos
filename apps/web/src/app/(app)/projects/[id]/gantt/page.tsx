@@ -53,7 +53,7 @@ export default async function ProjectGanttPage({ params, searchParams }: { param
       {previewValue?.changes?.length ? (
         <ImportOptionsDialog previewKey={searchParams.importPreview!} changes={previewValue.changes} />
       ) : null}
-      <section className="mb-5 overflow-hidden rounded-2xl border border-line bg-white shadow-soft">
+      <section className="mb-5 min-w-0 overflow-hidden rounded-2xl border border-line bg-white shadow-soft">
         <div className="flex flex-wrap items-start justify-between gap-4 border-b border-line bg-gradient-to-r from-brand-50 to-slate-50 p-5">
           <div>
             <p className="text-xs font-bold uppercase tracking-[0.16em] text-brand-600">Planejamento integrado</p>
@@ -95,8 +95,8 @@ export default async function ProjectGanttPage({ params, searchParams }: { param
         </div>
       </section>
 
-      <div className="grid gap-6">
-        <section className="grid gap-3">
+      <div className="grid min-w-0 gap-6">
+        <section className="grid min-w-0 gap-3">
           <div>
             <h2 className="text-lg font-black text-ink">Gantt e baseline</h2>
             <p className="text-sm text-slate-500">Visao temporal para sequenciamento, atrasos e comparacao com baselines.</p>
@@ -104,7 +104,7 @@ export default async function ProjectGanttPage({ params, searchParams }: { param
           <GanttView tasks={project.tasks} baselines={project.baselines} dependencies={dependencies} />
         </section>
 
-        <section className="grid gap-3">
+        <section className="grid min-w-0 gap-3">
           <div>
             <h2 className="text-lg font-black text-ink">To-do operacional</h2>
             <p className="text-sm text-slate-500">Edite atividades, status, responsaveis, horas, progresso, ocorrencias e predecessoras sem sair do planejamento.</p>

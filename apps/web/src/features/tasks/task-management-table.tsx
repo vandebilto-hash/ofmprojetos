@@ -197,7 +197,7 @@ export function TaskManagementTable({
   }
 
   return (
-    <div className="overflow-x-auto rounded-lg border border-line bg-white shadow-soft">
+    <div className="w-full max-w-full overflow-x-auto rounded-lg border border-line bg-white shadow-soft">
       {summaryTaskIds.length ? (
         <div className="flex items-center justify-between border-b border-line bg-slate-50 px-3 py-2 text-xs dark:bg-slate-900">
           <span className="font-semibold uppercase text-slate-500">

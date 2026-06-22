@@ -110,7 +110,7 @@ export function GanttView({
   }
 
   return (
-    <div className="rounded-lg border border-line bg-white shadow-soft">
+    <div className="w-full max-w-full overflow-hidden rounded-lg border border-line bg-white shadow-soft">
       <div className="flex items-center justify-between border-b border-line px-4 py-3">
         <div>
           <h2 className="font-bold text-ink">Grafico de Gantt</h2>
@@ -169,7 +169,7 @@ export function GanttView({
           </label>
         ) : null}
       </div>
-      <div className="h-[420px] max-h-[520px] min-h-[280px] resize-y overflow-auto border-b border-line">
+      <div className="h-[420px] max-h-[520px] min-h-[280px] w-full max-w-full resize-y overflow-auto border-b border-line">
         <div className="grid min-w-max" style={{ gridTemplateColumns: showEdt ? `${edtWidth}px 1fr` : "0px 1fr" }}>
           {showEdt ? (
             <div className="sticky left-0 z-10 border-r border-line bg-slate-50 px-3 py-3 text-xs font-semibold uppercase text-slate-500">

@@ -154,7 +154,7 @@ export function AppShell({
               <ThemeToggle />
             </div>
           </header>
-          <main className="animate-fadeIn p-4 lg:p-6">{children}</main>
+          <main className="min-w-0 max-w-full overflow-x-hidden p-4 animate-fadeIn lg:p-6">{children}</main>
         </div>
       </div>
     </div>
