@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import { PageHeader } from "@/components/ui/page-header";
 import { ProjectExecutiveDashboard } from "@/features/dashboard/project-executive-dashboard";
 import { ProjectTabs } from "@/features/projects/project-tabs";
-import { formatDate, formatHours } from "@/lib/format";
+import { formatDate, formatHours, formatMoney } from "@/lib/format";
 import { prisma } from "@/lib/prisma/client";
 
 const taskStatusLabel: Record<string, string> = {
@@ -13,12 +13,27 @@ const taskStatusLabel: Record<string, string> = {
   DONE: "Concluída"
 };
 
-const riskClassificationLabel: Record<string, string> = {
-  LOW: "Baixo",
-  MEDIUM: "Médio",
-  HIGH: "Alto",
-  CRITICAL: "Crítico"
+const blockerCriticalityLabel: Record<string, string> = {
+  LOW: "Baixa",
+  MEDIUM: "Média",
+  HIGH: "Alta",
+  CRITICAL: "Crítica"
 };
+
+function getBlockerCriticality(blocker: { scheduleImpactDays: number; financialImpact: unknown }) {
+  const scheduleImpactDays = Number(blocker.scheduleImpactDays ?? 0);
+  const financialImpact = Number(blocker.financialImpact ?? 0);
+
+  if (scheduleImpactDays >= 10 || financialImpact >= 100000) return "CRITICAL";
+  if (scheduleImpactDays >= 5 || financialImpact >= 50000) return "HIGH";
+  if (scheduleImpactDays > 0 || financialImpact > 0) return "MEDIUM";
+  return "LOW";
+}
+
+function blockerCriticalityRank(blocker: { scheduleImpactDays: number; financialImpact: unknown }) {
+  const rank: Record<string, number> = { LOW: 1, MEDIUM: 2, HIGH: 3, CRITICAL: 4 };
+  return rank[getBlockerCriticality(blocker)] ?? 0;
+}
 
 export default async function ProjectDashboardPage({ params }: { params: { id: string } }) {
   const project = await prisma.project.findUnique({
@@ -30,17 +45,30 @@ export default async function ProjectDashboardPage({ params }: { params: { id: s
   const now = new Date();
   const completedTasks = project.tasks.filter((task) => task.status === "DONE").length;
   const delayedTasks = project.tasks.filter((task) => task.status !== "DONE" && task.plannedEnd < now);
-  const priorityRisks = project.risks.filter((risk) => risk.classification === "CRITICAL" || risk.classification === "HIGH");
-  const openBlockers = project.blockers.filter((blocker) => blocker.status !== "RESOLVED");
+  const openBlockers = project.blockers.filter((blocker) => blocker.status !== "RESOLVED" && blocker.status !== "CANCELED");
+  const priorityBlockers = openBlockers
+    .filter((blocker) => ["CRITICAL", "HIGH"].includes(getBlockerCriticality(blocker)))
+    .sort((a, b) => {
+      const criticalityDiff = blockerCriticalityRank(b) - blockerCriticalityRank(a);
+      if (criticalityDiff !== 0) return criticalityDiff;
+      return Number(b.scheduleImpactDays ?? 0) - Number(a.scheduleImpactDays ?? 0);
+    });
   const openActions = project.todos.filter((todo) => todo.status !== "DONE");
   const completedMilestones = project.milestones.filter((item) => item.status === "COMPLETED").length;
   const progress = Number(project.progressPercent);
+  const parentTaskIds = new Set(project.tasks.map((task) => task.parentTaskId).filter(Boolean));
+  const leafTasks = project.tasks.filter((task) => !parentTaskIds.has(task.id));
+  const hoursTasks = leafTasks.length ? leafTasks : project.tasks;
+  const taskPlannedHours = hoursTasks.reduce((sum, task) => sum + Number(task.estimatedHours ?? 0), 0);
+  const taskActualHours = hoursTasks.reduce((sum, task) => sum + Number(task.actualHours ?? 0), 0);
+  const plannedHours = taskPlannedHours || Number(project.plannedHours ?? 0);
+  const actualHours = taskActualHours || Number(project.actualHours ?? 0);
 
   const cards = [
     { label: "Avanço do projeto", value: `${progress}%`, detail: "percentual consolidado", tone: "blue" },
-    { label: "Horas planejadas", value: formatHours(project.plannedHours), detail: `${formatHours(project.actualHours)} executadas`, tone: "emerald" },
+    { label: "Horas planejadas", value: formatHours(plannedHours), detail: `${formatHours(actualHours)} executadas`, tone: "emerald" },
     { label: "Atividades atrasadas", value: delayedTasks.length, detail: `${completedTasks} de ${project.tasks.length} concluídas`, tone: delayedTasks.length ? "red" : "emerald" },
-    { label: "Riscos altos/críticos", value: priorityRisks.length, detail: `${project.risks.length} riscos cadastrados`, tone: priorityRisks.length ? "amber" : "slate" },
+    { label: "Bloqueios críticos/altos", value: priorityBlockers.length, detail: `${project.blockers.length} bloqueios cadastrados`, tone: priorityBlockers.length ? "amber" : "slate" },
     { label: "Bloqueios abertos", value: openBlockers.length, detail: `${project.blockers.length} bloqueios cadastrados`, tone: openBlockers.length ? "red" : "emerald" },
     { label: "Ações abertas", value: openActions.length, detail: `${project.todos.length} ações cadastradas`, tone: openActions.length ? "amber" : "emerald" },
     { label: "Marcos", value: project.milestones.length, detail: `${completedMilestones} concluídos`, tone: "violet" },
@@ -50,13 +78,13 @@ export default async function ProjectDashboardPage({ params }: { params: { id: s
     name: taskStatusLabel[status],
     value: project.tasks.filter((task) => task.status === status).length
   }));
-  const riskData = ["LOW", "MEDIUM", "HIGH", "CRITICAL"].map((classification) => ({
-    name: riskClassificationLabel[classification],
-    value: project.risks.filter((risk) => risk.classification === classification).length
+  const blockerData = ["LOW", "MEDIUM", "HIGH", "CRITICAL"].map((criticality) => ({
+    name: blockerCriticalityLabel[criticality],
+    value: project.blockers.filter((blocker) => getBlockerCriticality(blocker) === criticality).length
   }));
-  const hoursData = [{ name: "Projeto", planejadas: Number(project.plannedHours), executadas: Number(project.actualHours) }];
+  const hoursData = [{ name: "Projeto", planejadas: plannedHours, executadas: actualHours }];
   const attentionTasks = delayedTasks.slice(0, 5);
-  const attentionRisks = priorityRisks.slice(0, 5);
+  const attentionBlockers = priorityBlockers.slice(0, 5);
 
   return (
     <>
@@ -68,7 +96,7 @@ export default async function ProjectDashboardPage({ params }: { params: { id: s
           <p className="text-xs font-black uppercase tracking-[0.16em] text-brand-600">Visão executiva</p>
           <h2 className="mt-1 text-2xl font-black text-ink">Saúde geral do projeto em uma tela</h2>
           <p className="mt-1 max-w-3xl text-sm leading-6 text-slate-600">
-            Acompanhe avanço, horas, riscos, bloqueios, ações, marcos e governança com leitura rápida e sem códigos em inglês.
+            Acompanhe avanço, horas, bloqueios, ações, marcos e governança com leitura rápida e sem códigos em inglês.
           </p>
         </div>
         <div className="grid gap-3 p-5 sm:grid-cols-2 xl:grid-cols-4">
@@ -79,7 +107,7 @@ export default async function ProjectDashboardPage({ params }: { params: { id: s
       </section>
 
       <section className="mt-5">
-        <ProjectExecutiveDashboard statusData={statusData} riskData={riskData} hoursData={hoursData} />
+        <ProjectExecutiveDashboard statusData={statusData} blockerData={blockerData} hoursData={hoursData} />
       </section>
 
       <section className="mt-5 grid gap-4 lg:grid-cols-2">
@@ -104,19 +132,25 @@ export default async function ProjectDashboardPage({ params }: { params: { id: s
         <div className="rounded-xl border border-line bg-white p-5 shadow-soft">
           <div className="flex items-center justify-between gap-3">
             <div>
-              <h2 className="text-lg font-black text-ink">Riscos executivos prioritários</h2>
-              <p className="text-sm text-slate-500">Riscos altos e críticos que exigem decisão.</p>
+              <h2 className="text-lg font-black text-ink">Bloqueios prioritários</h2>
+              <p className="text-sm text-slate-500">Bloqueios com maior impacto financeiro ou no cronograma.</p>
             </div>
-            <span className="rounded-full bg-amber-50 px-3 py-1 text-xs font-bold text-amber-700">{attentionRisks.length} item(ns)</span>
+            <span className="rounded-full bg-amber-50 px-3 py-1 text-xs font-bold text-amber-700">{attentionBlockers.length} item(ns)</span>
           </div>
           <div className="mt-4 grid gap-3">
-            {attentionRisks.map((risk) => (
-              <div key={risk.id} className="rounded-lg border border-amber-100 bg-amber-50/40 p-3 text-sm">
-                <div className="flex justify-between gap-3"><strong>{risk.name}</strong><span className="font-bold text-amber-700">{riskClassificationLabel[risk.classification]}</span></div>
-                <p className="mt-1 text-slate-500">{risk.impact ?? risk.description}</p>
+            {attentionBlockers.map((blocker) => (
+              <div key={blocker.id} className="rounded-lg border border-amber-100 bg-amber-50/40 p-3 text-sm">
+                <div className="flex justify-between gap-3">
+                  <strong>{blocker.title}</strong>
+                  <span className="font-bold text-amber-700">{blockerCriticalityLabel[getBlockerCriticality(blocker)]}</span>
+                </div>
+                <p className="mt-1 text-slate-500">{blocker.impactDescription ?? blocker.description ?? blocker.nextAction ?? "Sem descrição de impacto."}</p>
+                <p className="mt-2 text-xs font-semibold text-slate-500">
+                  Impacto: {blocker.scheduleImpactDays} dia(s) | Financeiro: {formatMoney(blocker.financialImpact)}
+                </p>
               </div>
             ))}
-            {!attentionRisks.length ? <p className="text-sm text-slate-500">Nenhum risco alto ou crítico.</p> : null}
+            {!attentionBlockers.length ? <p className="text-sm text-slate-500">Nenhum bloqueio prioritário aberto.</p> : null}
           </div>
         </div>
       </section>

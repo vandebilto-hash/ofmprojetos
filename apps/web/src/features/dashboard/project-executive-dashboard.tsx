@@ -4,13 +4,13 @@ import { Bar, BarChart, CartesianGrid, Cell, Legend, Pie, PieChart, ResponsiveCo
 
 type ProjectExecutiveDashboardProps = {
   statusData: Array<{ name: string; value: number }>;
-  riskData: Array<{ name: string; value: number }>;
+  blockerData: Array<{ name: string; value: number }>;
   hoursData: Array<{ name: string; planejadas: number; executadas: number }>;
 };
 
 const colors = ["#2563eb", "#16a34a", "#f59e0b", "#dc2626", "#7c3aed"];
 
-export function ProjectExecutiveDashboard({ statusData, riskData, hoursData }: ProjectExecutiveDashboardProps) {
+export function ProjectExecutiveDashboard({ statusData, blockerData, hoursData }: ProjectExecutiveDashboardProps) {
   return (
     <div className="grid gap-4 lg:grid-cols-3">
       <ChartCard title="Atividades por status" className="lg:col-span-1">
@@ -24,9 +24,9 @@ export function ProjectExecutiveDashboard({ statusData, riskData, hoursData }: P
           </PieChart>
         </ResponsiveContainer>
       </ChartCard>
-      <ChartCard title="Riscos por criticidade" className="lg:col-span-1">
+      <ChartCard title="Bloqueios por criticidade" className="lg:col-span-1">
         <ResponsiveContainer width="100%" height={260}>
-          <BarChart data={riskData}>
+          <BarChart data={blockerData}>
             <CartesianGrid strokeDasharray="3 3" vertical={false} />
             <XAxis dataKey="name" tick={{ fontSize: 12 }} />
             <YAxis allowDecimals={false} />
