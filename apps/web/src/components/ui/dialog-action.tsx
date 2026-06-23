@@ -20,12 +20,19 @@ export function DialogAction({ title, description, trigger, triggerLabel, trigge
   const icon = isCreate ? <Plus size={16} /> : isEdit ? <Pencil size={16} /> : <Trash2 size={16} />;
   const label = triggerLabel ?? (isCreate ? "Criar" : isEdit ? "Editar" : "Excluir");
 
+  function resetDialog() {
+    const dialog = dialogRef.current;
+    if (!dialog) return;
+    dialog.querySelectorAll("form").forEach((form) => form.reset());
+    dialog.querySelectorAll("[data-form-feedback-message]").forEach((node) => node.remove());
+  }
+
   useEffect(() => {
     const dialog = dialogRef.current;
     if (!dialog) return;
 
     function resetForms() {
-      dialog?.querySelectorAll("form").forEach((form) => form.reset());
+      resetDialog();
     }
 
     function handleSubmit(event: SubmitEvent) {
@@ -46,7 +53,10 @@ export function DialogAction({ title, description, trigger, triggerLabel, trigge
     <>
       <button
         type="button"
-        onClick={() => dialogRef.current?.showModal()}
+        onClick={() => {
+          resetDialog();
+          dialogRef.current?.showModal();
+        }}
         className={
           triggerVariant === "menu"
             ? trigger === "delete"
