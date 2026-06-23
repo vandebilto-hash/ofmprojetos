@@ -5,7 +5,7 @@ import { Bar, BarChart, CartesianGrid, Cell, Legend, Pie, PieChart, ResponsiveCo
 type ProjectExecutiveDashboardProps = {
   statusData: Array<{ name: string; value: number }>;
   blockerData: Array<{ name: string; value: number }>;
-  hoursData: Array<{ name: string; planejadas: number; executadas: number }>;
+  hoursData: Array<{ tipo: string; horas: number }>;
 };
 
 const colors = ["#2563eb", "#16a34a", "#f59e0b", "#dc2626", "#7c3aed"];
@@ -39,12 +39,12 @@ export function ProjectExecutiveDashboard({ statusData, blockerData, hoursData }
         <ResponsiveContainer width="100%" height={260}>
           <BarChart data={hoursData}>
             <CartesianGrid strokeDasharray="3 3" vertical={false} />
-            <XAxis dataKey="name" />
+            <XAxis dataKey="tipo" />
             <YAxis />
-            <Tooltip formatter={(value, name) => [value, name === "planejadas" ? "Planejadas" : "Executadas"]} />
-            <Legend formatter={(value) => (value === "planejadas" ? "Planejadas" : "Executadas")} />
-            <Bar dataKey="planejadas" name="Planejadas" fill="#2563eb" radius={[8, 8, 0, 0]} />
-            <Bar dataKey="executadas" name="Executadas" fill="#16a34a" radius={[8, 8, 0, 0]} />
+            <Tooltip formatter={(value) => [value, "Horas"]} />
+            <Bar dataKey="horas" name="Horas" radius={[8, 8, 0, 0]}>
+              {hoursData.map((item) => <Cell key={item.tipo} fill={item.tipo === "Planejadas" ? "#2563eb" : "#16a34a"} />)}
+            </Bar>
           </BarChart>
         </ResponsiveContainer>
       </ChartCard>

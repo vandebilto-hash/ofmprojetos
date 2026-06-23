@@ -13,6 +13,28 @@ function inputDate(value: Date | null) {
   return value ? value.toISOString().slice(0, 10) : "";
 }
 
+const blockerCriticalityLabel: Record<string, string> = {
+  LOW: "Baixa",
+  MEDIUM: "Média",
+  HIGH: "Alta",
+  CRITICAL: "Crítica"
+};
+
+const blockerCriticalityClass: Record<string, string> = {
+  LOW: "bg-slate-100 text-slate-700",
+  MEDIUM: "bg-amber-100 text-amber-700",
+  HIGH: "bg-orange-100 text-orange-700",
+  CRITICAL: "bg-red-100 text-red-700"
+};
+
+function BlockerCriticalityBadge({ value }: { value: string }) {
+  return (
+    <span className={`h-fit rounded-full px-3 py-1 text-xs font-bold ${blockerCriticalityClass[value] ?? blockerCriticalityClass.MEDIUM}`}>
+      Criticidade {blockerCriticalityLabel[value] ?? blockerCriticalityLabel.MEDIUM}
+    </span>
+  );
+}
+
 export default async function ProjectBlockersPage({ params }: { params: { id: string } }) {
   const project = await prisma.project.findUnique({
     where: { id: params.id },
@@ -115,6 +137,17 @@ export default async function ProjectBlockersPage({ params }: { params: { id: st
                 </select>
               </label>
               <label className="grid gap-1 text-sm font-medium">
+                Criticidade
+                <select name="criticality" defaultValue="MEDIUM" className="h-10 rounded-md border border-line px-3">
+                  <option value="LOW">Baixa</option>
+                  <option value="MEDIUM">Média</option>
+                  <option value="HIGH">Alta</option>
+                  <option value="CRITICAL">Crítica</option>
+                </select>
+              </label>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <label className="grid gap-1 text-sm font-medium">
                 Responsavel pela resolucao
                 <select name="resolverId" className="h-10 rounded-md border border-line px-3">
                   <option value="">Responsavel</option>
@@ -197,6 +230,7 @@ export default async function ProjectBlockersPage({ params }: { params: { id: st
                 <p className="mt-1 text-xs text-slate-500">{blocker.task?.name ?? "Projeto geral"}</p>
               </div>
               <div className="flex items-start gap-2">
+                <BlockerCriticalityBadge value={blocker.criticality} />
                 <StatusBadge status={blocker.status} />
                 <DialogAction title="Editar bloqueio" description={blocker.title} trigger="edit">
                   <form action={upsertBlockerAction} className="grid gap-3">
@@ -244,6 +278,17 @@ export default async function ProjectBlockersPage({ params }: { params: { id: st
                           <option value="CANCELED">Cancelado</option>
                         </select>
                       </label>
+                      <label className="grid gap-1 text-sm font-medium">
+                        Criticidade
+                        <select name="criticality" defaultValue={blocker.criticality} className="h-10 rounded-md border border-line px-3">
+                          <option value="LOW">Baixa</option>
+                          <option value="MEDIUM">Média</option>
+                          <option value="HIGH">Alta</option>
+                          <option value="CRITICAL">Crítica</option>
+                        </select>
+                      </label>
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
                       <label className="grid gap-1 text-sm font-medium">
                         Responsavel pela resolucao
                         <select name="resolverId" defaultValue={blocker.resolverId ?? ""} className="h-10 rounded-md border border-line px-3">

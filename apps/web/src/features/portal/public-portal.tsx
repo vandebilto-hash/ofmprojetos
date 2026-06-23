@@ -1063,6 +1063,13 @@ function RisksModule({ project }: { project: any }) {
 function BlockersModule({ project }: { project: any }) {
   const open = project.blockers.filter((b: any) => b.status !== "RESOLVED" && b.status !== "CANCELED");
   const resolved = project.blockers.filter((b: any) => b.status === "RESOLVED");
+  const criticalityLabel: Record<string, string> = { LOW: "Baixa", MEDIUM: "Média", HIGH: "Alta", CRITICAL: "Crítica" };
+  const criticalityClass: Record<string, string> = {
+    LOW: "bg-slate-100 text-slate-600",
+    MEDIUM: "bg-amber-100 text-amber-700",
+    HIGH: "bg-orange-100 text-orange-700",
+    CRITICAL: "bg-red-100 text-red-700"
+  };
 
   return (
     <ModulePage
@@ -1087,17 +1094,22 @@ function BlockersModule({ project }: { project: any }) {
           return (
             <div key={blocker.id} className={`flex flex-col rounded-xl border border-l-4 border-slate-100 bg-white p-5 shadow-sm ${borderColor}`}>
               <div className="flex items-start justify-between gap-3">
-                <span
-                  className={`rounded-full px-2.5 py-1 text-[10px] font-black uppercase ${
-                    isOpen
-                      ? days > 5
-                        ? "bg-red-100 text-red-700"
-                        : "bg-amber-100 text-amber-700"
-                      : "bg-emerald-100 text-emerald-700"
-                  }`}
-                >
-                  {blockerStatusPt(blocker.status)}
-                </span>
+                <div className="flex flex-wrap gap-1.5">
+                  <span
+                    className={`rounded-full px-2.5 py-1 text-[10px] font-black uppercase ${
+                      isOpen
+                        ? days > 5
+                          ? "bg-red-100 text-red-700"
+                          : "bg-amber-100 text-amber-700"
+                        : "bg-emerald-100 text-emerald-700"
+                    }`}
+                  >
+                    {blockerStatusPt(blocker.status)}
+                  </span>
+                  <span className={`rounded-full px-2.5 py-1 text-[10px] font-black uppercase ${criticalityClass[blocker.criticality] ?? criticalityClass.MEDIUM}`}>
+                    Criticidade {criticalityLabel[blocker.criticality] ?? criticalityLabel.MEDIUM}
+                  </span>
+                </div>
                 <span
                   className={`rounded-md px-2 py-0.5 text-[10px] font-black ${
                     isOpen && days > 5

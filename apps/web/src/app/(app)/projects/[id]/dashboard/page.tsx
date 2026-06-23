@@ -20,7 +20,9 @@ const blockerCriticalityLabel: Record<string, string> = {
   CRITICAL: "Crítica"
 };
 
-function getBlockerCriticality(blocker: { scheduleImpactDays: number; financialImpact: unknown }) {
+function getBlockerCriticality(blocker: { criticality?: string | null; scheduleImpactDays: number; financialImpact: unknown }) {
+  if (blocker.criticality) return blocker.criticality;
+
   const scheduleImpactDays = Number(blocker.scheduleImpactDays ?? 0);
   const financialImpact = Number(blocker.financialImpact ?? 0);
 
@@ -30,7 +32,7 @@ function getBlockerCriticality(blocker: { scheduleImpactDays: number; financialI
   return "LOW";
 }
 
-function blockerCriticalityRank(blocker: { scheduleImpactDays: number; financialImpact: unknown }) {
+function blockerCriticalityRank(blocker: { criticality?: string | null; scheduleImpactDays: number; financialImpact: unknown }) {
   const rank: Record<string, number> = { LOW: 1, MEDIUM: 2, HIGH: 3, CRITICAL: 4 };
   return rank[getBlockerCriticality(blocker)] ?? 0;
 }
@@ -82,7 +84,10 @@ export default async function ProjectDashboardPage({ params }: { params: { id: s
     name: blockerCriticalityLabel[criticality],
     value: project.blockers.filter((blocker) => getBlockerCriticality(blocker) === criticality).length
   }));
-  const hoursData = [{ name: "Projeto", planejadas: plannedHours, executadas: actualHours }];
+  const hoursData = [
+    { tipo: "Planejadas", horas: plannedHours },
+    { tipo: "Executadas", horas: actualHours }
+  ];
   const attentionTasks = delayedTasks.slice(0, 5);
   const attentionBlockers = priorityBlockers.slice(0, 5);
 

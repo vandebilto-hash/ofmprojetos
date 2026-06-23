@@ -656,6 +656,7 @@ model Blocker {
   expectedResolutionAt  DateTime?
   resolvedAt            DateTime?
   status                BlockerStatus @default(OPEN)
+  criticality           Priority      @default(MEDIUM)
   scheduleImpactDays    Int           @default(0)
   impactDescription     String?
   nextAction            String?
