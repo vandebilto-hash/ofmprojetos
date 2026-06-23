@@ -706,6 +706,16 @@ function EmailsModule({ project }: { project: any }) {
                     <strong className="text-slate-700">Tipo:</strong> {email.category}
                   </p>
                 </div>
+                {email.attachmentUrl ? (
+                  <Link
+                    href={email.attachmentUrl}
+                    target="_blank"
+                    className="mt-4 inline-flex w-fit items-center gap-1.5 rounded-lg bg-[#062553] px-3 py-2 text-xs font-bold text-white hover:bg-[#0f1b3d]"
+                  >
+                    <Mail size={12} />
+                    Acessar e-mail
+                  </Link>
+                ) : null}
               </div>
             );
           })}
