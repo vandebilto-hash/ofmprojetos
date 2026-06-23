@@ -26,7 +26,7 @@ export default async function ProjectMilestonesPage({ params }: { params: { id: 
 
   return (
     <>
-      <PageHeader title={`Marcos do projeto | ${project.name}`} description="Linha do tempo executiva dos eventos, entregas e aprovações." />
+      <PageHeader title={`Marcos do projeto | ${project.name}`} description="Linha do tempo executiva dos eventos, entregas e aprovações." action={{ href: `/projects/${project.id}/dashboard`, label: "Painel" }} />
       <ProjectTabs projectId={project.id} />
       <div className="mb-4 flex justify-end">
         <DialogAction title="Cadastrar marco" description="Adicione um evento, entrega, aprovação ou decisão importante." trigger="create" triggerLabel="Novo marco">

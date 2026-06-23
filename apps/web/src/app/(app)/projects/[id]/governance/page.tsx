@@ -27,7 +27,7 @@ export default async function ProjectGovernancePage({ params }: { params: { id: 
 
   return (
     <>
-      <PageHeader title={`Governança | ${project.name}`} description="Partes interessadas, mapa de influência/interesse e indicadores." />
+      <PageHeader title={`Governança | ${project.name}`} description="Partes interessadas, mapa de influência/interesse e indicadores." action={{ href: `/projects/${project.id}/dashboard`, label: "Painel" }} />
       <ProjectTabs projectId={project.id} />
       <div className="mb-4 flex justify-end">
         <DialogAction title="Cadastrar parte interessada" description="Adicione uma nova parte interessada ao mapa de governança." trigger="create" triggerLabel="Nova parte interessada">

@@ -25,7 +25,7 @@ export default async function ProjectBlockersPage({ params }: { params: { id: st
 
   return (
     <>
-      <PageHeader title={`Riscos e pendencias | ${project.name}`} description="Matriz de riscos, bloqueios, impactos e proximas acoes." />
+      <PageHeader title={`Riscos e pendencias | ${project.name}`} description="Matriz de riscos, bloqueios, impactos e proximas acoes." action={{ href: `/projects/${project.id}/dashboard`, label: "Painel" }} />
       <ProjectTabs projectId={project.id} />
       <section className="mb-5 grid gap-4 md:grid-cols-4">
         <div className="rounded-lg border border-line bg-white p-4 shadow-soft"><p className="text-sm text-slate-500">Riscos</p><p className="mt-2 text-2xl font-bold">{project.risks.length}</p></div>

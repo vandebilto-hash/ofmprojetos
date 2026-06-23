@@ -24,6 +24,7 @@ export default async function ProjectDetailPage({ params }: { params: { id: stri
       <PageHeader
         title={project.name}
         description={`${project.client.name} | Gestor: ${project.manager.name}${project.shareLinks[0] ? ` | Link cliente: /p/${project.shareLinks[0].token}` : ""}`}
+        action={{ href: `/projects/${project.id}/dashboard`, label: "Painel" }}
       />
       <ProjectTabs projectId={project.id} />
       <section className="mb-5 grid gap-4 lg:grid-cols-[1fr_360px]">

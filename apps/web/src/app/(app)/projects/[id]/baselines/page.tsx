@@ -15,7 +15,7 @@ export default async function ProjectBaselinesPage({ params }: { params: { id: s
 
   return (
     <>
-      <PageHeader title={`Baselines | ${project.name}`} description="Snapshots imutaveis do cronograma." />
+      <PageHeader title={`Baselines | ${project.name}`} description="Snapshots imutaveis do cronograma." action={{ href: `/projects/${project.id}/dashboard`, label: "Painel" }} />
       <ProjectTabs projectId={project.id} />
       <div className="mb-4 flex justify-end">
         <DialogAction title="Criar baseline" description="Salve um snapshot do cronograma atual e informe o motivo." trigger="create" triggerLabel="Nova baseline">

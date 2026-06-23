@@ -35,7 +35,7 @@ export default async function ProjectResourcesPage({ params }: { params: { id: s
 
   return (
     <>
-      <PageHeader title={`Recursos | ${project.name}`} description="Capacidade, alocacao e sobrealocacao destacada em vermelho." />
+      <PageHeader title={`Recursos | ${project.name}`} description="Capacidade, alocacao e sobrealocacao destacada em vermelho." action={{ href: `/projects/${project.id}/dashboard`, label: "Painel" }} />
       <ProjectTabs projectId={project.id} />
       <ResourceAllocationEditor projectId={project.id} allocations={allocations} users={allUsers} tasks={tasks} />
       <div className="mt-5" />

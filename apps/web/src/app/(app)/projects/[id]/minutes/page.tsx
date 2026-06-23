@@ -19,7 +19,7 @@ export default async function ProjectMinutesPage({ params }: { params: { id: str
 
   return (
     <>
-      <PageHeader title={`Atas | ${project.name}`} description="Cadastro de atas, decisoes, participantes e links publicados no portal do cliente." />
+      <PageHeader title={`Atas | ${project.name}`} description="Cadastro de atas, decisoes, participantes e links publicados no portal do cliente." action={{ href: `/projects/${project.id}/dashboard`, label: "Painel" }} />
       <ProjectTabs projectId={project.id} />
       <div className="mb-4 flex justify-end">
         <DialogAction title="Cadastrar ata" description="Inclua uma ata ou registro de reuniao." trigger="create" triggerLabel="Nova ata">

@@ -14,7 +14,7 @@ export default async function ProjectKanbanPage({ params }: { params: { id: stri
 
   return (
     <>
-      <PageHeader title={`Kanban | ${project.name}`} description="Colunas configuradas para o fluxo padrao do Projete-se." />
+      <PageHeader title={`Kanban | ${project.name}`} description="Colunas configuradas para o fluxo padrao do Projete-se." action={{ href: `/projects/${project.id}/dashboard`, label: "Painel" }} />
       <ProjectTabs projectId={project.id} />
       <KanbanBoard tasks={project.tasks} users={users} />
     </>

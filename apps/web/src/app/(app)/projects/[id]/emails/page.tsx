@@ -19,7 +19,7 @@ export default async function ProjectEmailsPage({ params }: { params: { id: stri
 
   return (
     <>
-      <PageHeader title={`E-mails importantes | ${project.name}`} description="Cadastro de comunicacoes formais que aparecem no portal do cliente." />
+      <PageHeader title={`E-mails importantes | ${project.name}`} description="Cadastro de comunicacoes formais que aparecem no portal do cliente." action={{ href: `/projects/${project.id}/dashboard`, label: "Painel" }} />
       <ProjectTabs projectId={project.id} />
       <div className="mb-4 flex justify-end">
         <DialogAction title="Cadastrar e-mail" description="Inclua uma comunicacao relevante do projeto." trigger="create" triggerLabel="Novo e-mail">

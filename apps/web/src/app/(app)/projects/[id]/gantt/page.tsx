@@ -43,7 +43,7 @@ export default async function ProjectGanttPage({ params, searchParams }: { param
 
   return (
     <>
-      <PageHeader title={`Cronograma | ${project.name}`} description="Gantt, importacao MPP, baselines e gestao operacional das tarefas em um unico fluxo." />
+      <PageHeader title={`Cronograma | ${project.name}`} description="Gantt, importacao MPP, baselines e gestao operacional das tarefas em um unico fluxo." action={{ href: `/projects/${project.id}/dashboard`, label: "Painel" }} />
       <ProjectTabs projectId={project.id} />
       {searchParams.importStatus === "nochanges" ? (
         <div className="mb-4 rounded-lg border border-emerald-200 bg-emerald-50 p-4 text-sm font-semibold text-emerald-800">

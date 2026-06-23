@@ -14,7 +14,7 @@ export default async function ProjectDocumentsPage({ params }: { params: { id: s
 
   return (
     <>
-      <PageHeader title={`Planos | ${project.name}`} description="Planos do projeto cadastrados como links, embeds e downloads do Google Drive." />
+      <PageHeader title={`Planos | ${project.name}`} description="Planos do projeto cadastrados como links, embeds e downloads do Google Drive." action={{ href: `/projects/${project.id}/dashboard`, label: "Painel" }} />
       <ProjectTabs projectId={project.id} />
       <div className="mb-4 flex justify-end">
         <DialogAction title="Adicionar plano" description="Cadastre um documento do Google Drive para o projeto." trigger="create" triggerLabel="Novo documento">

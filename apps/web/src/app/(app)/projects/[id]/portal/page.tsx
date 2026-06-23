@@ -23,7 +23,7 @@ export default async function ProjectPortalSettingsPage({ params }: { params: { 
 
   return (
     <>
-      <PageHeader title={`Portal cliente | ${project.name}`} description="Configure individualmente quais paginas o cliente acessa pelo link publico." />
+      <PageHeader title={`Portal cliente | ${project.name}`} description="Configure individualmente quais paginas o cliente acessa pelo link publico." action={{ href: `/projects/${project.id}/dashboard`, label: "Painel" }} />
       <ProjectTabs projectId={project.id} />
 
       <section className="mb-5 rounded-lg border border-line bg-white p-5 shadow-soft">

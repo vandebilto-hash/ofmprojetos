@@ -62,7 +62,7 @@ export default async function ProjectHistoryPage({ params }: { params: { id: str
 
   return (
     <>
-      <PageHeader title={`Historico | ${project.name}`} description="Auditoria de alteracoes relevantes." />
+      <PageHeader title={`Historico | ${project.name}`} description="Auditoria de alteracoes relevantes." action={{ href: `/projects/${project.id}/dashboard`, label: "Painel" }} />
       <ProjectTabs projectId={project.id} />
       <div className="relative grid gap-3 pl-6 before:absolute before:bottom-0 before:left-2 before:top-0 before:w-px before:bg-line">
         {logs.map((log) => (

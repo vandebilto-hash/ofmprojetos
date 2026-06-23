@@ -33,7 +33,7 @@ export default async function ProjectLogsPage({ params }: { params: { id: string
 
   return (
     <>
-      <PageHeader title={`Logs | ${project.name}`} description="Historico de acoes feitas no projeto, com horario, usuario e entidade afetada." />
+      <PageHeader title={`Logs | ${project.name}`} description="Historico de acoes feitas no projeto, com horario, usuario e entidade afetada." action={{ href: `/projects/${project.id}/dashboard`, label: "Painel" }} />
       <ProjectTabs projectId={project.id} />
       <section className="rounded-lg border border-line bg-white p-5 shadow-soft">
         <div className="overflow-x-auto">

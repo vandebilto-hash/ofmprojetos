@@ -69,7 +69,7 @@ export default async function ProjectReportsPage({ params }: { params: { id: str
 
   return (
     <>
-      <PageHeader title={`Relatorios | ${project.name}`} description="Status report executivo, PDF, Excel, CSV legado e XML compativel." />
+      <PageHeader title={`Relatorios | ${project.name}`} description="Status report executivo, PDF, Excel, CSV legado e XML compativel." action={{ href: `/projects/${project.id}/dashboard`, label: "Painel" }} />
       <ProjectTabs projectId={project.id} />
 
       <section className="rounded-lg border border-line bg-white p-4 shadow-soft">

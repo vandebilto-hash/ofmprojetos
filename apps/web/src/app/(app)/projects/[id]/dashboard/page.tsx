@@ -88,7 +88,11 @@ export default async function ProjectDashboardPage({ params }: { params: { id: s
 
   return (
     <>
-      <PageHeader title={`Painel executivo | ${project.name}`} description="Indicadores consolidados para acompanhamento executivo do projeto." />
+      <PageHeader
+        title={`Painel executivo | ${project.name}`}
+        description="Indicadores consolidados para acompanhamento executivo do projeto."
+        action={{ href: `/projects/${project.id}/dashboard`, label: "Painel" }}
+      />
       <ProjectTabs projectId={project.id} />
 
       <section className="mb-5 overflow-hidden rounded-2xl border border-line bg-white shadow-soft">

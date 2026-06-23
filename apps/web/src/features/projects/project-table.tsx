@@ -101,20 +101,12 @@ export function ProjectTable({
                   }
                 >
                   <td className="px-3 py-3">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <Link
-                        href={`/projects/${project.id}/dashboard`}
-                        className="font-semibold text-brand-600 hover:text-brand-700 dark:text-brand-300 dark:hover:text-brand-200"
-                      >
-                        {project.name}
-                      </Link>
-                      <Link
-                        href={`/projects/${project.id}/dashboard`}
-                        className="rounded-full border border-brand-100 bg-brand-50 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-brand-700 hover:bg-brand-100 dark:border-brand-500/30 dark:bg-brand-500/10 dark:text-brand-200"
-                      >
-                        Painel
-                      </Link>
-                    </div>
+                    <Link
+                      href={`/projects/${project.id}/dashboard`}
+                      className="font-semibold text-brand-600 hover:text-brand-700 dark:text-brand-300 dark:hover:text-brand-200"
+                    >
+                      {project.name}
+                    </Link>
                     {delayed && (
                       <span className="ml-2 rounded-full bg-red-100 px-1.5 py-0.5 text-[10px] font-semibold text-red-700 dark:bg-red-500/20 dark:text-red-300">
                         Atrasado
