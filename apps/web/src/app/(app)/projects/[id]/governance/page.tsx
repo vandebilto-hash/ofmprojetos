@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { DialogAction } from "@/components/ui/dialog-action";
 import { PageHeader } from "@/components/ui/page-header";
 import { ProjectTabs } from "@/features/projects/project-tabs";
+import { getCompanyBadgeClass, getCompanyLabel } from "@/lib/company-colors";
 import { prisma } from "@/lib/prisma/client";
 import { createStakeholderAction, deleteStakeholderAction, updateStakeholderAction } from "@/server/actions/projects";
 
@@ -70,7 +71,12 @@ export default async function ProjectGovernancePage({ params }: { params: { id: 
                 <p className="font-semibold text-ink">{label}</p>
                 <p className="mt-1 text-xs text-slate-500">Influência {levelLabel[influence]} | Interesse {levelLabel[interest]}</p>
                 <div className="mt-3 grid gap-2">
-                  {project.stakeholders.filter((item) => item.influence === influence && item.interest === interest).map((item) => <span key={item.id} className="rounded bg-slate-100 px-2 py-1">{item.name}</span>)}
+                  {project.stakeholders.filter((item) => item.influence === influence && item.interest === interest).map((item) => (
+                    <span key={item.id} className="flex flex-wrap items-center gap-1.5 rounded bg-slate-100 px-2 py-1">
+                      <span>{item.name}</span>
+                      <span className={`rounded-full border px-2 py-0.5 text-[10px] font-bold ${getCompanyBadgeClass(item.company)}`}>{getCompanyLabel(item.company)}</span>
+                    </span>
+                  ))}
                 </div>
               </div>
             ))}
@@ -82,8 +88,11 @@ export default async function ProjectGovernancePage({ params }: { params: { id: 
             {project.stakeholders.map((item) => (
               <div key={item.id} className="flex items-start justify-between gap-3 rounded-md border border-line p-3 text-sm">
                 <div>
-                  <p className="font-semibold">{item.name}</p>
-                  <p className="text-slate-500">{item.company ?? "-"} | {item.jobTitle ?? item.projectRole ?? "-"} | {stakeholderTypeLabel[item.type]}</p>
+                  <p className="flex flex-wrap items-center gap-2 font-semibold">
+                    <span>{item.name}</span>
+                    <span className={`rounded-full border px-2 py-0.5 text-[10px] font-bold ${getCompanyBadgeClass(item.company)}`}>{getCompanyLabel(item.company)}</span>
+                  </p>
+                  <p className="text-slate-500">{item.jobTitle ?? item.projectRole ?? "-"} | {stakeholderTypeLabel[item.type]}</p>
                 </div>
                 <div className="flex gap-2">
                   <DialogAction title="Editar parte interessada" description={item.name} trigger="edit">

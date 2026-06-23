@@ -29,6 +29,7 @@ import {
 import { EdtExpandControls } from "@/features/portal/edt-expand-controls";
 import { ExecutiveBarChart, MiniPieChart, ProgressLineChart, StatusCurveChart } from "@/features/portal/public-portal-charts";
 import { StatusReportFilters, StatusReportTableFilters, StatusReportTablePager } from "@/features/portal/status-report-controls";
+import { getCompanyBadgeClass, getCompanyLabel } from "@/lib/company-colors";
 import { formatDate, formatHours } from "@/lib/format";
 
 type PublicPortalShellProps = {
@@ -519,8 +520,9 @@ function GovernanceModule({ project }: { project: any }) {
                   </p>
                   <div className="mt-3 flex flex-wrap gap-2">
                     {items.map((s: any) => (
-                      <span key={s.id} className="rounded-full bg-white px-3 py-1 text-xs font-bold text-slate-700 shadow-sm ring-1 ring-slate-200">
-                        {s.name}
+                      <span key={s.id} className="inline-flex flex-wrap items-center gap-1.5 rounded-full bg-white px-3 py-1 text-xs font-bold text-slate-700 shadow-sm ring-1 ring-slate-200">
+                        <span>{s.name}</span>
+                        <span className={`rounded-full border px-2 py-0.5 text-[10px] font-bold ${getCompanyBadgeClass(s.company)}`}>{getCompanyLabel(s.company)}</span>
                       </span>
                     ))}
                     {!items.length ? <span className="text-xs text-slate-400">Sem stakeholders</span> : null}
@@ -548,7 +550,12 @@ function GovernanceModule({ project }: { project: any }) {
             <tbody className="divide-y divide-slate-100">
               {project.stakeholders.map((s: any) => (
                 <tr key={s.id} className="hover:bg-slate-50">
-                  <td className="py-3 font-bold">{s.name}</td>
+                  <td className="py-3 font-bold">
+                    <span className="flex flex-wrap items-center gap-2">
+                      <span>{s.name}</span>
+                      <span className={`rounded-full border px-2 py-0.5 text-[10px] font-bold ${getCompanyBadgeClass(s.company)}`}>{getCompanyLabel(s.company)}</span>
+                    </span>
+                  </td>
                   <td className="text-slate-600">{s.company ?? "-"}</td>
                   <td className="text-slate-600">{s.projectRole ?? s.jobTitle ?? "-"}</td>
                   <td className="text-slate-600">{stakeholderTypePt(s.type)}</td>
