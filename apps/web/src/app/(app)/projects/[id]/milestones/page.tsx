@@ -1,9 +1,11 @@
 import { notFound } from "next/navigation";
 import { DialogAction } from "@/components/ui/dialog-action";
+import { PeopleMultiSelect } from "@/components/ui/people-multi-select";
 import { PageHeader } from "@/components/ui/page-header";
 import { ProjectTabs } from "@/features/projects/project-tabs";
 import { formatDate } from "@/lib/format";
 import { prisma } from "@/lib/prisma/client";
+import { getProjectPeople } from "@/lib/project-people";
 import { createMilestoneAction, deleteMilestoneAction, updateMilestoneAction } from "@/server/actions/projects";
 
 function inputDate(value: Date | null) {
@@ -20,9 +22,15 @@ const milestoneStatusLabel: Record<string, string> = {
 export default async function ProjectMilestonesPage({ params }: { params: { id: string } }) {
   const project = await prisma.project.findUnique({
     where: { id: params.id },
-    include: { milestones: { orderBy: { plannedDate: "asc" } } }
+    include: {
+      milestones: { orderBy: { plannedDate: "asc" } },
+      manager: true,
+      stakeholders: { orderBy: { name: "asc" } },
+      allocations: { include: { user: true } }
+    }
   });
   if (!project) notFound();
+  const people = getProjectPeople(project);
 
   return (
     <>
@@ -43,7 +51,7 @@ export default async function ProjectMilestonesPage({ params }: { params: { id: 
               <label className="grid gap-1 text-sm font-medium">Status<select name="status" defaultValue="PLANNED" className="h-10 rounded-md border border-line px-3"><option value="PLANNED">Planejado</option><option value="IN_PROGRESS">Em andamento</option><option value="COMPLETED">Concluído</option><option value="DELAYED">Atrasado</option></select></label>
             </div>
             <div className="grid grid-cols-2 gap-3">
-              <label className="grid gap-1 text-sm font-medium">Responsável<input name="owner" className="h-10 rounded-md border border-line px-3" /></label>
+              <PeopleMultiSelect name="owner" label="Responsável" people={people} />
               <label className="grid gap-1 text-sm font-medium">Evidência/link<input name="evidenceUrl" type="url" className="h-10 rounded-md border border-line px-3" /></label>
             </div>
             <label className="grid gap-1 text-sm font-medium">Observações<textarea name="notes" rows={2} className="rounded-md border border-line px-3 py-2" /></label>
@@ -70,7 +78,7 @@ export default async function ProjectMilestonesPage({ params }: { params: { id: 
                     <div className="grid grid-cols-2 gap-3"><label className="grid gap-1 text-sm font-medium">Nome<input name="name" required defaultValue={milestone.name} className="h-10 rounded-md border border-line px-3" /></label><label className="grid gap-1 text-sm font-medium">Tipo<select name="type" defaultValue={milestone.type ?? "Entrega"} className="h-10 rounded-md border border-line px-3"><option value="Entrega">Entrega</option><option value="Aprovação">Aprovação</option><option value="Reunião">Reunião</option><option value="Decisão">Decisão</option><option value="Marco contratual">Marco contratual</option><option value="Outro">Outro</option></select></label></div>
                     <label className="grid gap-1 text-sm font-medium">Descrição<textarea name="description" defaultValue={milestone.description ?? ""} rows={3} className="rounded-md border border-line px-3 py-2" /></label>
                     <div className="grid grid-cols-3 gap-3"><label className="grid gap-1 text-sm font-medium">Data planejada<input name="plannedDate" type="date" required defaultValue={inputDate(milestone.plannedDate)} className="h-10 rounded-md border border-line px-3" /></label><label className="grid gap-1 text-sm font-medium">Data real<input name="actualDate" type="date" defaultValue={inputDate(milestone.actualDate)} className="h-10 rounded-md border border-line px-3" /></label><label className="grid gap-1 text-sm font-medium">Status<select name="status" defaultValue={milestone.status} className="h-10 rounded-md border border-line px-3"><option value="PLANNED">Planejado</option><option value="IN_PROGRESS">Em andamento</option><option value="COMPLETED">Concluído</option><option value="DELAYED">Atrasado</option></select></label></div>
-                    <div className="grid grid-cols-2 gap-3"><label className="grid gap-1 text-sm font-medium">Responsável<input name="owner" defaultValue={milestone.owner ?? ""} className="h-10 rounded-md border border-line px-3" /></label><label className="grid gap-1 text-sm font-medium">Evidência/link<input name="evidenceUrl" type="url" defaultValue={milestone.evidenceUrl ?? ""} className="h-10 rounded-md border border-line px-3" /></label></div>
+                    <div className="grid grid-cols-2 gap-3"><PeopleMultiSelect name="owner" label="Responsável" people={people} defaultValue={milestone.owner ?? ""} /><label className="grid gap-1 text-sm font-medium">Evidência/link<input name="evidenceUrl" type="url" defaultValue={milestone.evidenceUrl ?? ""} className="h-10 rounded-md border border-line px-3" /></label></div>
                     <label className="grid gap-1 text-sm font-medium">Observações<textarea name="notes" defaultValue={milestone.notes ?? ""} rows={2} className="rounded-md border border-line px-3 py-2" /></label>
                     <button className="w-fit rounded-md bg-brand-600 px-4 py-2 text-sm font-semibold text-white">Salvar</button>
                   </form>

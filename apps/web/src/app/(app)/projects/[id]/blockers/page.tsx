@@ -1,10 +1,12 @@
 import { notFound } from "next/navigation";
 import { DialogAction } from "@/components/ui/dialog-action";
+import { PeopleMultiSelect } from "@/components/ui/people-multi-select";
 import { PageHeader } from "@/components/ui/page-header";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { ProjectTabs } from "@/features/projects/project-tabs";
 import { formatDate, formatMoney } from "@/lib/format";
 import { prisma } from "@/lib/prisma/client";
+import { getProjectPeople } from "@/lib/project-people";
 import { createRiskAction, deleteBlockerAction, deleteRiskAction, updateRiskAction, upsertBlockerAction } from "@/server/actions/projects";
 
 function inputDate(value: Date | null) {
@@ -17,10 +19,14 @@ export default async function ProjectBlockersPage({ params }: { params: { id: st
     include: {
       blockers: { include: { task: true }, orderBy: { createdAt: "desc" } },
       risks: { orderBy: [{ classification: "desc" }, { registeredAt: "desc" }] },
-      tasks: { orderBy: { name: "asc" } }
+      tasks: { orderBy: { name: "asc" } },
+      manager: true,
+      stakeholders: { orderBy: { name: "asc" } },
+      allocations: { include: { user: true } }
     }
   });
   if (!project) notFound();
+  const people = getProjectPeople(project);
   const users = await prisma.user.findMany({ where: { status: "ACTIVE" }, orderBy: { name: "asc" } });
 
   return (
@@ -56,7 +62,7 @@ export default async function ProjectBlockersPage({ params }: { params: { id: st
             <label className="grid gap-1 text-sm font-medium">Plano de contingencia<textarea name="contingencyPlan" rows={2} className="rounded-md border border-line px-3 py-2" /></label>
             <div className="grid grid-cols-3 gap-3">
               <label className="grid gap-1 text-sm font-medium">Gatilhos<input name="triggers" className="h-10 rounded-md border border-line px-3" /></label>
-              <label className="grid gap-1 text-sm font-medium">Responsavel<input name="owner" className="h-10 rounded-md border border-line px-3" /></label>
+              <PeopleMultiSelect name="owner" label="Responsavel" people={people} />
               <label className="grid gap-1 text-sm font-medium">Ultima revisao<input name="lastReviewAt" type="date" className="h-10 rounded-md border border-line px-3" /></label>
             </div>
             <label className="grid gap-1 text-sm font-medium">Observacoes<textarea name="notes" rows={2} className="rounded-md border border-line px-3 py-2" /></label>
@@ -97,10 +103,7 @@ export default async function ProjectBlockersPage({ params }: { params: { id: st
                 <input name="responsibleCompany" className="h-10 rounded-md border border-line px-3" />
               </label>
             </div>
-            <label className="grid gap-1 text-sm font-medium">
-              Pessoa responsavel
-              <input name="responsiblePerson" className="h-10 rounded-md border border-line px-3" />
-            </label>
+            <PeopleMultiSelect name="responsiblePerson" label="Pessoa responsavel" people={people} />
             <div className="grid grid-cols-2 gap-3">
               <label className="grid gap-1 text-sm font-medium">
                 Status
@@ -164,7 +167,7 @@ export default async function ProjectBlockersPage({ params }: { params: { id: st
                       <label className="grid gap-1 text-sm font-medium">Impacto<textarea name="impact" defaultValue={risk.impact ?? ""} rows={2} className="rounded-md border border-line px-3 py-2" /></label>
                       <label className="grid gap-1 text-sm font-medium">Acoes preventivas<textarea name="preventiveActions" defaultValue={risk.preventiveActions ?? ""} rows={2} className="rounded-md border border-line px-3 py-2" /></label>
                       <label className="grid gap-1 text-sm font-medium">Plano de contingencia<textarea name="contingencyPlan" defaultValue={risk.contingencyPlan ?? ""} rows={2} className="rounded-md border border-line px-3 py-2" /></label>
-                      <div className="grid grid-cols-3 gap-3"><label className="grid gap-1 text-sm font-medium">Gatilhos<input name="triggers" defaultValue={risk.triggers ?? ""} className="h-10 rounded-md border border-line px-3" /></label><label className="grid gap-1 text-sm font-medium">Responsavel<input name="owner" defaultValue={risk.owner ?? ""} className="h-10 rounded-md border border-line px-3" /></label><label className="grid gap-1 text-sm font-medium">Ultima revisao<input name="lastReviewAt" type="date" defaultValue={inputDate(risk.lastReviewAt)} className="h-10 rounded-md border border-line px-3" /></label></div>
+                      <div className="grid grid-cols-3 gap-3"><label className="grid gap-1 text-sm font-medium">Gatilhos<input name="triggers" defaultValue={risk.triggers ?? ""} className="h-10 rounded-md border border-line px-3" /></label><PeopleMultiSelect name="owner" label="Responsavel" people={people} defaultValue={risk.owner ?? ""} /><label className="grid gap-1 text-sm font-medium">Ultima revisao<input name="lastReviewAt" type="date" defaultValue={inputDate(risk.lastReviewAt)} className="h-10 rounded-md border border-line px-3" /></label></div>
                       <label className="grid gap-1 text-sm font-medium">Observacoes<textarea name="notes" defaultValue={risk.notes ?? ""} rows={2} className="rounded-md border border-line px-3 py-2" /></label>
                       <button className="w-fit rounded-md bg-brand-600 px-4 py-2 text-sm font-semibold text-white">Salvar</button>
                     </form>
@@ -230,10 +233,7 @@ export default async function ProjectBlockersPage({ params }: { params: { id: st
                         <input name="responsibleCompany" defaultValue={blocker.responsibleCompany ?? ""} className="h-10 rounded-md border border-line px-3" />
                       </label>
                     </div>
-                    <label className="grid gap-1 text-sm font-medium">
-                      Pessoa responsavel
-                      <input name="responsiblePerson" defaultValue={blocker.responsiblePerson ?? ""} className="h-10 rounded-md border border-line px-3" />
-                    </label>
+                    <PeopleMultiSelect name="responsiblePerson" label="Pessoa responsavel" people={people} defaultValue={blocker.responsiblePerson ?? ""} />
                     <div className="grid grid-cols-2 gap-3">
                       <label className="grid gap-1 text-sm font-medium">
                         Status

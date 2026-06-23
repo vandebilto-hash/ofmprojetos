@@ -1,9 +1,11 @@
 import { notFound } from "next/navigation";
 import { DialogAction } from "@/components/ui/dialog-action";
+import { PeopleMultiSelect } from "@/components/ui/people-multi-select";
 import { PageHeader } from "@/components/ui/page-header";
 import { ProjectTabs } from "@/features/projects/project-tabs";
 import { formatDate } from "@/lib/format";
 import { prisma } from "@/lib/prisma/client";
+import { getProjectPeople } from "@/lib/project-people";
 import { deleteImportantEmailAction, upsertImportantEmailAction } from "@/server/actions/projects";
 
 function inputDate(value: Date | null) {
@@ -13,9 +15,15 @@ function inputDate(value: Date | null) {
 export default async function ProjectEmailsPage({ params }: { params: { id: string } }) {
   const project = await prisma.project.findUnique({
     where: { id: params.id },
-    include: { importantEmails: { orderBy: { date: "desc" } } }
+    include: {
+      importantEmails: { orderBy: { date: "desc" } },
+      manager: true,
+      stakeholders: { orderBy: { name: "asc" } },
+      allocations: { include: { user: true } }
+    }
   });
   if (!project) notFound();
+  const people = getProjectPeople(project);
 
   return (
     <>
@@ -23,7 +31,7 @@ export default async function ProjectEmailsPage({ params }: { params: { id: stri
       <ProjectTabs projectId={project.id} />
       <div className="mb-4 flex justify-end">
         <DialogAction title="Cadastrar e-mail" description="Inclua uma comunicacao relevante do projeto." trigger="create" triggerLabel="Novo e-mail">
-          <EmailForm projectId={project.id} />
+          <EmailForm projectId={project.id} people={people} />
         </DialogAction>
       </div>
       <section className="grid gap-3">
@@ -38,7 +46,7 @@ export default async function ProjectEmailsPage({ params }: { params: { id: stri
               </div>
               <div className="flex gap-2">
                 <DialogAction title="Editar e-mail" description={email.subject} trigger="edit">
-                  <EmailForm projectId={project.id} email={email} />
+                  <EmailForm projectId={project.id} email={email} people={people} />
                 </DialogAction>
                 <DialogAction title="Excluir e-mail" description={`Deseja realmente excluir "${email.subject}"?`} trigger="delete">
                   <form action={deleteImportantEmailAction} className="flex justify-end">
@@ -57,14 +65,14 @@ export default async function ProjectEmailsPage({ params }: { params: { id: stri
   );
 }
 
-function EmailForm({ projectId, email }: { projectId: string; email?: any }) {
+function EmailForm({ projectId, email, people }: { projectId: string; email?: any; people: string[] }) {
   return (
     <form action={upsertImportantEmailAction} className="grid gap-3">
       {email ? <input type="hidden" name="emailId" value={email.id} /> : null}
       <input type="hidden" name="projectId" value={projectId} />
       <label className="grid gap-1 text-sm font-medium">Assunto<input name="subject" required defaultValue={email?.subject ?? ""} className="h-10 rounded-md border border-line px-3" /></label>
       <label className="grid gap-1 text-sm font-medium">Resumo<textarea name="summary" defaultValue={email?.summary ?? ""} rows={3} className="rounded-md border border-line px-3 py-2" /></label>
-      <div className="grid grid-cols-2 gap-3"><label className="grid gap-1 text-sm font-medium">Origem<input name="origin" defaultValue={email?.origin ?? ""} className="h-10 rounded-md border border-line px-3" /></label><label className="grid gap-1 text-sm font-medium">Envolvidos<input name="involved" defaultValue={email?.involved ?? ""} className="h-10 rounded-md border border-line px-3" /></label></div>
+      <div className="grid grid-cols-2 gap-3"><label className="grid gap-1 text-sm font-medium">Origem<input name="origin" defaultValue={email?.origin ?? ""} className="h-10 rounded-md border border-line px-3" /></label><PeopleMultiSelect name="involved" label="Envolvidos" people={people} defaultValue={email?.involved ?? ""} /></div>
       <div className="grid grid-cols-3 gap-3"><label className="grid gap-1 text-sm font-medium">Categoria<select name="category" defaultValue={email?.category ?? "E-mail Formal"} className="h-10 rounded-md border border-line px-3"><option value="E-mail Formal">E-mail formal</option><option value="Solicitação">Solicitação</option><option value="Decisão">Decisão</option><option value="Pendência">Pendência</option><option value="Aprovação">Aprovação</option><option value="Alinhamento">Alinhamento</option></select></label><label className="grid gap-1 text-sm font-medium">Status<select name="status" defaultValue={email?.status ?? "Solucionado"} className="h-10 rounded-md border border-line px-3"><option value="Aberto">Aberto</option><option value="Em andamento">Em andamento</option><option value="Aguardando retorno">Aguardando retorno</option><option value="Solucionado">Solucionado</option><option value="Cancelado">Cancelado</option></select></label><label className="grid gap-1 text-sm font-medium">Data<input name="date" type="date" required defaultValue={inputDate(email?.date ?? null)} className="h-10 rounded-md border border-line px-3" /></label></div>
       <label className="grid gap-1 text-sm font-medium">Anexo/link<input name="attachmentUrl" type="url" defaultValue={email?.attachmentUrl ?? ""} className="h-10 rounded-md border border-line px-3" /></label>
       <button className="w-fit rounded-md bg-brand-600 px-4 py-2 text-sm font-semibold text-white">Salvar</button>

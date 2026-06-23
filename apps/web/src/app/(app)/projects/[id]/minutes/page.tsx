@@ -1,9 +1,11 @@
 import { notFound } from "next/navigation";
 import { DialogAction } from "@/components/ui/dialog-action";
+import { PeopleMultiSelect } from "@/components/ui/people-multi-select";
 import { PageHeader } from "@/components/ui/page-header";
 import { ProjectTabs } from "@/features/projects/project-tabs";
 import { formatDate } from "@/lib/format";
 import { prisma } from "@/lib/prisma/client";
+import { getProjectPeople } from "@/lib/project-people";
 import { deleteMeetingMinuteAction, upsertMeetingMinuteAction } from "@/server/actions/projects";
 
 function inputDate(value: Date | null) {
@@ -13,9 +15,15 @@ function inputDate(value: Date | null) {
 export default async function ProjectMinutesPage({ params }: { params: { id: string } }) {
   const project = await prisma.project.findUnique({
     where: { id: params.id },
-    include: { meetingMinutes: { orderBy: { meetingDate: "desc" } } }
+    include: {
+      meetingMinutes: { orderBy: { meetingDate: "desc" } },
+      manager: true,
+      stakeholders: { orderBy: { name: "asc" } },
+      allocations: { include: { user: true } }
+    }
   });
   if (!project) notFound();
+  const people = getProjectPeople(project);
 
   return (
     <>
@@ -23,7 +31,7 @@ export default async function ProjectMinutesPage({ params }: { params: { id: str
       <ProjectTabs projectId={project.id} />
       <div className="mb-4 flex justify-end">
         <DialogAction title="Cadastrar ata" description="Inclua uma ata ou registro de reuniao." trigger="create" triggerLabel="Nova ata">
-          <MinuteForm projectId={project.id} />
+          <MinuteForm projectId={project.id} people={people} />
         </DialogAction>
       </div>
       <section className="grid gap-3">
@@ -38,7 +46,7 @@ export default async function ProjectMinutesPage({ params }: { params: { id: str
               </div>
               <div className="flex gap-2">
                 <DialogAction title="Editar ata" description={minute.title} trigger="edit">
-                  <MinuteForm projectId={project.id} minute={minute} />
+                  <MinuteForm projectId={project.id} minute={minute} people={people} />
                 </DialogAction>
                 <DialogAction title="Excluir ata" description={`Deseja realmente excluir "${minute.title}"?`} trigger="delete">
                   <form action={deleteMeetingMinuteAction} className="flex justify-end">
@@ -57,7 +65,7 @@ export default async function ProjectMinutesPage({ params }: { params: { id: str
   );
 }
 
-function MinuteForm({ projectId, minute }: { projectId: string; minute?: any }) {
+function MinuteForm({ projectId, minute, people }: { projectId: string; minute?: any; people: string[] }) {
   return (
     <form action={upsertMeetingMinuteAction} className="grid gap-3">
       {minute ? <input type="hidden" name="minuteId" value={minute.id} /> : null}
@@ -65,7 +73,7 @@ function MinuteForm({ projectId, minute }: { projectId: string; minute?: any }) 
       <label className="grid gap-1 text-sm font-medium">Titulo<input name="title" required defaultValue={minute?.title ?? ""} className="h-10 rounded-md border border-line px-3" /></label>
       <label className="grid gap-1 text-sm font-medium">Resumo<textarea name="summary" defaultValue={minute?.summary ?? ""} rows={3} className="rounded-md border border-line px-3 py-2" /></label>
       <div className="grid grid-cols-3 gap-3"><label className="grid gap-1 text-sm font-medium">Data<input name="meetingDate" type="date" required defaultValue={inputDate(minute?.meetingDate ?? null)} className="h-10 rounded-md border border-line px-3" /></label><label className="grid gap-1 text-sm font-medium">Tipo<select name="meetingType" defaultValue={minute?.meetingType ?? "Reunião de acompanhamento"} className="h-10 rounded-md border border-line px-3"><option value="Reunião de acompanhamento">Reunião de acompanhamento</option><option value="Reunião executiva">Reunião executiva</option><option value="Reunião técnica">Reunião técnica</option><option value="Comitê do projeto">Comitê do projeto</option><option value="Workshop">Workshop</option><option value="Outro">Outro</option></select></label><label className="grid gap-1 text-sm font-medium">Status<select name="status" defaultValue={minute?.status ?? "Publicado"} className="h-10 rounded-md border border-line px-3"><option value="Rascunho">Rascunho</option><option value="Em revisão">Em revisão</option><option value="Publicado">Publicado</option><option value="Cancelado">Cancelado</option></select></label></div>
-      <label className="grid gap-1 text-sm font-medium">Participantes<input name="participants" defaultValue={minute?.participants ?? ""} className="h-10 rounded-md border border-line px-3" /></label>
+      <PeopleMultiSelect name="participants" label="Participantes" people={people} defaultValue={minute?.participants ?? ""} />
       <label className="grid gap-1 text-sm font-medium">Arquivo/link<input name="fileUrl" type="url" defaultValue={minute?.fileUrl ?? ""} className="h-10 rounded-md border border-line px-3" /></label>
       <button className="w-fit rounded-md bg-brand-600 px-4 py-2 text-sm font-semibold text-white">Salvar</button>
     </form>
