@@ -24,12 +24,22 @@ export function DialogAction({ title, description, trigger, triggerLabel, trigge
     const dialog = dialogRef.current;
     if (!dialog) return;
 
-    function handleSubmit() {
-      setTimeout(() => dialog?.close(), 150);
+    function resetForms() {
+      dialog?.querySelectorAll("form").forEach((form) => form.reset());
     }
 
+    function handleSubmit(event: SubmitEvent) {
+      const form = event.target as HTMLFormElement | null;
+      if (form && !form.checkValidity()) return;
+      setTimeout(() => dialog?.close(), 700);
+    }
+
+    dialog.addEventListener("close", resetForms);
     dialog.addEventListener("submit", handleSubmit);
-    return () => dialog.removeEventListener("submit", handleSubmit);
+    return () => {
+      dialog.removeEventListener("close", resetForms);
+      dialog.removeEventListener("submit", handleSubmit);
+    };
   }, []);
 
   return (

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { FormFeedbackProvider } from "@/components/ui/form-feedback-provider";
 import { ToastProvider } from "@/components/ui/toast-provider";
 import "@/app/globals.css";
 
@@ -29,6 +30,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
       </head>
       <body>
+        <FormFeedbackProvider />
         <ToastProvider />
         {children}
       </body>
