@@ -9,7 +9,7 @@ const tabs = [
   ["milestones", "Marcos"],
   ["gantt", "Planejamento"],
   ["blockers", "Riscos e pendencias"],
-  ["dashboard", "Dashboard"],
+  ["dashboard", "Painel"],
   ["portal", "Portal cliente"],
   ["logs", "Logs"]
 ];

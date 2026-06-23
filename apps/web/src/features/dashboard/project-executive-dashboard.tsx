@@ -1,6 +1,6 @@
 "use client";
 
-import { Bar, BarChart, CartesianGrid, Cell, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { Bar, BarChart, CartesianGrid, Cell, Legend, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 
 type ProjectExecutiveDashboardProps = {
   statusData: Array<{ name: string; value: number }>;
@@ -19,30 +19,32 @@ export function ProjectExecutiveDashboard({ statusData, riskData, hoursData }: P
             <Pie data={statusData} dataKey="value" nameKey="name" outerRadius={90} label>
               {statusData.map((_, index) => <Cell key={index} fill={colors[index % colors.length]} />)}
             </Pie>
-            <Tooltip />
+            <Tooltip formatter={(value) => [value, "Quantidade"]} />
+            <Legend />
           </PieChart>
         </ResponsiveContainer>
       </ChartCard>
       <ChartCard title="Riscos por criticidade" className="lg:col-span-1">
         <ResponsiveContainer width="100%" height={260}>
           <BarChart data={riskData}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="name" />
+            <CartesianGrid strokeDasharray="3 3" vertical={false} />
+            <XAxis dataKey="name" tick={{ fontSize: 12 }} />
             <YAxis allowDecimals={false} />
-            <Tooltip />
-            <Bar dataKey="value" fill="#dc2626" radius={[8, 8, 0, 0]} />
+            <Tooltip formatter={(value) => [value, "Quantidade"]} />
+            <Bar dataKey="value" name="Quantidade" fill="#dc2626" radius={[8, 8, 0, 0]} />
           </BarChart>
         </ResponsiveContainer>
       </ChartCard>
       <ChartCard title="Horas planejadas x executadas" className="lg:col-span-1">
         <ResponsiveContainer width="100%" height={260}>
           <BarChart data={hoursData}>
-            <CartesianGrid strokeDasharray="3 3" />
+            <CartesianGrid strokeDasharray="3 3" vertical={false} />
             <XAxis dataKey="name" />
             <YAxis />
-            <Tooltip />
-            <Bar dataKey="planejadas" fill="#2563eb" radius={[8, 8, 0, 0]} />
-            <Bar dataKey="executadas" fill="#16a34a" radius={[8, 8, 0, 0]} />
+            <Tooltip formatter={(value, name) => [value, name === "planejadas" ? "Planejadas" : "Executadas"]} />
+            <Legend formatter={(value) => (value === "planejadas" ? "Planejadas" : "Executadas")} />
+            <Bar dataKey="planejadas" name="Planejadas" fill="#2563eb" radius={[8, 8, 0, 0]} />
+            <Bar dataKey="executadas" name="Executadas" fill="#16a34a" radius={[8, 8, 0, 0]} />
           </BarChart>
         </ResponsiveContainer>
       </ChartCard>
@@ -52,8 +54,8 @@ export function ProjectExecutiveDashboard({ statusData, riskData, hoursData }: P
 
 function ChartCard({ title, className, children }: { title: string; className?: string; children: React.ReactNode }) {
   return (
-    <div className={`rounded-xl border border-line bg-white p-5 shadow-soft ${className ?? ""}`}>
-      <h2 className="mb-4 text-lg font-bold text-ink">{title}</h2>
+    <div className={`rounded-2xl border border-line bg-white p-5 shadow-soft ${className ?? ""}`}>
+      <h2 className="mb-4 text-lg font-black text-ink">{title}</h2>
       {children}
     </div>
   );

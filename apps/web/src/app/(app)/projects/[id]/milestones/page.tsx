@@ -10,6 +10,13 @@ function inputDate(value: Date | null) {
   return value ? value.toISOString().slice(0, 10) : "";
 }
 
+const milestoneStatusLabel: Record<string, string> = {
+  PLANNED: "Planejado",
+  IN_PROGRESS: "Em andamento",
+  COMPLETED: "Concluído",
+  DELAYED: "Atrasado"
+};
+
 export default async function ProjectMilestonesPage({ params }: { params: { id: string } }) {
   const project = await prisma.project.findUnique({
     where: { id: params.id },
@@ -19,27 +26,27 @@ export default async function ProjectMilestonesPage({ params }: { params: { id: 
 
   return (
     <>
-      <PageHeader title={`Marcos do projeto | ${project.name}`} description="Timeline executiva dos eventos, entregas e aprovacoes." />
+      <PageHeader title={`Marcos do projeto | ${project.name}`} description="Linha do tempo executiva dos eventos, entregas e aprovações." />
       <ProjectTabs projectId={project.id} />
       <div className="mb-4 flex justify-end">
-        <DialogAction title="Cadastrar marco" description="Adicione um evento, entrega, aprovacao ou decisao importante." trigger="create" triggerLabel="Novo marco">
+        <DialogAction title="Cadastrar marco" description="Adicione um evento, entrega, aprovação ou decisão importante." trigger="create" triggerLabel="Novo marco">
           <form action={createMilestoneAction} className="grid gap-3">
             <input type="hidden" name="projectId" value={project.id} />
             <div className="grid grid-cols-2 gap-3">
               <label className="grid gap-1 text-sm font-medium">Nome<input name="name" required className="h-10 rounded-md border border-line px-3" /></label>
-              <label className="grid gap-1 text-sm font-medium">Tipo<input name="type" placeholder="Entrega, aprovacao, reuniao..." className="h-10 rounded-md border border-line px-3" /></label>
+              <label className="grid gap-1 text-sm font-medium">Tipo<input name="type" placeholder="Entrega, aprovação, reunião..." className="h-10 rounded-md border border-line px-3" /></label>
             </div>
-            <label className="grid gap-1 text-sm font-medium">Descricao<textarea name="description" rows={3} className="rounded-md border border-line px-3 py-2" /></label>
+            <label className="grid gap-1 text-sm font-medium">Descrição<textarea name="description" rows={3} className="rounded-md border border-line px-3 py-2" /></label>
             <div className="grid grid-cols-3 gap-3">
               <label className="grid gap-1 text-sm font-medium">Data planejada<input name="plannedDate" type="date" required className="h-10 rounded-md border border-line px-3" /></label>
               <label className="grid gap-1 text-sm font-medium">Data real<input name="actualDate" type="date" className="h-10 rounded-md border border-line px-3" /></label>
-              <label className="grid gap-1 text-sm font-medium">Status<select name="status" defaultValue="PLANNED" className="h-10 rounded-md border border-line px-3"><option value="PLANNED">Planejado</option><option value="IN_PROGRESS">Em andamento</option><option value="COMPLETED">Concluido</option><option value="DELAYED">Atrasado</option></select></label>
+              <label className="grid gap-1 text-sm font-medium">Status<select name="status" defaultValue="PLANNED" className="h-10 rounded-md border border-line px-3"><option value="PLANNED">Planejado</option><option value="IN_PROGRESS">Em andamento</option><option value="COMPLETED">Concluído</option><option value="DELAYED">Atrasado</option></select></label>
             </div>
             <div className="grid grid-cols-2 gap-3">
-              <label className="grid gap-1 text-sm font-medium">Responsavel<input name="owner" className="h-10 rounded-md border border-line px-3" /></label>
-              <label className="grid gap-1 text-sm font-medium">Evidencia/link<input name="evidenceUrl" type="url" className="h-10 rounded-md border border-line px-3" /></label>
+              <label className="grid gap-1 text-sm font-medium">Responsável<input name="owner" className="h-10 rounded-md border border-line px-3" /></label>
+              <label className="grid gap-1 text-sm font-medium">Evidência/link<input name="evidenceUrl" type="url" className="h-10 rounded-md border border-line px-3" /></label>
             </div>
-            <label className="grid gap-1 text-sm font-medium">Observacoes<textarea name="notes" rows={2} className="rounded-md border border-line px-3 py-2" /></label>
+            <label className="grid gap-1 text-sm font-medium">Observações<textarea name="notes" rows={2} className="rounded-md border border-line px-3 py-2" /></label>
             <button className="w-fit rounded-md bg-brand-600 px-4 py-2 text-sm font-semibold text-white">Cadastrar marco</button>
           </form>
         </DialogAction>
@@ -55,16 +62,16 @@ export default async function ProjectMilestonesPage({ params }: { params: { id: 
                 <p className="mt-1 text-sm text-slate-600">{milestone.description ?? milestone.type ?? "Marco do projeto"}</p>
               </div>
               <div className="flex items-start justify-end gap-2">
-                <span className="h-fit rounded-full bg-slate-100 px-3 py-1 text-center text-xs font-semibold text-slate-700">{milestone.status}</span>
+                <span className="h-fit rounded-full bg-slate-100 px-3 py-1 text-center text-xs font-semibold text-slate-700">{milestoneStatusLabel[milestone.status]}</span>
                 <DialogAction title="Editar marco" description={milestone.name} trigger="edit">
                   <form action={updateMilestoneAction} className="grid gap-3">
                     <input type="hidden" name="milestoneId" value={milestone.id} />
                     <input type="hidden" name="projectId" value={project.id} />
                     <div className="grid grid-cols-2 gap-3"><label className="grid gap-1 text-sm font-medium">Nome<input name="name" required defaultValue={milestone.name} className="h-10 rounded-md border border-line px-3" /></label><label className="grid gap-1 text-sm font-medium">Tipo<input name="type" defaultValue={milestone.type ?? ""} className="h-10 rounded-md border border-line px-3" /></label></div>
-                    <label className="grid gap-1 text-sm font-medium">Descricao<textarea name="description" defaultValue={milestone.description ?? ""} rows={3} className="rounded-md border border-line px-3 py-2" /></label>
-                    <div className="grid grid-cols-3 gap-3"><label className="grid gap-1 text-sm font-medium">Data planejada<input name="plannedDate" type="date" required defaultValue={inputDate(milestone.plannedDate)} className="h-10 rounded-md border border-line px-3" /></label><label className="grid gap-1 text-sm font-medium">Data real<input name="actualDate" type="date" defaultValue={inputDate(milestone.actualDate)} className="h-10 rounded-md border border-line px-3" /></label><label className="grid gap-1 text-sm font-medium">Status<select name="status" defaultValue={milestone.status} className="h-10 rounded-md border border-line px-3"><option value="PLANNED">Planejado</option><option value="IN_PROGRESS">Em andamento</option><option value="COMPLETED">Concluido</option><option value="DELAYED">Atrasado</option></select></label></div>
-                    <div className="grid grid-cols-2 gap-3"><label className="grid gap-1 text-sm font-medium">Responsavel<input name="owner" defaultValue={milestone.owner ?? ""} className="h-10 rounded-md border border-line px-3" /></label><label className="grid gap-1 text-sm font-medium">Evidencia/link<input name="evidenceUrl" type="url" defaultValue={milestone.evidenceUrl ?? ""} className="h-10 rounded-md border border-line px-3" /></label></div>
-                    <label className="grid gap-1 text-sm font-medium">Observacoes<textarea name="notes" defaultValue={milestone.notes ?? ""} rows={2} className="rounded-md border border-line px-3 py-2" /></label>
+                    <label className="grid gap-1 text-sm font-medium">Descrição<textarea name="description" defaultValue={milestone.description ?? ""} rows={3} className="rounded-md border border-line px-3 py-2" /></label>
+                    <div className="grid grid-cols-3 gap-3"><label className="grid gap-1 text-sm font-medium">Data planejada<input name="plannedDate" type="date" required defaultValue={inputDate(milestone.plannedDate)} className="h-10 rounded-md border border-line px-3" /></label><label className="grid gap-1 text-sm font-medium">Data real<input name="actualDate" type="date" defaultValue={inputDate(milestone.actualDate)} className="h-10 rounded-md border border-line px-3" /></label><label className="grid gap-1 text-sm font-medium">Status<select name="status" defaultValue={milestone.status} className="h-10 rounded-md border border-line px-3"><option value="PLANNED">Planejado</option><option value="IN_PROGRESS">Em andamento</option><option value="COMPLETED">Concluído</option><option value="DELAYED">Atrasado</option></select></label></div>
+                    <div className="grid grid-cols-2 gap-3"><label className="grid gap-1 text-sm font-medium">Responsável<input name="owner" defaultValue={milestone.owner ?? ""} className="h-10 rounded-md border border-line px-3" /></label><label className="grid gap-1 text-sm font-medium">Evidência/link<input name="evidenceUrl" type="url" defaultValue={milestone.evidenceUrl ?? ""} className="h-10 rounded-md border border-line px-3" /></label></div>
+                    <label className="grid gap-1 text-sm font-medium">Observações<textarea name="notes" defaultValue={milestone.notes ?? ""} rows={2} className="rounded-md border border-line px-3 py-2" /></label>
                     <button className="w-fit rounded-md bg-brand-600 px-4 py-2 text-sm font-semibold text-white">Salvar</button>
                   </form>
                 </DialogAction>

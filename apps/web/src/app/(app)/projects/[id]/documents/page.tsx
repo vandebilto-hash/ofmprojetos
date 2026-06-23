@@ -38,8 +38,7 @@ export default async function ProjectDocumentsPage({ params }: { params: { id: s
         </DialogAction>
       </div>
       <div className="rounded-lg border border-line bg-white p-5 shadow-soft">
-        <p className="text-sm text-slate-600">No MVP os documentos ficam no Google Drive. O portal armazena os metadados, links de visualizacao e links de download.</p>
-        <div className="mt-4 grid gap-2">
+        <div className="grid gap-2">
           {project.documents.map((document) => (
             <div key={document.id} className="rounded-md border border-line p-3 text-sm">
               <div className="flex items-center justify-between gap-3">
