@@ -7,7 +7,7 @@ import { ProjectTabs } from "@/features/projects/project-tabs";
 import { formatDate, formatMoney } from "@/lib/format";
 import { prisma } from "@/lib/prisma/client";
 import { getProjectPeople } from "@/lib/project-people";
-import { createRiskAction, deleteBlockerAction, deleteRiskAction, updateRiskAction, upsertBlockerAction } from "@/server/actions/projects";
+import { createRiskAction, deleteBlockerAction, deletePendingIssueAction, deleteRiskAction, updateRiskAction, upsertBlockerAction, upsertPendingIssueAction } from "@/server/actions/projects";
 
 function inputDate(value: Date | null) {
   return value ? value.toISOString().slice(0, 10) : "";
@@ -35,11 +35,86 @@ function BlockerCriticalityBadge({ value }: { value: string }) {
   );
 }
 
+function PendingIssueForm({ project, people, pending }: { project: any; people: string[]; pending?: any }) {
+  return (
+    <form action={upsertPendingIssueAction} className="grid gap-3">
+      {pending ? <input type="hidden" name="pendingIssueId" value={pending.id} /> : null}
+      <input type="hidden" name="projectId" value={project.id} />
+      <label className="grid gap-1 text-sm font-medium">
+        Título
+        <input name="title" required defaultValue={pending?.title ?? ""} className="h-10 rounded-md border border-line px-3" />
+      </label>
+      <label className="grid gap-1 text-sm font-medium">
+        Descrição
+        <textarea name="description" rows={3} defaultValue={pending?.description ?? ""} className="rounded-md border border-line px-3 py-2" />
+      </label>
+      <div className="grid grid-cols-2 gap-3">
+        <label className="grid gap-1 text-sm font-medium">
+          Risco relacionado
+          <select name="riskId" defaultValue={pending?.riskId ?? ""} className="h-10 rounded-md border border-line px-3">
+            <option value="">Sem risco</option>
+            {project.risks.map((risk: any) => <option key={risk.id} value={risk.id}>{risk.name}</option>)}
+          </select>
+        </label>
+        <label className="grid gap-1 text-sm font-medium">
+          Empresa responsável
+          <input name="responsibleCompany" defaultValue={pending?.responsibleCompany ?? ""} className="h-10 rounded-md border border-line px-3" />
+        </label>
+      </div>
+      <PeopleMultiSelect name="responsiblePerson" label="Pessoa responsável" people={people} defaultValue={pending?.responsiblePerson ?? ""} />
+      <div className="grid grid-cols-2 gap-3">
+        <label className="grid gap-1 text-sm font-medium">
+          Data de abertura
+          <input name="openedAt" type="date" defaultValue={inputDate(pending?.openedAt ?? new Date())} className="h-10 rounded-md border border-line px-3" />
+        </label>
+        <label className="grid gap-1 text-sm font-medium">
+          Prazo
+          <input name="dueDate" type="date" defaultValue={inputDate(pending?.dueDate)} className="h-10 rounded-md border border-line px-3" />
+        </label>
+      </div>
+      <div className="grid grid-cols-3 gap-3">
+        <label className="grid gap-1 text-sm font-medium">
+          Status
+          <select name="status" defaultValue={pending?.status ?? "OPEN"} className="h-10 rounded-md border border-line px-3">
+            <option value="OPEN">Aberta</option>
+            <option value="IN_PROGRESS">Em andamento</option>
+            <option value="RESOLVED">Resolvida</option>
+            <option value="CANCELED">Cancelada</option>
+          </select>
+        </label>
+        <label className="grid gap-1 text-sm font-medium">
+          Prioridade
+          <select name="priority" defaultValue={pending?.priority ?? "MEDIUM"} className="h-10 rounded-md border border-line px-3">
+            <option value="LOW">Baixa</option>
+            <option value="MEDIUM">Média</option>
+            <option value="HIGH">Alta</option>
+            <option value="CRITICAL">Crítica</option>
+          </select>
+        </label>
+        <label className="grid gap-1 text-sm font-medium">
+          Resolvida em
+          <input name="resolvedAt" type="date" defaultValue={inputDate(pending?.resolvedAt)} className="h-10 rounded-md border border-line px-3" />
+        </label>
+      </div>
+      <label className="grid gap-1 text-sm font-medium">
+        Impacto / observação
+        <textarea name="impactDescription" rows={2} defaultValue={pending?.impactDescription ?? ""} className="rounded-md border border-line px-3 py-2" />
+      </label>
+      <label className="grid gap-1 text-sm font-medium">
+        Próxima ação
+        <textarea name="nextAction" rows={2} defaultValue={pending?.nextAction ?? ""} className="rounded-md border border-line px-3 py-2" />
+      </label>
+      <button className="w-fit rounded-md bg-brand-600 px-4 py-2 text-sm font-semibold text-white">{pending ? "Salvar pendência" : "Cadastrar pendência"}</button>
+    </form>
+  );
+}
+
 export default async function ProjectBlockersPage({ params }: { params: { id: string } }) {
   const project = await prisma.project.findUnique({
     where: { id: params.id },
     include: {
       blockers: { include: { task: true }, orderBy: { createdAt: "desc" } },
+      pendingIssues: { include: { risk: true }, orderBy: [{ priority: "desc" }, { dueDate: "asc" }] },
       risks: { orderBy: [{ classification: "desc" }, { registeredAt: "desc" }] },
       tasks: { orderBy: { name: "asc" } },
       manager: true,
@@ -55,9 +130,10 @@ export default async function ProjectBlockersPage({ params }: { params: { id: st
     <>
       <PageHeader title={`Riscos e pendencias | ${project.name}`} description="Matriz de riscos, bloqueios, impactos e proximas acoes." action={{ href: `/projects/${project.id}/dashboard`, label: "Painel" }} />
       <ProjectTabs projectId={project.id} />
-      <section className="mb-5 grid gap-4 md:grid-cols-4">
+      <section className="mb-5 grid gap-4 md:grid-cols-5">
         <div className="rounded-lg border border-line bg-white p-4 shadow-soft"><p className="text-sm text-slate-500">Riscos</p><p className="mt-2 text-2xl font-bold">{project.risks.length}</p></div>
         <div className="rounded-lg border border-line bg-white p-4 shadow-soft"><p className="text-sm text-slate-500">Criticos/altos</p><p className="mt-2 text-2xl font-bold">{project.risks.filter((risk) => risk.classification === "CRITICAL" || risk.classification === "HIGH").length}</p></div>
+        <div className="rounded-lg border border-line bg-white p-4 shadow-soft"><p className="text-sm text-slate-500">Pendências</p><p className="mt-2 text-2xl font-bold">{project.pendingIssues.filter((pending) => pending.status !== "RESOLVED" && pending.status !== "CANCELED").length}</p></div>
         <div className="rounded-lg border border-line bg-white p-4 shadow-soft"><p className="text-sm text-slate-500">Bloqueios</p><p className="mt-2 text-2xl font-bold">{project.blockers.length}</p></div>
         <div className="rounded-lg border border-line bg-white p-4 shadow-soft"><p className="text-sm text-slate-500">Abertos</p><p className="mt-2 text-2xl font-bold">{project.blockers.filter((blocker) => blocker.status !== "RESOLVED" && blocker.status !== "CANCELED").length}</p></div>
       </section>
@@ -176,6 +252,9 @@ export default async function ProjectBlockersPage({ params }: { params: { id: st
             <button className="w-fit rounded-md bg-brand-600 px-4 py-2 text-sm font-semibold text-white">Cadastrar bloqueio</button>
           </form>
         </DialogAction>
+        <DialogAction title="Cadastrar pendência" description="Registre um ponto de atenção que não bloqueia o projeto." trigger="create" triggerLabel="Nova pendência">
+          <PendingIssueForm project={project} people={people} />
+        </DialogAction>
       </div>
       <section className="mb-6 rounded-lg border border-line bg-white p-5 shadow-soft">
         <h2 className="text-lg font-bold text-ink">Matriz de riscos</h2>
@@ -219,6 +298,39 @@ export default async function ProjectBlockersPage({ params }: { params: { id: st
             </article>
           ))}
           {!project.risks.length ? <div className="rounded-lg border border-line bg-white p-6 text-sm text-slate-500">Nenhum risco cadastrado.</div> : null}
+        </div>
+      </section>
+      <section className="mb-6 rounded-lg border border-line bg-white p-5 shadow-soft">
+        <h2 className="text-lg font-bold text-ink">Pendências</h2>
+        <p className="mt-1 text-sm text-slate-600">Itens que precisam acompanhamento, mas não impedem a continuidade do projeto.</p>
+        <div className="mt-4 grid gap-3">
+          {project.pendingIssues.map((pending) => (
+            <article key={pending.id} className="rounded-lg border border-line p-4 text-sm">
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div>
+                  <h3 className="font-bold text-ink">{pending.title}</h3>
+                  <p className="mt-1 text-slate-600">{pending.description ?? pending.impactDescription ?? "Sem descrição."}</p>
+                  <p className="mt-2 text-xs text-slate-500">Risco: {pending.risk?.name ?? "Sem vínculo"} | Responsável: {pending.responsiblePerson ?? "-"} | prazo {formatDate(pending.dueDate)}</p>
+                  <p className="mt-1 text-xs text-slate-500">Próxima ação: {pending.nextAction ?? "-"}</p>
+                </div>
+                <div className="flex items-start gap-2">
+                  <span className="rounded-full bg-amber-50 px-3 py-1 text-xs font-bold text-amber-700">{pending.status}</span>
+                  <BlockerCriticalityBadge value={pending.priority} />
+                  <DialogAction title="Editar pendência" description={pending.title} trigger="edit">
+                    <PendingIssueForm project={project} people={people} pending={pending} />
+                  </DialogAction>
+                  <DialogAction title="Excluir pendência" description={`Deseja realmente excluir "${pending.title}"?`} trigger="delete">
+                    <form action={deletePendingIssueAction} className="flex justify-end">
+                      <input type="hidden" name="pendingIssueId" value={pending.id} />
+                      <input type="hidden" name="projectId" value={project.id} />
+                      <button className="rounded-md bg-red-600 px-4 py-2 text-sm font-semibold text-white">Sim, excluir</button>
+                    </form>
+                  </DialogAction>
+                </div>
+              </div>
+            </article>
+          ))}
+          {!project.pendingIssues.length ? <div className="rounded-lg border border-line bg-white p-6 text-sm text-slate-500">Nenhuma pendência cadastrada.</div> : null}
         </div>
       </section>
       <div className="grid gap-3">

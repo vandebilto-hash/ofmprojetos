@@ -109,6 +109,46 @@ const blockerSchema = z.object({
   financialImpact: z.coerce.number().default(0)
 });
 
+const pendingIssueSchema = z.object({
+  pendingIssueId: z.string().optional(),
+  projectId: z.string().min(1),
+  riskId: z.string().optional(),
+  title: z.string().min(3),
+  description: z.string().optional(),
+  responsibleCompany: z.string().optional(),
+  responsiblePerson: z.string().optional(),
+  openedAt: optionalDateField,
+  dueDate: optionalDateField,
+  resolvedAt: optionalDateField,
+  status: z.enum(["OPEN", "IN_PROGRESS", "RESOLVED", "CANCELED"]),
+  priority: z.enum(["LOW", "MEDIUM", "HIGH", "CRITICAL"]).default("MEDIUM"),
+  impactDescription: z.string().optional(),
+  nextAction: z.string().optional()
+});
+
+const projectActionSchema = z.object({
+  actionId: z.string().optional(),
+  projectId: z.string().min(1),
+  taskId: z.string().optional(),
+  riskId: z.string().optional(),
+  blockerId: z.string().optional(),
+  pendingIssueId: z.string().optional(),
+  code: z.string().optional(),
+  trafficLight: z.enum(["GREEN", "YELLOW", "RED"]).default("GREEN"),
+  origin: z.string().optional(),
+  description: z.string().min(3),
+  responsible: z.string().optional(),
+  priority: z.enum(["LOW", "MEDIUM", "HIGH", "CRITICAL"]).default("MEDIUM"),
+  status: z.enum(["OPEN", "IN_PROGRESS", "DONE", "CANCELED"]).default("OPEN"),
+  visibleToClient: z.coerce.boolean().optional(),
+  dueDate: optionalDateField,
+  plannedProgress: z.coerce.number().min(0).max(100).default(0),
+  actualProgress: z.coerce.number().min(0).max(100).default(0),
+  estimatedHours: z.coerce.number().min(0).default(0),
+  workedHours: z.coerce.number().min(0).default(0),
+  nextAction: z.string().optional()
+});
+
 const projectHomeSchema = z.object({
   projectId: z.string().min(1),
   mission: z.string().optional(),
@@ -788,6 +828,139 @@ export async function deleteRiskAction(formData: FormData) {
   const before = await prisma.risk.findUniqueOrThrow({ where: { id: riskId } });
   await prisma.risk.delete({ where: { id: riskId } });
   await logProjectChange({ actorId: session?.user.id, projectId, entityType: "Risk", entityId: riskId, action: "DELETE", description: `Removeu o risco ${before.name}.`, before });
+  revalidateProjectModule(projectId);
+}
+
+export async function upsertPendingIssueAction(formData: FormData) {
+  const session = await getServerSession(authOptions);
+  if (!canManageTask(session?.user.role)) throw new Error("Sem permissao para editar pendencias.");
+
+  const data = pendingIssueSchema.parse(Object.fromEntries(formData));
+  await assertProjectRelations(data.projectId, { riskId: data.riskId });
+
+  const payload = {
+    projectId: data.projectId,
+    riskId: data.riskId || null,
+    title: data.title,
+    description: data.description || null,
+    responsibleCompany: data.responsibleCompany || null,
+    responsiblePerson: data.responsiblePerson || null,
+    openedAt: data.openedAt ?? new Date(),
+    dueDate: data.dueDate ?? null,
+    resolvedAt: data.resolvedAt ?? null,
+    status: data.status,
+    priority: data.priority,
+    impactDescription: data.impactDescription || null,
+    nextAction: data.nextAction || null
+  };
+
+  const before = data.pendingIssueId ? await prisma.pendingIssue.findUnique({ where: { id: data.pendingIssueId } }) : null;
+  const pendingIssue = data.pendingIssueId
+    ? await prisma.pendingIssue.update({ where: { id: data.pendingIssueId }, data: payload })
+    : await prisma.pendingIssue.create({ data: payload });
+
+  await logProjectChange({
+    actorId: session?.user.id,
+    projectId: data.projectId,
+    entityType: "PendingIssue",
+    entityId: pendingIssue.id,
+    action: data.pendingIssueId ? "UPDATE" : "CREATE",
+    description: `${data.pendingIssueId ? "Atualizou" : "Adicionou"} a pendencia ${pendingIssue.title}.`,
+    before,
+    after: pendingIssue
+  });
+  revalidateProjectModule(data.projectId);
+}
+
+export async function deletePendingIssueAction(formData: FormData) {
+  const session = await getServerSession(authOptions);
+  if (!canManageTask(session?.user.role)) throw new Error("Sem permissao para excluir pendencias.");
+
+  const pendingIssueId = String(formData.get("pendingIssueId"));
+  const projectId = String(formData.get("projectId"));
+  const before = await prisma.pendingIssue.findUniqueOrThrow({ where: { id: pendingIssueId } });
+  await prisma.pendingIssue.delete({ where: { id: pendingIssueId } });
+  await logProjectChange({
+    actorId: session?.user.id,
+    projectId,
+    entityType: "PendingIssue",
+    entityId: pendingIssueId,
+    action: "DELETE",
+    description: `Removeu a pendencia ${before.title}.`,
+    before
+  });
+  revalidateProjectModule(projectId);
+}
+
+export async function upsertProjectActionAction(formData: FormData) {
+  const session = await getServerSession(authOptions);
+  if (!canManageTask(session?.user.role)) throw new Error("Sem permissao para editar acoes.");
+
+  const data = projectActionSchema.parse(Object.fromEntries(formData));
+  await assertProjectRelations(data.projectId, {
+    taskId: data.taskId,
+    riskId: data.riskId,
+    blockerId: data.blockerId,
+    pendingIssueId: data.pendingIssueId
+  });
+
+  const payload = {
+    projectId: data.projectId,
+    taskId: data.taskId || null,
+    riskId: data.riskId || null,
+    blockerId: data.blockerId || null,
+    pendingIssueId: data.pendingIssueId || null,
+    code: data.code || null,
+    trafficLight: data.trafficLight,
+    origin: data.origin || "Manual",
+    description: data.description,
+    responsible: data.responsible || null,
+    priority: data.priority,
+    status: data.status,
+    visibleToClient: Boolean(data.visibleToClient),
+    dueDate: data.dueDate ?? null,
+    plannedProgress: data.plannedProgress,
+    actualProgress: data.actualProgress,
+    estimatedHours: data.estimatedHours,
+    workedHours: data.workedHours,
+    nextAction: data.nextAction || null
+  };
+
+  const before = data.actionId ? await prisma.portalTodo.findUnique({ where: { id: data.actionId } }) : null;
+  const action = data.actionId
+    ? await prisma.portalTodo.update({ where: { id: data.actionId }, data: payload })
+    : await prisma.portalTodo.create({ data: payload });
+
+  await logProjectChange({
+    actorId: session?.user.id,
+    projectId: data.projectId,
+    entityType: "ProjectAction",
+    entityId: action.id,
+    action: data.actionId ? "UPDATE" : "CREATE",
+    description: `${data.actionId ? "Atualizou" : "Adicionou"} a acao ${action.description}.`,
+    before,
+    after: action
+  });
+  revalidateProjectModule(data.projectId);
+}
+
+export async function deleteProjectActionAction(formData: FormData) {
+  const session = await getServerSession(authOptions);
+  if (!canManageTask(session?.user.role)) throw new Error("Sem permissao para excluir acoes.");
+
+  const actionId = String(formData.get("actionId"));
+  const projectId = String(formData.get("projectId"));
+  const before = await prisma.portalTodo.findUniqueOrThrow({ where: { id: actionId } });
+  await prisma.portalTodo.delete({ where: { id: actionId } });
+  await logProjectChange({
+    actorId: session?.user.id,
+    projectId,
+    entityType: "ProjectAction",
+    entityId: actionId,
+    action: "DELETE",
+    description: `Removeu a acao ${before.description}.`,
+    before
+  });
   revalidateProjectModule(projectId);
 }
 
@@ -2691,11 +2864,27 @@ function sameDay(left: Date, right: Date) {
   return left.getTime() === right.getTime();
 }
 
+async function assertProjectRelations(
+  projectId: string,
+  ids: { taskId?: string; riskId?: string; blockerId?: string; pendingIssueId?: string }
+) {
+  const checks = [
+    ids.taskId ? prisma.task.count({ where: { id: ids.taskId, projectId } }).then((count) => count > 0) : Promise.resolve(true),
+    ids.riskId ? prisma.risk.count({ where: { id: ids.riskId, projectId } }).then((count) => count > 0) : Promise.resolve(true),
+    ids.blockerId ? prisma.blocker.count({ where: { id: ids.blockerId, projectId } }).then((count) => count > 0) : Promise.resolve(true),
+    ids.pendingIssueId ? prisma.pendingIssue.count({ where: { id: ids.pendingIssueId, projectId } }).then((count) => count > 0) : Promise.resolve(true),
+  ];
+  const valid = await Promise.all(checks);
+  if (valid.some((item) => !item)) throw new Error("Vinculo invalido para este projeto.");
+}
+
 function revalidateProjectModule(projectId: string) {
   revalidatePath(`/projects/${projectId}`);
   revalidatePath(`/projects/${projectId}/tasks`);
   revalidatePath(`/projects/${projectId}/kanban`);
   revalidatePath(`/projects/${projectId}/gantt`);
+  revalidatePath(`/projects/${projectId}/actions`);
+  revalidatePath(`/projects/${projectId}/blockers`);
   revalidatePath(`/projects/${projectId}/resources`);
   revalidatePath(`/projects/${projectId}/reports`);
   revalidatePath("/projects");

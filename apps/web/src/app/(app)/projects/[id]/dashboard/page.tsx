@@ -40,7 +40,7 @@ function blockerCriticalityRank(blocker: { criticality?: string | null; schedule
 export default async function ProjectDashboardPage({ params }: { params: { id: string } }) {
   const project = await prisma.project.findUnique({
     where: { id: params.id },
-    include: { tasks: true, risks: true, blockers: true, milestones: true, todos: true, stakeholders: true, documents: true }
+    include: { tasks: true, risks: true, blockers: true, pendingIssues: true, milestones: true, todos: true, stakeholders: true, documents: true }
   });
   if (!project) notFound();
 
@@ -48,6 +48,7 @@ export default async function ProjectDashboardPage({ params }: { params: { id: s
   const completedTasks = project.tasks.filter((task) => task.status === "DONE").length;
   const delayedTasks = project.tasks.filter((task) => task.status !== "DONE" && task.plannedEnd < now);
   const openBlockers = project.blockers.filter((blocker) => blocker.status !== "RESOLVED" && blocker.status !== "CANCELED");
+  const openPendingIssues = project.pendingIssues.filter((pending) => pending.status !== "RESOLVED" && pending.status !== "CANCELED");
   const priorityBlockers = openBlockers
     .filter((blocker) => ["CRITICAL", "HIGH"].includes(getBlockerCriticality(blocker)))
     .sort((a, b) => {
@@ -55,7 +56,8 @@ export default async function ProjectDashboardPage({ params }: { params: { id: s
       if (criticalityDiff !== 0) return criticalityDiff;
       return Number(b.scheduleImpactDays ?? 0) - Number(a.scheduleImpactDays ?? 0);
     });
-  const openActions = project.todos.filter((todo) => todo.status !== "DONE");
+  const openActions = project.todos.filter((todo) => todo.status !== "DONE" && todo.status !== "CANCELED");
+  const overdueActions = openActions.filter((todo) => todo.dueDate && todo.dueDate < now);
   const completedMilestones = project.milestones.filter((item) => item.status === "COMPLETED").length;
   const progress = Number(project.progressPercent);
   const parentTaskIds = new Set(project.tasks.map((task) => task.parentTaskId).filter(Boolean));
@@ -72,7 +74,8 @@ export default async function ProjectDashboardPage({ params }: { params: { id: s
     { label: "Atividades atrasadas", value: delayedTasks.length, detail: `${completedTasks} de ${project.tasks.length} concluídas`, tone: delayedTasks.length ? "red" : "emerald" },
     { label: "Bloqueios críticos/altos", value: priorityBlockers.length, detail: `${project.blockers.length} bloqueios cadastrados`, tone: priorityBlockers.length ? "amber" : "slate" },
     { label: "Bloqueios abertos", value: openBlockers.length, detail: `${project.blockers.length} bloqueios cadastrados`, tone: openBlockers.length ? "red" : "emerald" },
-    { label: "Ações abertas", value: openActions.length, detail: `${project.todos.length} ações cadastradas`, tone: openActions.length ? "amber" : "emerald" },
+    { label: "Pendências abertas", value: openPendingIssues.length, detail: `${project.pendingIssues.length} pendências cadastradas`, tone: openPendingIssues.length ? "amber" : "emerald" },
+    { label: "Ações abertas", value: openActions.length, detail: `${overdueActions.length} vencida(s)`, tone: overdueActions.length ? "red" : openActions.length ? "amber" : "emerald" },
     { label: "Marcos", value: project.milestones.length, detail: `${completedMilestones} concluídos`, tone: "violet" },
     { label: "Partes interessadas", value: project.stakeholders.length, detail: "governança do projeto", tone: "slate" }
   ];

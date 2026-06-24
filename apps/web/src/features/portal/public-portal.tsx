@@ -49,6 +49,7 @@ const moduleTone: Record<string, string> = {
   planning: "from-blue-500 to-slate-800",
   risks: "from-red-500 to-rose-800",
   blockers: "from-orange-500 to-red-800",
+  actions: "from-emerald-500 to-teal-800",
   dashboard: "from-slate-700 to-slate-950",
 };
 
@@ -60,6 +61,7 @@ const moduleIcon: Record<string, React.ElementType> = {
   planning: CalendarDays,
   risks: ShieldAlert,
   blockers: AlertOctagon,
+  actions: CheckCheck,
   dashboard: BarChart3,
 };
 
@@ -69,6 +71,7 @@ const navigationGroups = [
   { label: "Documentos", keys: ["documents"] },
   { label: "Planejamento", keys: ["planning"] },
   { label: "Riscos e Bloqueios", keys: ["risks", "blockers"] },
+  { label: "Ações", keys: ["actions"] },
 ];
 
 const groupNavIcon: Record<string, React.ElementType> = {
@@ -77,6 +80,7 @@ const groupNavIcon: Record<string, React.ElementType> = {
   Documentos: FileText,
   Planejamento: CalendarDays,
   "Riscos e Bloqueios": AlertTriangle,
+  Ações: CheckCheck,
 };
 
 export function PublicPortalShell({ token, project, modules, activeModule, children }: PublicPortalShellProps) {
@@ -301,6 +305,7 @@ export function PublicPortalModule({ moduleKey, project }: { moduleKey: string; 
   if (moduleKey === "planning") return <PlanningModule project={project} />;
   if (moduleKey === "risks") return <RisksModule project={project} />;
   if (moduleKey === "blockers") return <BlockersModule project={project} />;
+  if (moduleKey === "actions") return <ActionsModule project={project} />;
   return <DashboardModule project={project} />;
 }
 
@@ -805,22 +810,23 @@ function RisksModule({ project }: { project: any }) {
     name: riskClassPt(n),
     value: project.risks.filter((r: any) => r.classification === n).length,
   }));
+  const pendingIssues = project.pendingIssues ?? [];
+  const openPendingIssues = pendingIssues.filter((pending: any) => pending.status !== "RESOLVED" && pending.status !== "CANCELED");
   const critical = project.risks.filter((r: any) => r.classification === "CRITICAL").length;
   const high = project.risks.filter((r: any) => r.classification === "HIGH").length;
-  const escalations = project.risks.filter((r: any) => ["CRITICAL", "HIGH"].includes(r.classification)).length;
 
   return (
     <ModulePage
       eyebrow="Riscos"
       icon={ShieldAlert}
-      title="Matriz de riscos"
-      description="Riscos com causa, evento, estratégia, contingência, gatilhos e responsáveis."
+      title="Matriz de riscos e pendências"
+      description="Riscos e pendências com responsáveis, criticidade, próximas ações e acompanhamento executivo."
     >
       <div className="grid gap-4 md:grid-cols-4">
         <Metric label="Riscos cadastrados" value={project.risks.length} tone="blue" />
         <Metric label="Riscos críticos" value={critical} tone="red" />
         <Metric label="Riscos altos" value={high} tone="amber" />
-        <Metric label="Escalonamento" value={escalations} tone={escalations > 0 ? "red" : "green"} />
+        <Metric label="Pendências abertas" value={openPendingIssues.length} tone={openPendingIssues.length > 0 ? "amber" : "green"} />
       </div>
       <FilterStrip search="Pesquisar por descrição, causa, responsável, categoria..." selects={["Todas as categorias", "Todas as classificações", "Todos os status"]} />
       <div className="grid gap-5 xl:grid-cols-[1fr_300px]">
@@ -834,6 +840,27 @@ function RisksModule({ project }: { project: any }) {
           <ExecutiveBarChart data={riskData} bars={[{ key: "value", color: "#f97316" }]} />
         </Panel>
       </div>
+      <Panel title="Pendências em acompanhamento">
+        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+          {pendingIssues.map((pending: any) => (
+            <div key={pending.id} className="rounded-xl border border-l-4 border-slate-100 border-l-amber-400 bg-white p-5 shadow-sm">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <h3 className="font-black text-slate-950">{pending.title}</h3>
+                  <p className="mt-1.5 text-sm leading-5 text-slate-500">{pending.description ?? pending.impactDescription ?? "Pendência em acompanhamento."}</p>
+                </div>
+                <span className="rounded-full bg-amber-100 px-2.5 py-1 text-[10px] font-black uppercase text-amber-700">{blockerStatusPt(pending.status)}</span>
+              </div>
+              <div className="mt-3 grid gap-1 rounded-lg bg-slate-50 p-3 text-xs leading-5 text-slate-600">
+                <p><strong className="text-slate-700">Responsável:</strong> {pending.responsiblePerson ?? "-"}</p>
+                <p><strong className="text-slate-700">Prazo:</strong> {formatDate(pending.dueDate)}</p>
+                {pending.nextAction ? <p><strong className="text-slate-700">Próxima ação:</strong> {pending.nextAction}</p> : null}
+              </div>
+            </div>
+          ))}
+          {!pendingIssues.length ? <div className="col-span-full"><Empty label="Nenhuma pendência cadastrada." icon={Clock} /></div> : null}
+        </div>
+      </Panel>
     </ModulePage>
   );
 }
@@ -929,6 +956,61 @@ function BlockersModule({ project }: { project: any }) {
   );
 }
 
+function ActionsModule({ project }: { project: any }) {
+  const actions = (project.todos ?? []).filter((action: any) => action.visibleToClient);
+  const open = actions.filter((action: any) => action.status !== "DONE" && action.status !== "CANCELED");
+  const overdue = open.filter((action: any) => action.dueDate && new Date(action.dueDate) < new Date());
+  const high = open.filter((action: any) => action.priority === "HIGH" || action.priority === "CRITICAL");
+  const trafficClass: Record<string, string> = {
+    GREEN: "bg-emerald-500",
+    YELLOW: "bg-amber-400",
+    RED: "bg-red-500",
+  };
+
+  return (
+    <ModulePage
+      eyebrow="Ações"
+      icon={CheckCheck}
+      title="Ações e próximos passos"
+      description="Ações visíveis ao cliente, com responsáveis, prazos, vínculos e próximos passos."
+    >
+      <div className="grid gap-4 md:grid-cols-4">
+        <Metric label="Ações visíveis" value={actions.length} tone="blue" />
+        <Metric label="Abertas" value={open.length} tone={open.length ? "amber" : "green"} />
+        <Metric label="Vencidas" value={overdue.length} tone={overdue.length ? "red" : "green"} />
+        <Metric label="Críticas/altas" value={high.length} tone={high.length ? "red" : "slate"} />
+      </div>
+
+      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+        {actions.map((action: any) => {
+          const relation = action.pendingIssue?.title ?? action.risk?.name ?? action.blocker?.title ?? action.task?.name ?? action.origin;
+          return (
+            <div key={action.id} className="flex flex-col rounded-xl border border-l-4 border-slate-100 border-l-emerald-400 bg-white p-5 shadow-sm">
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex flex-wrap gap-1.5">
+                  <span className="rounded-full bg-blue-50 px-2.5 py-1 text-[10px] font-black uppercase text-blue-700">{actionStatusPt(action.status)}</span>
+                  <span className="rounded-full bg-slate-100 px-2.5 py-1 text-[10px] font-black uppercase text-slate-600">{priorityPt(action.priority)}</span>
+                </div>
+                <span className={`h-3 w-3 shrink-0 rounded-full ${trafficClass[action.trafficLight] ?? trafficClass.GREEN}`} />
+              </div>
+              <h3 className="mt-3 font-black text-slate-950">{action.code ? `${action.code} - ` : ""}{action.description}</h3>
+              <div className="mt-3 grid gap-1 rounded-lg bg-slate-50 p-3 text-xs leading-5 text-slate-600">
+                <p><strong className="text-slate-700">Responsável:</strong> {action.responsible ?? "-"}</p>
+                <p><strong className="text-slate-700">Prazo:</strong> {formatDate(action.dueDate)}</p>
+                <p><strong className="text-slate-700">Vínculo:</strong> {relation ?? "Projeto"}</p>
+                {action.nextAction ? <p><strong className="text-slate-700">Próxima ação:</strong> {action.nextAction}</p> : null}
+              </div>
+            </div>
+          );
+        })}
+        {!actions.length ? (
+          <div className="col-span-full"><Empty label="Nenhuma ação visível ao cliente." icon={CheckCheck} /></div>
+        ) : null}
+      </div>
+    </ModulePage>
+  );
+}
+
 // ─── Dashboard / Status Report ─────────────────────────────────────────────
 
 function DashboardModule({ project }: { project: any }) {
@@ -942,6 +1024,9 @@ function DashboardModule({ project }: { project: any }) {
   const doneTasks = leafTasks.filter((t: any) => t.status === "DONE").length;
   const delayedTasks = leafTasks.filter((t: any) => t.status !== "DONE" && new Date(t.plannedEnd) < now);
   const openBlockers = (project.blockers ?? []).filter((b: any) => b.status !== "RESOLVED" && b.status !== "CANCELED");
+  const openPendingIssues = (project.pendingIssues ?? []).filter((p: any) => p.status !== "RESOLVED" && p.status !== "CANCELED");
+  const visibleActions = (project.todos ?? []).filter((a: any) => a.visibleToClient);
+  const openActions = visibleActions.filter((a: any) => a.status !== "DONE" && a.status !== "CANCELED");
   const activeRisks = (project.risks ?? []).filter((r: any) => r.status !== "CLOSED");
   const criticalRisks = activeRisks.filter((r: any) => r.classification === "CRITICAL" || r.classification === "HIGH");
   const phaseTasks = tasks.filter((t: any) => Number(t.outlineLevel ?? 1) <= 2).slice(0, 5);
@@ -950,6 +1035,7 @@ function DashboardModule({ project }: { project: any }) {
   const resourceRows = resourceConsumptionRows(project, leafTasks);
   const riskRows = [
     ...openBlockers.map((b: any) => ({ type: "blocker", item: b })),
+    ...openPendingIssues.map((p: any) => ({ type: "pending", item: p })),
     ...activeRisks.map((r: any) => ({ type: "risk", item: r })),
   ];
   const milestoneRows = leafTasks;
@@ -1173,6 +1259,8 @@ function DashboardModule({ project }: { project: any }) {
             <AgileGroup icon={CheckCheck} tone="green" title="Entregas (últimos 15 dias)" items={delivered.map((t: any) => t.name)} empty="Sem entregas no período." />
             <AgileGroup icon={Target} tone="blue" title="Foco da próxima quinzena" items={nextFocus.map((t: any) => t.name)} empty="Sem atividades programadas." />
             <AgileGroup icon={AlertOctagon} tone="red" title="Bloqueios críticos" items={openBlockers.map((b: any) => `${b.title}${b.responsiblePerson ? ` · ${b.responsiblePerson}` : ""}`)} empty="Sem bloqueios ativos." />
+            <AgileGroup icon={Clock} tone="amber" title="Pendências abertas" items={openPendingIssues.map((p: any) => `${p.title}${p.responsiblePerson ? ` · ${p.responsiblePerson}` : ""}`)} empty="Sem pendências abertas." />
+            <AgileGroup icon={CheckCheck} tone="blue" title="Ações visíveis ao cliente" items={openActions.map((a: any) => `${a.description}${a.responsible ? ` · ${a.responsible}` : ""}`)} empty="Sem ações abertas para o cliente." />
           </div>
         </div>
       </section>
@@ -1360,7 +1448,7 @@ function DashboardModule({ project }: { project: any }) {
           <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-red-50">
             <ShieldAlert size={15} className="text-red-600" />
           </span>
-          <h2 className="text-sm font-black text-slate-900">Matriz de Riscos e Bloqueios</h2>
+          <h2 className="text-sm font-black text-slate-900">Matriz de Riscos, Pendências e Bloqueios</h2>
         </div>
         <div className="overflow-auto">
           <table id="status-report-risks" className="w-full min-w-[900px] text-left text-xs">
@@ -1456,13 +1544,14 @@ function AgileGroup({
 }: {
   icon: React.ElementType;
   title: string;
-  tone: "green" | "blue" | "red";
+  tone: "green" | "blue" | "amber" | "red";
   items: string[];
   empty: string;
 }) {
   const cfg = {
     green: { icon: "bg-emerald-100 text-emerald-600", dot: "bg-emerald-400", title: "text-emerald-800" },
     blue:  { icon: "bg-blue-100 text-blue-600",   dot: "bg-blue-400",   title: "text-blue-800" },
+    amber: { icon: "bg-amber-100 text-amber-600", dot: "bg-amber-400", title: "text-amber-800" },
     red:   { icon: "bg-red-100 text-red-600",     dot: "bg-red-400",    title: "text-red-800" },
   }[tone];
   return (
@@ -1688,32 +1777,37 @@ function ResourceReportRow({ row }: { row: { name: string; planned: number; actu
 function RiskReportRow({ row, index }: { row: { type: string; item: any }; index: number }) {
   const item = row.item;
   const isBlocker = row.type === "blocker";
-  const level = isBlocker ? "Crítico" : riskClassPt(item.classification);
-  const owner = isBlocker ? item.responsiblePerson ?? "-" : item.owner ?? "-";
-  const text = `${isBlocker ? item.title : item.name} ${owner} ${level} ${isBlocker ? item.nextAction ?? "" : item.preventiveActions ?? item.contingencyPlan ?? ""}`;
+  const isPending = row.type === "pending";
+  const level = isBlocker ? "Crítico" : isPending ? priorityPt(item.priority) : riskClassPt(item.classification);
+  const owner = isBlocker || isPending ? item.responsiblePerson ?? "-" : item.owner ?? "-";
+  const title = isBlocker || isPending ? item.title : item.name;
+  const plannedAction = isBlocker || isPending ? item.nextAction ?? "Definir plano de ação" : item.preventiveActions ?? item.contingencyPlan ?? "Monitorar e revisar";
+  const text = `${title} ${owner} ${level} ${plannedAction}`;
+  const typeLabel = isBlocker ? "BLOQUEIO" : isPending ? "PENDÊNCIA" : "RISCO";
+  const statusLabel = isBlocker ? "Bloqueado" : isPending ? blockerStatusPt(item.status) : riskStatusPt(item.status);
   return (
     <tr
       data-status-report-row
       data-report-text={text}
-      data-report-status={isBlocker ? "Bloqueado" : riskStatusPt(item.status)}
+      data-report-status={statusLabel}
       data-report-owner={owner}
       data-report-level={level}
-      className={isBlocker ? "bg-red-50/50 hover:bg-red-50" : "hover:bg-slate-50"}
+      className={isBlocker ? "bg-red-50/50 hover:bg-red-50" : isPending ? "bg-amber-50/30 hover:bg-amber-50/60" : "hover:bg-slate-50"}
     >
       <td className="px-6 py-3 font-semibold text-slate-800">
-        <span className={`mr-2 rounded-full px-2 py-0.5 text-[10px] font-black ${isBlocker ? "bg-red-100 text-red-700" : "bg-slate-100 text-slate-600"}`}>
-          {isBlocker ? "BLOQUEIO" : "RISCO"}
+        <span className={`mr-2 rounded-full px-2 py-0.5 text-[10px] font-black ${isBlocker ? "bg-red-100 text-red-700" : isPending ? "bg-amber-100 text-amber-700" : "bg-slate-100 text-slate-600"}`}>
+          {typeLabel}
         </span>
-        {isBlocker ? item.title : item.name}
-        <p className="mt-0.5 text-[11px] text-red-500">{isBlocker ? `${daysOpen(item.openedAt, item.resolvedAt)} dias em aberto` : riskStatusPt(item.status)}</p>
+        {title}
+        <p className={`mt-0.5 text-[11px] ${isBlocker ? "text-red-500" : isPending ? "text-amber-600" : "text-slate-400"}`}>{isBlocker || isPending ? `${daysOpen(item.openedAt, item.resolvedAt)} dias em aberto` : riskStatusPt(item.status)}</p>
       </td>
-      <td className="py-3 text-xs text-slate-500">{isBlocker ? item.impactDescription ?? `${item.scheduleImpactDays} dias` : item.impact ?? item.description ?? "Impacto a monitorar"}</td>
+      <td className="py-3 text-xs text-slate-500">{isBlocker ? item.impactDescription ?? `${item.scheduleImpactDays} dias` : isPending ? item.impactDescription ?? item.description ?? "Pendência a acompanhar" : item.impact ?? item.description ?? "Impacto a monitorar"}</td>
       <td className="py-3">
-        <StatusPill tone={isBlocker || item.classification === "CRITICAL" ? "red" : item.classification === "HIGH" ? "amber" : "slate"}>
+        <StatusPill tone={isBlocker || item.classification === "CRITICAL" || item.priority === "CRITICAL" ? "red" : item.classification === "HIGH" || item.priority === "HIGH" ? "amber" : "slate"}>
           {level}
         </StatusPill>
       </td>
-      <td className="py-3 text-xs text-slate-500">{isBlocker ? item.nextAction ?? "Definir plano de ação" : item.preventiveActions ?? item.contingencyPlan ?? "Monitorar e revisar"}</td>
+      <td className="py-3 text-xs text-slate-500">{plannedAction}</td>
       <td className="py-3 pr-6 font-semibold text-slate-700">{owner}</td>
     </tr>
   );
@@ -2215,6 +2309,10 @@ function statusPt(status: string) {
 
 function blockerStatusPt(status: string) {
   return ({ OPEN: "Aberto", IN_PROGRESS: "Em tratamento", RESOLVED: "Resolvido", CANCELED: "Cancelado" } as Record<string, string>)[status] ?? status;
+}
+
+function actionStatusPt(status: string) {
+  return ({ OPEN: "Aberta", IN_PROGRESS: "Em andamento", DONE: "Concluída", CANCELED: "Cancelada" } as Record<string, string>)[status] ?? status;
 }
 
 function riskStatusPt(status: string) {

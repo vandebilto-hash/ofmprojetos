@@ -145,6 +145,13 @@ enum TodoStatus {
   CANCELED
 }
 
+enum PendingStatus {
+  OPEN
+  IN_PROGRESS
+  RESOLVED
+  CANCELED
+}
+
 enum TrafficLight {
   GREEN
   YELLOW
@@ -319,6 +326,7 @@ model Project {
   milestones      Milestone[]
   todos           PortalTodo[]
   risks           Risk[]
+  pendingIssues   PendingIssue[]
   importantEmails ImportantEmail[]
   meetingMinutes  MeetingMinute[]
   accessLogs      ClientAccessLog[]
@@ -488,30 +496,33 @@ model Milestone {
 }
 
 model PortalTodo {
-  id              String       @id @default(cuid())
+  id              String        @id @default(cuid())
   projectId       String
   taskId          String?
   riskId          String?
   blockerId       String?
+  pendingIssueId  String?
   code            String?
-  trafficLight    TrafficLight @default(GREEN)
-  origin          String       @default("Manual")
+  trafficLight    TrafficLight  @default(GREEN)
+  origin          String        @default("Manual")
   description     String
   responsible     String?
-  priority        Priority     @default(MEDIUM)
-  status          TodoStatus   @default(OPEN)
+  priority        Priority      @default(MEDIUM)
+  status          TodoStatus    @default(OPEN)
+  visibleToClient Boolean       @default(false)
   dueDate         DateTime?
-  plannedProgress Decimal      @default(0) @db.Decimal(5, 2)
-  actualProgress  Decimal      @default(0) @db.Decimal(5, 2)
-  estimatedHours  Decimal      @default(0) @db.Decimal(10, 2)
-  workedHours     Decimal      @default(0) @db.Decimal(10, 2)
+  plannedProgress Decimal       @default(0) @db.Decimal(5, 2)
+  actualProgress  Decimal       @default(0) @db.Decimal(5, 2)
+  estimatedHours  Decimal       @default(0) @db.Decimal(10, 2)
+  workedHours     Decimal       @default(0) @db.Decimal(10, 2)
   nextAction      String?
-  project         Project      @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  task            Task?        @relation(fields: [taskId], references: [id], onDelete: SetNull)
-  risk            Risk?        @relation(fields: [riskId], references: [id], onDelete: SetNull)
-  blocker         Blocker?     @relation(fields: [blockerId], references: [id], onDelete: SetNull)
-  createdAt       DateTime     @default(now())
-  updatedAt       DateTime     @updatedAt
+  project         Project       @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  task            Task?         @relation(fields: [taskId], references: [id], onDelete: SetNull)
+  risk            Risk?         @relation(fields: [riskId], references: [id], onDelete: SetNull)
+  blocker         Blocker?      @relation(fields: [blockerId], references: [id], onDelete: SetNull)
+  pendingIssue    PendingIssue? @relation(fields: [pendingIssueId], references: [id], onDelete: SetNull)
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
 
   @@index([projectId, status, priority])
 }
@@ -537,10 +548,36 @@ model Risk {
   notes             String?
   project           Project              @relation(fields: [projectId], references: [id], onDelete: Cascade)
   todos             PortalTodo[]
+  pendingIssues     PendingIssue[]
   createdAt         DateTime             @default(now())
   updatedAt         DateTime             @updatedAt
 
   @@index([projectId, classification, status])
+}
+
+model PendingIssue {
+  id                 String        @id @default(cuid())
+  projectId          String
+  riskId             String?
+  title              String
+  description        String?
+  responsibleCompany String?
+  responsiblePerson  String?
+  openedAt           DateTime      @default(now())
+  dueDate            DateTime?
+  resolvedAt         DateTime?
+  status             PendingStatus @default(OPEN)
+  priority           Priority      @default(MEDIUM)
+  impactDescription  String?
+  nextAction         String?
+  project            Project       @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  risk               Risk?         @relation(fields: [riskId], references: [id], onDelete: SetNull)
+  todos              PortalTodo[]
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
+
+  @@index([projectId, status, priority])
+  @@index([riskId])
 }
 
 model Task {

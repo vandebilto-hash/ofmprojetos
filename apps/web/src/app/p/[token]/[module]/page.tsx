@@ -38,8 +38,13 @@ export default async function PublicProjectModulePage({ params }: { params: { to
             orderBy: { date: "desc" }
           },
           meetingMinutes: { orderBy: { meetingDate: "desc" } },
-          todos: { orderBy: [{ priority: "desc" }, { dueDate: "asc" }] },
+          todos: {
+            where: { visibleToClient: true },
+            include: { task: true, risk: true, blocker: true, pendingIssue: true },
+            orderBy: [{ priority: "desc" }, { dueDate: "asc" }]
+          },
           risks: { orderBy: [{ classification: "desc" }, { registeredAt: "desc" }] },
+          pendingIssues: { include: { risk: true }, orderBy: [{ priority: "desc" }, { dueDate: "asc" }] },
           tasks: {
             include: {
               owner: true,

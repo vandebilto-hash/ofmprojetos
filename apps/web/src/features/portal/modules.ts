@@ -42,6 +42,12 @@ export const portalModules = [
     href: "blockers"
   },
   {
+    key: "actions",
+    label: "Ações",
+    description: "Ações, responsáveis, prazos e próximos passos.",
+    href: "actions"
+  },
+  {
     key: "dashboard",
     label: "Status Report",
     description: "Relatorio executivo com progresso, cronograma, riscos, bloqueios e alocacao.",
