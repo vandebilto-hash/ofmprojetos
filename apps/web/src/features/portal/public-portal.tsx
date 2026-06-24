@@ -669,8 +669,8 @@ function DownloadsModule({ project }: { project: any }) {
 
 function EmailAttachmentLinks({ email, compact = false }: { email: any; compact?: boolean }) {
   const links = [
-    ...(email.attachments ?? []).map((attachment: any) => ({ name: attachment.name, href: attachment.fileUrl })),
-    ...(email.attachmentUrl ? [{ name: "Acessar e-mail", href: email.attachmentUrl }] : [])
+    ...(email.attachments ?? []).map((attachment: any) => ({ name: attachment.name, href: attachment.fileUrl?.startsWith("data:") ? `/api/files/email?attachmentId=${attachment.id}` : attachment.fileUrl })),
+    ...(email.attachmentUrl ? [{ name: "Acessar e-mail", href: email.attachmentUrl.startsWith("data:") ? `/api/files/email?emailId=${email.id}` : email.attachmentUrl }] : [])
   ];
 
   if (!links.length) return null;

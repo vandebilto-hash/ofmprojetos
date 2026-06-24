@@ -111,8 +111,8 @@ export default async function ProjectEmailsPage({ params }: { params: { id: stri
 function EmailAttachments({ email }: { email: any }) {
   const attachments = email.attachments ?? [];
   const links = [
-    ...attachments.map((attachment: any) => ({ name: attachment.name, href: attachment.fileUrl })),
-    ...(email.attachmentUrl ? [{ name: "Anexo legado", href: email.attachmentUrl }] : [])
+    ...attachments.map((attachment: any) => ({ name: attachment.name, href: attachment.fileUrl?.startsWith("data:") ? `/api/files/email?attachmentId=${attachment.id}` : attachment.fileUrl })),
+    ...(email.attachmentUrl ? [{ name: "Arquivo do e-mail", href: email.attachmentUrl.startsWith("data:") ? `/api/files/email?emailId=${email.id}` : email.attachmentUrl }] : [])
   ];
 
   if (!links.length) return null;
