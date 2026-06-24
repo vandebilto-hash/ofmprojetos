@@ -12,28 +12,10 @@ export const portalModules = [
     href: "governance"
   },
   {
-    key: "plans",
-    label: "Planos",
-    description: "Documentos e links do Google Drive.",
-    href: "plans"
-  },
-  {
-    key: "downloads",
-    label: "Documentos importantes",
-    description: "Central de documentos importantes para visualizacao e download.",
-    href: "downloads"
-  },
-  {
-    key: "emails",
-    label: "E-mails importantes",
-    description: "Registro de comunicacoes formais relevantes do projeto.",
-    href: "emails"
-  },
-  {
-    key: "minutes",
-    label: "Central de atas",
-    description: "Atas, reunioes, decisoes e encaminhamentos publicados.",
-    href: "minutes"
+    key: "documents",
+    label: "Documentos",
+    description: "E-mails, atas, planos e documentos importantes do projeto.",
+    href: "documents"
   },
   {
     key: "milestones",

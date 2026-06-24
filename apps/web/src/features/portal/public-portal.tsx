@@ -4,7 +4,6 @@ import {
   AlertOctagon,
   AlertTriangle,
   BarChart3,
-  BookOpen,
   CalendarCheck,
   CalendarDays,
   CheckCheck,
@@ -18,7 +17,6 @@ import {
   Home,
   Mail,
   Milestone,
-  ScrollText,
   ShieldAlert,
   Target,
   TrendingDown,
@@ -27,6 +25,7 @@ import {
   Zap,
 } from "lucide-react";
 import { EdtExpandControls } from "@/features/portal/edt-expand-controls";
+import { DocumentsModule } from "@/features/portal/portal-documents-module";
 import { ExecutiveBarChart, MiniPieChart, ProgressLineChart, StatusCurveChart } from "@/features/portal/public-portal-charts";
 import { StatusReportFilters, StatusReportTableFilters, StatusReportTablePager } from "@/features/portal/status-report-controls";
 import { getCompanyBadgeClass, getCompanyLabel } from "@/lib/company-colors";
@@ -45,10 +44,7 @@ type PublicPortalModuleLink = { key: string; label: string };
 const moduleTone: Record<string, string> = {
   home: "from-sky-500 to-blue-700",
   governance: "from-violet-500 to-indigo-700",
-  plans: "from-cyan-500 to-sky-700",
-  downloads: "from-cyan-500 to-blue-800",
-  emails: "from-sky-500 to-indigo-800",
-  minutes: "from-blue-500 to-slate-800",
+  documents: "from-cyan-500 to-blue-800",
   milestones: "from-amber-400 to-orange-700",
   planning: "from-blue-500 to-slate-800",
   risks: "from-red-500 to-rose-800",
@@ -59,10 +55,7 @@ const moduleTone: Record<string, string> = {
 const moduleIcon: Record<string, React.ElementType> = {
   home: Home,
   governance: Users,
-  plans: FileText,
-  downloads: FileText,
-  emails: Mail,
-  minutes: ScrollText,
+  documents: FileText,
   milestones: Milestone,
   planning: CalendarDays,
   risks: ShieldAlert,
@@ -72,9 +65,8 @@ const moduleIcon: Record<string, React.ElementType> = {
 
 const navigationGroups = [
   { label: "Visão geral", keys: ["home", "milestones"] },
-  { label: "Governança", keys: ["governance", "emails", "minutes"] },
+  { label: "Governança", keys: ["governance", "documents"] },
   { label: "Planejamento", keys: ["planning"] },
-  { label: "Documentos", keys: ["plans", "downloads"] },
   { label: "Riscos e Bloqueios", keys: ["risks", "blockers"] },
 ];
 
@@ -82,7 +74,6 @@ const groupNavIcon: Record<string, React.ElementType> = {
   "Visão geral": Home,
   Governança: GitBranch,
   Planejamento: CalendarDays,
-  Documentos: FileText,
   "Riscos e Bloqueios": AlertTriangle,
 };
 
@@ -303,10 +294,7 @@ function HeroMetric({
 export function PublicPortalModule({ moduleKey, project }: { moduleKey: string; project: any }) {
   if (moduleKey === "home") return <HomeModule project={project} />;
   if (moduleKey === "governance") return <GovernanceModule project={project} />;
-  if (moduleKey === "plans") return <PlansModule project={project} />;
-  if (moduleKey === "downloads") return <DownloadsModule project={project} />;
-  if (moduleKey === "emails") return <EmailsModule project={project} />;
-  if (moduleKey === "minutes") return <MinutesModule project={project} />;
+  if (moduleKey === "documents") return <DocumentsModule project={project} />;
   if (moduleKey === "milestones") return <MilestonesModule project={project} />;
   if (moduleKey === "planning") return <PlanningModule project={project} />;
   if (moduleKey === "risks") return <RisksModule project={project} />;
@@ -568,252 +556,6 @@ function GovernanceModule({ project }: { project: any }) {
           </table>
         </div>
       </Panel>
-    </ModulePage>
-  );
-}
-
-function PlansModule({ project }: { project: any }) {
-  const byStatus = countBy(project.documents, "status");
-  return (
-    <ModulePage
-      eyebrow="Planos"
-      icon={FileText}
-      title="Biblioteca de planos do projeto"
-      description="Documentos, versões, status e links de download disponibilizados via Google Drive."
-    >
-      <div className="grid gap-5 lg:grid-cols-[1fr_300px]">
-        <Panel title="Documentos liberados ao cliente">
-          <div className="grid gap-3">
-            {project.documents.map((doc: any) => (
-              <div key={doc.id} className="rounded-xl border border-slate-100 bg-slate-50 p-4">
-                <div className="flex flex-wrap items-start justify-between gap-3">
-                  <div>
-                    <p className="font-black text-slate-950">{doc.name}</p>
-                    <p className="mt-1 text-sm text-slate-500">
-                      {doc.type} · {doc.status} · {doc.version ?? "sem versão"}
-                    </p>
-                  </div>
-                  <div className="flex flex-wrap gap-2">
-                    {doc.embedUrl ? (
-                      <Link href={doc.embedUrl} target="_blank" className="rounded-full border border-slate-300 bg-white px-4 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-100">
-                        Visualizar
-                      </Link>
-                    ) : null}
-                    {doc.downloadUrl || doc.externalUrl ? (
-                      <Link href={doc.downloadUrl ?? doc.externalUrl} target="_blank" className="rounded-full bg-[#0f1b3d] px-4 py-1.5 text-xs font-bold text-white hover:bg-[#1a2d5a]">
-                        Baixar
-                      </Link>
-                    ) : null}
-                  </div>
-                </div>
-              </div>
-            ))}
-            {!project.documents.length ? <Empty label="Nenhum documento liberado para o cliente." icon={FileText} /> : null}
-          </div>
-        </Panel>
-        <Panel title="Resumo documental">
-          <Metric label="Total de documentos" value={project.documents.length} tone="blue" />
-          <div className="mt-4 grid gap-2">
-            {Object.entries(byStatus).map(([status, total]) => (
-              <div key={status} className="flex justify-between rounded-lg bg-slate-50 px-3 py-2 text-sm">
-                <span className="text-slate-600">{status}</span>
-                <strong>{Number(total)}</strong>
-              </div>
-            ))}
-          </div>
-        </Panel>
-      </div>
-    </ModulePage>
-  );
-}
-
-function DownloadsModule({ project }: { project: any }) {
-  return (
-    <ModulePage
-      eyebrow="Documentos importantes"
-      icon={Download}
-      title="Documentos importantes"
-      description="Central de arquivos liberados para consulta e download pelo cliente."
-    >
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {project.documents.map((doc: any) => (
-          <div key={doc.id} className="flex flex-col rounded-xl border border-slate-100 bg-white p-5 shadow-sm">
-            <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50">
-              <FileText size={18} className="text-blue-600" />
-            </div>
-            <h3 className="text-sm font-black text-[#06326e]">{doc.name}</h3>
-            <p className="mt-1.5 min-h-14 flex-1 text-xs leading-5 text-slate-500">
-              {doc.type} · {doc.status} · {doc.version ?? "sem versão"}
-            </p>
-            {doc.downloadUrl || doc.externalUrl ? (
-              <Link
-                href={getDocumentDownloadHref(doc)}
-                target="_blank"
-                className="mt-4 inline-flex items-center gap-1.5 rounded-lg bg-[#062553] px-3 py-2 text-xs font-bold text-white hover:bg-[#0f1b3d]"
-              >
-                <Download size={12} />
-                Acessar documento
-              </Link>
-            ) : null}
-          </div>
-        ))}
-        {!project.documents.length ? (
-          <div className="col-span-full">
-            <Empty label="Nenhum documento disponível." icon={Download} />
-          </div>
-        ) : null}
-      </div>
-    </ModulePage>
-  );
-}
-
-function getDocumentDownloadHref(doc: { id: string; downloadUrl?: string | null; externalUrl?: string | null }) {
-  const href = doc.downloadUrl ?? doc.externalUrl ?? "#";
-  return href.startsWith("data:") ? `/api/files/document?documentId=${doc.id}` : href;
-}
-
-function EmailAttachmentLinks({ email, compact = false }: { email: any; compact?: boolean }) {
-  const links = [
-    ...(email.attachments ?? []).map((attachment: any) => ({ name: attachment.name, href: attachment.fileUrl?.startsWith("data:") ? `/api/files/email?attachmentId=${attachment.id}` : attachment.fileUrl })),
-    ...(email.attachmentUrl ? [{ name: "Acessar e-mail", href: email.attachmentUrl.startsWith("data:") ? `/api/files/email?emailId=${email.id}` : email.attachmentUrl }] : [])
-  ];
-
-  if (!links.length) return null;
-
-  return (
-    <div className={compact ? "mt-2 flex flex-wrap gap-1.5" : "mt-4 flex flex-wrap gap-2"}>
-      {links.map((attachment, index) => (
-        <Link
-          key={`${attachment.name}-${index}`}
-          href={attachment.href}
-          target="_blank"
-          className="inline-flex w-fit items-center gap-1.5 rounded-lg bg-[#062553] px-3 py-2 text-xs font-bold text-white hover:bg-[#0f1b3d]"
-        >
-          <Mail size={12} />
-          {attachment.name}
-        </Link>
-      ))}
-    </div>
-  );
-}
-
-function EmailsModule({ project }: { project: any }) {
-  const categories = countBy(project.importantEmails ?? [], "category");
-  const emails = project.importantEmails ?? [];
-  return (
-    <ModulePage
-      eyebrow="Comunicações"
-      icon={Mail}
-      title="E-mails importantes"
-      description="Registro de comunicações formais, decisões, pendências e alinhamentos relevantes do projeto."
-    >
-      <FilterStrip search="Pesquisar por assunto, origem, envolvidos..." selects={["Todas as categorias", "Todos os status"]} />
-      <div className="grid gap-5 lg:grid-cols-[1fr_240px]">
-        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-          {emails.map((email: any) => {
-            const isPending = email.status === "PENDENCIA" || email.status === "Pendencia";
-            const initials = (email.origin ?? "E").slice(0, 2).toUpperCase();
-            return (
-              <div key={email.id} className="flex flex-col rounded-xl border border-l-4 border-slate-100 border-l-blue-400 bg-white p-5 shadow-sm">
-                <div className="flex items-center gap-3">
-                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-blue-100 text-xs font-black text-blue-700">
-                    {initials}
-                  </div>
-                  <div>
-                    <span
-                      className={`rounded-full px-2 py-0.5 text-[10px] font-black uppercase ${
-                        isPending ? "bg-amber-100 text-amber-700" : "bg-emerald-100 text-emerald-700"
-                      }`}
-                    >
-                      {email.status}
-                    </span>
-                    <p className="mt-0.5 text-[11px] font-semibold text-slate-400">{formatDate(email.date)}</p>
-                  </div>
-                </div>
-                <h3 className="mt-3 text-sm font-black leading-5 text-slate-950">{email.subject}</h3>
-                <p className="mt-2 flex-1 text-xs leading-5 text-slate-500">{email.summary}</p>
-                <div className="mt-3 rounded-lg bg-slate-50 p-3 text-xs leading-5 text-slate-600">
-                  <p>
-                    <strong className="text-slate-700">Origem:</strong> {email.origin ?? "-"}
-                  </p>
-                  <p>
-                    <strong className="text-slate-700">Envolvidos:</strong> {email.involved ?? "-"}
-                  </p>
-                  <p>
-                    <strong className="text-slate-700">Tipo:</strong> {email.category}
-                  </p>
-                </div>
-                <EmailAttachmentLinks email={email} />
-                {email.replies?.length ? (
-                  <div className="mt-4 grid gap-2 border-l-2 border-slate-200 pl-3">
-                    <p className="text-[10px] font-black uppercase tracking-wide text-slate-400">Respostas relacionadas</p>
-                    {email.replies.map((reply: any) => (
-                      <div key={reply.id} className="rounded-lg bg-white p-3 ring-1 ring-slate-200">
-                        <p className="text-[11px] font-bold text-slate-400">{formatDate(reply.date)} | {reply.status}</p>
-                        <h4 className="mt-1 text-xs font-black text-slate-900">{reply.subject}</h4>
-                        <p className="mt-1 text-xs leading-5 text-slate-500">{reply.summary}</p>
-                        <EmailAttachmentLinks email={reply} compact />
-                      </div>
-                    ))}
-                  </div>
-                ) : null}
-              </div>
-            );
-          })}
-          {!emails.length ? <div className="col-span-full"><Empty label="Nenhum e-mail registrado." icon={Mail} /></div> : null}
-        </div>
-        <Panel title="Resumo">
-          <Metric label="E-mails" value={emails.length} tone="blue" />
-          <div className="mt-4 grid gap-2">
-            {Object.entries(categories).map(([cat, total]) => (
-              <div key={cat} className="flex justify-between rounded-lg bg-slate-50 px-3 py-2 text-sm">
-                <span className="text-slate-600">{cat}</span>
-                <strong>{Number(total)}</strong>
-              </div>
-            ))}
-          </div>
-        </Panel>
-      </div>
-    </ModulePage>
-  );
-}
-
-function MinutesModule({ project }: { project: any }) {
-  const minutes = project.meetingMinutes ?? [];
-  return (
-    <ModulePage
-      eyebrow="Central de atas"
-      icon={ScrollText}
-      title="Atas, reuniões e decisões"
-      description="Repositório executivo de atas publicadas, participantes, tipo de reunião e encaminhamentos principais."
-    >
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-        {minutes.map((minute: any) => (
-          <div key={minute.id} className="flex flex-col rounded-xl border border-l-4 border-slate-100 border-l-blue-400 bg-white p-5 shadow-sm">
-            <div className="flex items-center justify-between gap-3">
-              <span className="rounded-full bg-emerald-100 px-3 py-1 text-[10px] font-black text-emerald-700">{minute.status}</span>
-              <span className="text-xs font-semibold text-slate-400">{formatDate(minute.meetingDate)}</span>
-            </div>
-            <h3 className="mt-3 font-black text-slate-950">{minute.title}</h3>
-            <p className="mt-2 flex-1 text-sm leading-6 text-slate-500">{minute.summary}</p>
-            <div className="mt-3 rounded-lg bg-slate-50 p-3 text-xs leading-5 text-slate-600">
-              <p>
-                <strong className="text-slate-700">Reunião:</strong> {minute.meetingType ?? "-"}
-              </p>
-              <p>
-                <strong className="text-slate-700">Participantes:</strong> {minute.participants ?? "-"}
-              </p>
-            </div>
-            {minute.fileUrl ? (
-              <Link href={minute.fileUrl} target="_blank" className="mt-3 inline-flex items-center gap-1.5 rounded-lg bg-[#062553] px-3 py-2 text-xs font-bold text-white hover:bg-[#0f1b3d]">
-                <BookOpen size={12} />
-                Abrir ata
-              </Link>
-            ) : null}
-          </div>
-        ))}
-        {!minutes.length ? <div className="col-span-full"><Empty label="Nenhuma ata registrada." icon={ScrollText} /></div> : null}
-      </div>
     </ModulePage>
   );
 }

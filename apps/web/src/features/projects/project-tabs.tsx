@@ -3,9 +3,7 @@ import Link from "next/link";
 const tabs = [
   ["overview", "Home"],
   ["governance", "Governanca"],
-  ["emails", "E-mails"],
-  ["minutes", "Atas"],
-  ["documents", "Documentos importantes"],
+  ["documents", "Documentos"],
   ["milestones", "Marcos"],
   ["gantt", "Planejamento"],
   ["blockers", "Riscos e pendencias"],
