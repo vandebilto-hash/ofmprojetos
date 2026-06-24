@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { DialogAction } from "@/components/ui/dialog-action";
+import { FileUpload } from "@/components/ui/file-upload";
 import { MultiFileUpload } from "@/components/ui/multi-file-upload";
 import { PeopleMultiSelect } from "@/components/ui/people-multi-select";
 import { PageHeader } from "@/components/ui/page-header";
@@ -133,11 +134,11 @@ function EmailForm({ projectId, parentId, email, people, defaultSubject }: { pro
       {email ? <input type="hidden" name="emailId" value={email.id} /> : null}
       <input type="hidden" name="projectId" value={projectId} />
       <input type="hidden" name="parentId" value={parentId ?? email?.parentId ?? ""} />
-      <input type="hidden" name="attachmentUrl" value={email?.attachmentUrl ?? ""} />
       <label className="grid gap-1 text-sm font-medium">Assunto<input name="subject" required defaultValue={email?.subject ?? defaultSubject ?? ""} className="h-10 rounded-md border border-line px-3" /></label>
       <label className="grid gap-1 text-sm font-medium">Resumo<textarea name="summary" defaultValue={email?.summary ?? ""} rows={3} className="rounded-md border border-line px-3 py-2" /></label>
       <div className="grid grid-cols-2 gap-3"><PeopleMultiSelect name="origin" label="Origem" people={people} defaultValue={email?.origin ?? ""} /><PeopleMultiSelect name="involved" label="Envolvidos" people={people} defaultValue={email?.involved ?? ""} /></div>
       <div className="grid grid-cols-3 gap-3"><label className="grid gap-1 text-sm font-medium">Categoria<select name="category" defaultValue={email?.category ?? "E-mail Formal"} className="h-10 rounded-md border border-line px-3"><option value="E-mail Formal">E-mail formal</option><option value="Solicitação">Solicitação</option><option value="Decisão">Decisão</option><option value="Pendência">Pendência</option><option value="Aprovação">Aprovação</option><option value="Alinhamento">Alinhamento</option></select></label><label className="grid gap-1 text-sm font-medium">Status<select name="status" defaultValue={email?.status ?? "Solucionado"} className="h-10 rounded-md border border-line px-3"><option value="Aberto">Aberto</option><option value="Em andamento">Em andamento</option><option value="Aguardando retorno">Aguardando retorno</option><option value="Solucionado">Solucionado</option><option value="Cancelado">Cancelado</option></select></label><label className="grid gap-1 text-sm font-medium">Data<input name="date" type="date" required defaultValue={inputDate(email?.date ?? null)} className="h-10 rounded-md border border-line px-3" /></label></div>
+      <FileUpload name="attachmentUrl" label="Arquivo do e-mail" defaultValue={email?.attachmentUrl ?? ""} />
       <MultiFileUpload name="attachments" label="Arquivos relacionados" defaultValue={(email?.attachments ?? []).map((attachment: any) => ({ name: attachment.name, fileUrl: attachment.fileUrl }))} />
       <button className="w-fit rounded-md bg-brand-600 px-4 py-2 text-sm font-semibold text-white">Salvar</button>
     </form>
