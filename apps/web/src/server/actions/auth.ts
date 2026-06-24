@@ -7,6 +7,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { authOptions } from "@/lib/auth/options";
+import { sendEmail } from "@/lib/email/smtp";
 import { prisma } from "@/lib/prisma/client";
 
 const changePasswordSchema = z
@@ -95,11 +96,33 @@ export async function forgotPasswordAction(formData: FormData) {
     }
   });
 
-  console.log(`[RESET PASSWORD] URL de recuperacao para ${user.email}: ${resetUrl}`);
+  const emailResult = await sendEmail({
+    to: user.email,
+    subject: "Recuperação de senha | Projete-se",
+    text: `Use o link abaixo para redefinir sua senha. O link expira em 1 hora.\n\n${resetUrl}`,
+    html: `
+      <div style="font-family: Arial, sans-serif; color: #0f172a; line-height: 1.5;">
+        <h2>Recuperação de senha</h2>
+        <p>Recebemos uma solicitação para redefinir sua senha no Projete-se.</p>
+        <p>O link abaixo expira em 1 hora:</p>
+        <p><a href="${resetUrl}" style="display:inline-block;background:#2563eb;color:#fff;padding:10px 14px;border-radius:8px;text-decoration:none;font-weight:700;">Redefinir senha</a></p>
+        <p>Se o botão não funcionar, copie e cole este link no navegador:</p>
+        <p style="word-break:break-all;color:#334155;">${resetUrl}</p>
+        <p>Se você não solicitou a recuperação, ignore este e-mail.</p>
+      </div>
+    `
+  });
+
+  if (!emailResult.sent) {
+    console.log(`[RESET PASSWORD] SMTP nao configurado. URL de recuperacao para ${user.email}: ${resetUrl}`);
+  }
 
   return {
-    message: "Se o e-mail estiver cadastrado, voce recebera um link de recuperacao.",
-    resetUrl
+    message: emailResult.sent
+      ? "Se o e-mail estiver cadastrado, voce recebera um link de recuperacao."
+      : "Link de recuperação gerado, mas o envio de e-mail ainda não está configurado no servidor.",
+    resetUrl: process.env.NODE_ENV === "development" ? resetUrl : undefined,
+    sent: emailResult.sent
   };
 }
 

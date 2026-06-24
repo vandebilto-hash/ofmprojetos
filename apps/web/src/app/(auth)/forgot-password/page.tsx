@@ -54,7 +54,7 @@ export default function ForgotPasswordPage() {
                 <CheckCircle2 size={28} className="text-emerald-600 dark:text-emerald-400" aria-hidden="true" />
               </div>
               <div>
-                <p className="font-semibold text-ink dark:text-white">E-mail enviado</p>
+                <p className="font-semibold text-ink dark:text-white">{resetUrl ? "Link gerado" : "E-mail enviado"}</p>
                 <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">{success}</p>
               </div>
               {resetUrl && (
