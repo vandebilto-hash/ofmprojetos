@@ -9,6 +9,12 @@ import { prisma } from "@/lib/prisma/client";
 import { getProjectPeople } from "@/lib/project-people";
 import { createMilestoneAction, deleteMilestoneAction, updateMilestoneAction } from "@/server/actions/projects";
 
+const inputClass = "h-10 rounded-md border border-line bg-white px-3 text-sm text-ink outline-none transition-colors placeholder:text-slate-400 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white dark:placeholder-slate-500";
+const selectClass = "h-10 rounded-md border border-line bg-white px-3 text-sm text-ink outline-none transition-colors focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white";
+const textareaClass = "min-h-[80px] rounded-md border border-line bg-white px-3 py-2 text-sm text-ink outline-none transition-colors placeholder:text-slate-400 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white dark:placeholder-slate-500";
+const labelClass = "grid gap-1.5 text-sm font-medium text-slate-700 dark:text-slate-300";
+const sectionTitle = "text-xs font-bold uppercase tracking-wide text-slate-500 dark:text-slate-400";
+
 function inputDate(value: Date | null) {
   return value ? value.toISOString().slice(0, 10) : "";
 }
@@ -39,24 +45,75 @@ export default async function ProjectMilestonesPage({ params }: { params: { id: 
       <ProjectTabs projectId={project.id} />
       <div className="mb-4 flex justify-end">
         <DialogAction title="Cadastrar marco" description="Adicione um evento, entrega, aprovação ou decisão importante." trigger="create" triggerLabel="Novo marco">
-          <form action={createMilestoneAction} className="grid gap-3">
+          <form action={createMilestoneAction} className="grid gap-4">
             <input type="hidden" name="projectId" value={project.id} />
-            <div className="grid grid-cols-2 gap-3">
-              <label className="grid gap-1 text-sm font-medium">Nome<input name="name" required className="h-10 rounded-md border border-line px-3" /></label>
-              <label className="grid gap-1 text-sm font-medium">Tipo<select name="type" defaultValue="Entrega" className="h-10 rounded-md border border-line px-3"><option value="Entrega">Entrega</option><option value="Aprovação">Aprovação</option><option value="Reunião">Reunião</option><option value="Decisão">Decisão</option><option value="Marco contratual">Marco contratual</option><option value="Outro">Outro</option></select></label>
+
+            <div>
+              <p className={sectionTitle}>Identificação</p>
+              <div className="mt-2 grid grid-cols-2 gap-3">
+                <label className={labelClass}>
+                  Nome <span className="text-red-500">*</span>
+                  <input name="name" required className={inputClass} placeholder="Nome do marco" />
+                </label>
+                <label className={labelClass}>
+                  Tipo
+                  <select name="type" defaultValue="Entrega" className={selectClass}>
+                    <option value="Entrega">Entrega</option>
+                    <option value="Aprovação">Aprovação</option>
+                    <option value="Reunião">Reunião</option>
+                    <option value="Decisão">Decisão</option>
+                    <option value="Marco contratual">Marco contratual</option>
+                    <option value="Outro">Outro</option>
+                  </select>
+                </label>
+              </div>
+              <label className={`${labelClass} mt-3`}>
+                Descrição
+                <textarea name="description" rows={3} className={textareaClass} placeholder="Descreva o marco" />
+              </label>
             </div>
-            <label className="grid gap-1 text-sm font-medium">Descrição<textarea name="description" rows={3} className="rounded-md border border-line px-3 py-2" /></label>
-            <div className="grid grid-cols-3 gap-3">
-              <label className="grid gap-1 text-sm font-medium">Data planejada<input name="plannedDate" type="date" required className="h-10 rounded-md border border-line px-3" /></label>
-              <label className="grid gap-1 text-sm font-medium">Data real<input name="actualDate" type="date" className="h-10 rounded-md border border-line px-3" /></label>
-              <label className="grid gap-1 text-sm font-medium">Status<select name="status" defaultValue="PLANNED" className="h-10 rounded-md border border-line px-3"><option value="PLANNED">Planejado</option><option value="IN_PROGRESS">Em andamento</option><option value="COMPLETED">Concluído</option><option value="DELAYED">Atrasado</option></select></label>
+
+            <div>
+              <p className={sectionTitle}>Cronograma</p>
+              <div className="mt-2 grid grid-cols-3 gap-3">
+                <label className={labelClass}>
+                  Data planejada <span className="text-red-500">*</span>
+                  <input name="plannedDate" type="date" required className={inputClass} />
+                </label>
+                <label className={labelClass}>
+                  Data real
+                  <input name="actualDate" type="date" className={inputClass} />
+                </label>
+                <label className={labelClass}>
+                  Status
+                  <select name="status" defaultValue="PLANNED" className={selectClass}>
+                    <option value="PLANNED">Planejado</option>
+                    <option value="IN_PROGRESS">Em andamento</option>
+                    <option value="COMPLETED">Concluído</option>
+                    <option value="DELAYED">Atrasado</option>
+                  </select>
+                </label>
+              </div>
             </div>
-            <div className="grid grid-cols-2 gap-3">
-              <PeopleMultiSelect name="owner" label="Responsável" people={people} />
-              <FileUpload name="evidenceUrl" label="Evidencia" />
+
+            <div>
+              <p className={sectionTitle}>Responsável e evidência</p>
+              <div className="mt-2 grid grid-cols-2 gap-3">
+                <PeopleMultiSelect name="owner" label="Responsável" people={people} />
+                <FileUpload name="evidenceUrl" label="Evidência" />
+              </div>
             </div>
-            <label className="grid gap-1 text-sm font-medium">Observações<textarea name="notes" rows={2} className="rounded-md border border-line px-3 py-2" /></label>
-            <button className="w-fit rounded-md bg-brand-600 px-4 py-2 text-sm font-semibold text-white">Cadastrar marco</button>
+
+            <label className={`${labelClass} mt-1`}>
+              Observações
+              <textarea name="notes" rows={2} className={textareaClass} placeholder="Notas adicionais" />
+            </label>
+
+            <div className="flex justify-end border-t border-line pt-3 dark:border-slate-700">
+              <button type="submit" className="inline-flex h-10 items-center justify-center gap-2 rounded-md bg-brand-600 px-5 text-sm font-semibold text-white transition-colors hover:bg-brand-700">
+                Cadastrar marco
+              </button>
+            </div>
           </form>
         </DialogAction>
       </div>
@@ -73,15 +130,74 @@ export default async function ProjectMilestonesPage({ params }: { params: { id: 
               <div className="flex items-start justify-end gap-2">
                 <span className="h-fit rounded-full bg-slate-100 px-3 py-1 text-center text-xs font-semibold text-slate-700">{milestoneStatusLabel[milestone.status]}</span>
                 <DialogAction title="Editar marco" description={milestone.name} trigger="edit">
-                  <form action={updateMilestoneAction} className="grid gap-3">
+                  <form action={updateMilestoneAction} className="grid gap-4">
                     <input type="hidden" name="milestoneId" value={milestone.id} />
                     <input type="hidden" name="projectId" value={project.id} />
-                    <div className="grid grid-cols-2 gap-3"><label className="grid gap-1 text-sm font-medium">Nome<input name="name" required defaultValue={milestone.name} className="h-10 rounded-md border border-line px-3" /></label><label className="grid gap-1 text-sm font-medium">Tipo<select name="type" defaultValue={milestone.type ?? "Entrega"} className="h-10 rounded-md border border-line px-3"><option value="Entrega">Entrega</option><option value="Aprovação">Aprovação</option><option value="Reunião">Reunião</option><option value="Decisão">Decisão</option><option value="Marco contratual">Marco contratual</option><option value="Outro">Outro</option></select></label></div>
-                    <label className="grid gap-1 text-sm font-medium">Descrição<textarea name="description" defaultValue={milestone.description ?? ""} rows={3} className="rounded-md border border-line px-3 py-2" /></label>
-                    <div className="grid grid-cols-3 gap-3"><label className="grid gap-1 text-sm font-medium">Data planejada<input name="plannedDate" type="date" required defaultValue={inputDate(milestone.plannedDate)} className="h-10 rounded-md border border-line px-3" /></label><label className="grid gap-1 text-sm font-medium">Data real<input name="actualDate" type="date" defaultValue={inputDate(milestone.actualDate)} className="h-10 rounded-md border border-line px-3" /></label><label className="grid gap-1 text-sm font-medium">Status<select name="status" defaultValue={milestone.status} className="h-10 rounded-md border border-line px-3"><option value="PLANNED">Planejado</option><option value="IN_PROGRESS">Em andamento</option><option value="COMPLETED">Concluído</option><option value="DELAYED">Atrasado</option></select></label></div>
-                    <div className="grid grid-cols-2 gap-3"><PeopleMultiSelect name="owner" label="Responsável" people={people} defaultValue={milestone.owner ?? ""} /><FileUpload name="evidenceUrl" label="Evidencia" defaultValue={milestone.evidenceUrl ?? ""} /></div>
-                    <label className="grid gap-1 text-sm font-medium">Observações<textarea name="notes" defaultValue={milestone.notes ?? ""} rows={2} className="rounded-md border border-line px-3 py-2" /></label>
-                    <button className="w-fit rounded-md bg-brand-600 px-4 py-2 text-sm font-semibold text-white">Salvar</button>
+
+                    <div>
+                      <p className={sectionTitle}>Identificação</p>
+                      <div className="mt-2 grid grid-cols-2 gap-3">
+                        <label className={labelClass}>
+                          Nome <span className="text-red-500">*</span>
+                          <input name="name" required defaultValue={milestone.name} className={inputClass} />
+                        </label>
+                        <label className={labelClass}>
+                          Tipo
+                          <select name="type" defaultValue={milestone.type ?? "Entrega"} className={selectClass}>
+                            <option value="Entrega">Entrega</option>
+                            <option value="Aprovação">Aprovação</option>
+                            <option value="Reunião">Reunião</option>
+                            <option value="Decisão">Decisão</option>
+                            <option value="Marco contratual">Marco contratual</option>
+                            <option value="Outro">Outro</option>
+                          </select>
+                        </label>
+                      </div>
+                      <label className={`${labelClass} mt-3`}>
+                        Descrição
+                        <textarea name="description" defaultValue={milestone.description ?? ""} rows={3} className={textareaClass} />
+                      </label>
+                    </div>
+
+                    <div>
+                      <p className={sectionTitle}>Cronograma</p>
+                      <div className="mt-2 grid grid-cols-3 gap-3">
+                        <label className={labelClass}>
+                          Data planejada <span className="text-red-500">*</span>
+                          <input name="plannedDate" type="date" required defaultValue={inputDate(milestone.plannedDate)} className={inputClass} />
+                        </label>
+                        <label className={labelClass}>
+                          Data real
+                          <input name="actualDate" type="date" defaultValue={inputDate(milestone.actualDate)} className={inputClass} />
+                        </label>
+                        <label className={labelClass}>
+                          Status
+                          <select name="status" defaultValue={milestone.status} className={selectClass}>
+                            <option value="PLANNED">Planejado</option>
+                            <option value="IN_PROGRESS">Em andamento</option>
+                            <option value="COMPLETED">Concluído</option>
+                            <option value="DELAYED">Atrasado</option>
+                          </select>
+                        </label>
+                      </div>
+                    </div>
+
+                    <div>
+                      <p className={sectionTitle}>Responsável e evidência</p>
+                      <div className="mt-2 grid grid-cols-2 gap-3">
+                        <PeopleMultiSelect name="owner" label="Responsável" people={people} defaultValue={milestone.owner ?? ""} />
+                        <FileUpload name="evidenceUrl" label="Evidência" defaultValue={milestone.evidenceUrl ?? ""} />
+                      </div>
+                    </div>
+
+                    <label className={`${labelClass} mt-1`}>
+                      Observações
+                      <textarea name="notes" defaultValue={milestone.notes ?? ""} rows={2} className={textareaClass} />
+                    </label>
+
+                    <div className="flex justify-end border-t border-line pt-3 dark:border-slate-700">
+                      <button type="submit" className="inline-flex h-10 items-center justify-center gap-2 rounded-md bg-brand-600 px-5 text-sm font-semibold text-white transition-colors hover:bg-brand-700">Salvar</button>
+                    </div>
                   </form>
                 </DialogAction>
                 <DialogAction title="Excluir marco" description={`Deseja realmente excluir "${milestone.name}"?`} trigger="delete">

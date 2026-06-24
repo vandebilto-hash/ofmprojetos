@@ -35,76 +35,111 @@ function BlockerCriticalityBadge({ value }: { value: string }) {
   );
 }
 
+const inputClass = "h-10 rounded-md border border-line bg-white px-3 text-sm text-ink outline-none transition-colors placeholder:text-slate-400 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white dark:placeholder-slate-500";
+const selectClass = "h-10 rounded-md border border-line bg-white px-3 text-sm text-ink outline-none transition-colors focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white";
+const textareaClass = "min-h-[80px] rounded-md border border-line bg-white px-3 py-2 text-sm text-ink outline-none transition-colors placeholder:text-slate-400 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white dark:placeholder-slate-500";
+const labelClass = "grid gap-1.5 text-sm font-medium text-slate-700 dark:text-slate-300";
+const sectionTitle = "text-xs font-bold uppercase tracking-wide text-slate-500 dark:text-slate-400";
+
 function PendingIssueForm({ project, people, pending }: { project: any; people: string[]; pending?: any }) {
   return (
-    <form action={upsertPendingIssueAction} className="grid gap-3">
+    <form action={upsertPendingIssueAction} className="grid gap-4">
       {pending ? <input type="hidden" name="pendingIssueId" value={pending.id} /> : null}
       <input type="hidden" name="projectId" value={project.id} />
-      <label className="grid gap-1 text-sm font-medium">
-        Título
-        <input name="title" required defaultValue={pending?.title ?? ""} className="h-10 rounded-md border border-line px-3" />
-      </label>
-      <label className="grid gap-1 text-sm font-medium">
-        Descrição
-        <textarea name="description" rows={3} defaultValue={pending?.description ?? ""} className="rounded-md border border-line px-3 py-2" />
-      </label>
-      <div className="grid grid-cols-2 gap-3">
-        <label className="grid gap-1 text-sm font-medium">
-          Risco relacionado
-          <select name="riskId" defaultValue={pending?.riskId ?? ""} className="h-10 rounded-md border border-line px-3">
-            <option value="">Sem risco</option>
-            {project.risks.map((risk: any) => <option key={risk.id} value={risk.id}>{risk.name}</option>)}
-          </select>
-        </label>
-        <label className="grid gap-1 text-sm font-medium">
-          Empresa responsável
-          <input name="responsibleCompany" defaultValue={pending?.responsibleCompany ?? ""} className="h-10 rounded-md border border-line px-3" />
-        </label>
+
+      <div>
+        <p className={sectionTitle}>Identificação</p>
+        <div className="mt-2 grid gap-3">
+          <label className={labelClass}>
+            Título <span className="text-red-500">*</span>
+            <input name="title" required defaultValue={pending?.title ?? ""} className={inputClass} placeholder="Título da pendência" />
+          </label>
+          <label className={labelClass}>
+            Descrição
+            <textarea name="description" rows={3} defaultValue={pending?.description ?? ""} className={textareaClass} placeholder="Descreva a pendência" />
+          </label>
+        </div>
       </div>
-      <PeopleMultiSelect name="responsiblePerson" label="Pessoa responsável" people={people} defaultValue={pending?.responsiblePerson ?? ""} />
-      <div className="grid grid-cols-2 gap-3">
-        <label className="grid gap-1 text-sm font-medium">
-          Data de abertura
-          <input name="openedAt" type="date" defaultValue={inputDate(pending?.openedAt ?? new Date())} className="h-10 rounded-md border border-line px-3" />
-        </label>
-        <label className="grid gap-1 text-sm font-medium">
-          Prazo
-          <input name="dueDate" type="date" defaultValue={inputDate(pending?.dueDate)} className="h-10 rounded-md border border-line px-3" />
-        </label>
+
+      <div>
+        <p className={sectionTitle}>Vínculos e responsável</p>
+        <div className="mt-2 grid gap-3">
+          <div className="grid grid-cols-2 gap-3">
+            <label className={labelClass}>
+              Risco relacionado
+              <select name="riskId" defaultValue={pending?.riskId ?? ""} className={selectClass}>
+                <option value="">Sem risco</option>
+                {project.risks.map((risk: any) => <option key={risk.id} value={risk.id}>{risk.name}</option>)}
+              </select>
+            </label>
+            <label className={labelClass}>
+              Empresa responsável
+              <input name="responsibleCompany" defaultValue={pending?.responsibleCompany ?? ""} className={inputClass} placeholder="Empresa ou área" />
+            </label>
+          </div>
+          <PeopleMultiSelect name="responsiblePerson" label="Pessoa responsável" people={people} defaultValue={pending?.responsiblePerson ?? ""} />
+        </div>
       </div>
-      <div className="grid grid-cols-3 gap-3">
-        <label className="grid gap-1 text-sm font-medium">
-          Status
-          <select name="status" defaultValue={pending?.status ?? "OPEN"} className="h-10 rounded-md border border-line px-3">
-            <option value="OPEN">Aberta</option>
-            <option value="IN_PROGRESS">Em andamento</option>
-            <option value="RESOLVED">Resolvida</option>
-            <option value="CANCELED">Cancelada</option>
-          </select>
-        </label>
-        <label className="grid gap-1 text-sm font-medium">
-          Prioridade
-          <select name="priority" defaultValue={pending?.priority ?? "MEDIUM"} className="h-10 rounded-md border border-line px-3">
-            <option value="LOW">Baixa</option>
-            <option value="MEDIUM">Média</option>
-            <option value="HIGH">Alta</option>
-            <option value="CRITICAL">Crítica</option>
-          </select>
-        </label>
-        <label className="grid gap-1 text-sm font-medium">
-          Resolvida em
-          <input name="resolvedAt" type="date" defaultValue={inputDate(pending?.resolvedAt)} className="h-10 rounded-md border border-line px-3" />
-        </label>
+
+      <div>
+        <p className={sectionTitle}>Datas e status</p>
+        <div className="mt-2 grid gap-3">
+          <div className="grid grid-cols-2 gap-3">
+            <label className={labelClass}>
+              Data de abertura
+              <input name="openedAt" type="date" defaultValue={inputDate(pending?.openedAt ?? new Date())} className={inputClass} />
+            </label>
+            <label className={labelClass}>
+              Prazo
+              <input name="dueDate" type="date" defaultValue={inputDate(pending?.dueDate)} className={inputClass} />
+            </label>
+          </div>
+          <div className="grid grid-cols-3 gap-3">
+            <label className={labelClass}>
+              Status
+              <select name="status" defaultValue={pending?.status ?? "OPEN"} className={selectClass}>
+                <option value="OPEN">Aberta</option>
+                <option value="IN_PROGRESS">Em andamento</option>
+                <option value="RESOLVED">Resolvida</option>
+                <option value="CANCELED">Cancelada</option>
+              </select>
+            </label>
+            <label className={labelClass}>
+              Prioridade
+              <select name="priority" defaultValue={pending?.priority ?? "MEDIUM"} className={selectClass}>
+                <option value="LOW">Baixa</option>
+                <option value="MEDIUM">Média</option>
+                <option value="HIGH">Alta</option>
+                <option value="CRITICAL">Crítica</option>
+              </select>
+            </label>
+            <label className={labelClass}>
+              Resolvida em
+              <input name="resolvedAt" type="date" defaultValue={inputDate(pending?.resolvedAt)} className={inputClass} />
+            </label>
+          </div>
+        </div>
       </div>
-      <label className="grid gap-1 text-sm font-medium">
-        Impacto / observação
-        <textarea name="impactDescription" rows={2} defaultValue={pending?.impactDescription ?? ""} className="rounded-md border border-line px-3 py-2" />
-      </label>
-      <label className="grid gap-1 text-sm font-medium">
-        Próxima ação
-        <textarea name="nextAction" rows={2} defaultValue={pending?.nextAction ?? ""} className="rounded-md border border-line px-3 py-2" />
-      </label>
-      <button className="w-fit rounded-md bg-brand-600 px-4 py-2 text-sm font-semibold text-white">{pending ? "Salvar pendência" : "Cadastrar pendência"}</button>
+
+      <div>
+        <p className={sectionTitle}>Acompanhamento</p>
+        <div className="mt-2 grid gap-3">
+          <label className={labelClass}>
+            Impacto / observação
+            <textarea name="impactDescription" rows={2} defaultValue={pending?.impactDescription ?? ""} className={textareaClass} placeholder="Descreva o impacto" />
+          </label>
+          <label className={labelClass}>
+            Próxima ação
+            <textarea name="nextAction" rows={2} defaultValue={pending?.nextAction ?? ""} className={textareaClass} placeholder="Próxima ação a ser tomada" />
+          </label>
+        </div>
+      </div>
+
+      <div className="flex justify-end border-t border-line pt-3 dark:border-slate-700">
+        <button type="submit" className="inline-flex h-10 items-center justify-center gap-2 rounded-md bg-brand-600 px-5 text-sm font-semibold text-white transition-colors hover:bg-brand-700">
+          {pending ? "Salvar pendência" : "Cadastrar pendência"}
+        </button>
+      </div>
     </form>
   );
 }
@@ -139,117 +174,222 @@ export default async function ProjectBlockersPage({ params }: { params: { id: st
       </section>
       <div className="mb-4 flex flex-wrap justify-end gap-2">
         <DialogAction title="Cadastrar risco" description="Inclua um novo risco na matriz do projeto." trigger="create" triggerLabel="Novo risco">
-          <form action={createRiskAction} className="grid gap-3">
+          <form action={createRiskAction} className="grid gap-4">
             <input type="hidden" name="projectId" value={project.id} />
-            <div className="grid grid-cols-2 gap-3">
-              <label className="grid gap-1 text-sm font-medium">Nome do risco<input name="name" required className="h-10 rounded-md border border-line px-3" /></label>
-              <label className="grid gap-1 text-sm font-medium">Classificacao<select name="classification" defaultValue="MEDIUM" className="h-10 rounded-md border border-line px-3"><option value="LOW">Baixo</option><option value="MEDIUM">Medio</option><option value="HIGH">Alto</option><option value="CRITICAL">Critico</option></select></label>
+
+            <div>
+              <p className={sectionTitle}>Identificação</p>
+              <div className="mt-2 grid grid-cols-2 gap-3">
+                <label className={labelClass}>
+                  Nome do risco <span className="text-red-500">*</span>
+                  <input name="name" required className={inputClass} placeholder="Nome do risco" />
+                </label>
+                <label className={labelClass}>
+                  Classificação
+                  <select name="classification" defaultValue="MEDIUM" className={selectClass}>
+                    <option value="LOW">Baixo</option>
+                    <option value="MEDIUM">Médio</option>
+                    <option value="HIGH">Alto</option>
+                    <option value="CRITICAL">Crítico</option>
+                  </select>
+                </label>
+              </div>
+              <label className={`${labelClass} mt-3`}>
+                Descrição
+                <textarea name="description" rows={3} className={textareaClass} placeholder="Descreva o risco" />
+              </label>
             </div>
-            <label className="grid gap-1 text-sm font-medium">Descricao<textarea name="description" rows={3} className="rounded-md border border-line px-3 py-2" /></label>
-            <div className="grid grid-cols-3 gap-3">
-              <label className="grid gap-1 text-sm font-medium">Probabilidade<select name="probability" defaultValue="MEDIUM" className="h-10 rounded-md border border-line px-3"><option value="LOW">Baixa</option><option value="MEDIUM">Media</option><option value="HIGH">Alta</option></select></label>
-              <label className="grid gap-1 text-sm font-medium">Estrategia<select name="responseStrategy" defaultValue="MITIGATE" className="h-10 rounded-md border border-line px-3"><option value="MITIGATE">Mitigar</option><option value="ACCEPT">Aceitar</option><option value="TRANSFER">Transferir</option><option value="AVOID">Evitar</option></select></label>
-              <label className="grid gap-1 text-sm font-medium">Status<select name="status" defaultValue="OPEN" className="h-10 rounded-md border border-line px-3"><option value="OPEN">Aberto</option><option value="IN_TREATMENT">Em tratamento</option><option value="MATERIALIZED">Materializado</option><option value="CLOSED">Encerrado</option></select></label>
+
+            <div>
+              <p className={sectionTitle}>Análise</p>
+              <div className="mt-2 grid grid-cols-3 gap-3">
+                <label className={labelClass}>
+                  Probabilidade
+                  <select name="probability" defaultValue="MEDIUM" className={selectClass}>
+                    <option value="LOW">Baixa</option>
+                    <option value="MEDIUM">Média</option>
+                    <option value="HIGH">Alta</option>
+                  </select>
+                </label>
+                <label className={labelClass}>
+                  Estratégia
+                  <select name="responseStrategy" defaultValue="MITIGATE" className={selectClass}>
+                    <option value="MITIGATE">Mitigar</option>
+                    <option value="ACCEPT">Aceitar</option>
+                    <option value="TRANSFER">Transferir</option>
+                    <option value="AVOID">Evitar</option>
+                  </select>
+                </label>
+                <label className={labelClass}>
+                  Status
+                  <select name="status" defaultValue="OPEN" className={selectClass}>
+                    <option value="OPEN">Aberto</option>
+                    <option value="IN_TREATMENT">Em tratamento</option>
+                    <option value="MATERIALIZED">Materializado</option>
+                    <option value="CLOSED">Encerrado</option>
+                  </select>
+                </label>
+              </div>
+              <div className="mt-3 grid grid-cols-2 gap-3">
+                <label className={labelClass}>
+                  Causa
+                  <input name="cause" className={inputClass} placeholder="Causa do risco" />
+                </label>
+                <label className={labelClass}>
+                  Evento
+                  <input name="event" className={inputClass} placeholder="Evento que pode ocorrer" />
+                </label>
+              </div>
             </div>
-            <div className="grid grid-cols-2 gap-3">
-              <label className="grid gap-1 text-sm font-medium">Causa<input name="cause" className="h-10 rounded-md border border-line px-3" /></label>
-              <label className="grid gap-1 text-sm font-medium">Evento<input name="event" className="h-10 rounded-md border border-line px-3" /></label>
+
+            <div>
+              <p className={sectionTitle}>Impacto e resposta</p>
+              <div className="mt-2 grid gap-3">
+                <label className={labelClass}>
+                  Impacto
+                  <textarea name="impact" rows={2} className={textareaClass} placeholder="Descreva o impacto" />
+                </label>
+                <label className={labelClass}>
+                  Ações preventivas
+                  <textarea name="preventiveActions" rows={2} className={textareaClass} placeholder="Ações para mitigar o risco" />
+                </label>
+                <label className={labelClass}>
+                  Plano de contingência
+                  <textarea name="contingencyPlan" rows={2} className={textareaClass} placeholder="Plano caso o risco se materialize" />
+                </label>
+              </div>
             </div>
-            <label className="grid gap-1 text-sm font-medium">Impacto<textarea name="impact" rows={2} className="rounded-md border border-line px-3 py-2" /></label>
-            <label className="grid gap-1 text-sm font-medium">Acoes preventivas<textarea name="preventiveActions" rows={2} className="rounded-md border border-line px-3 py-2" /></label>
-            <label className="grid gap-1 text-sm font-medium">Plano de contingencia<textarea name="contingencyPlan" rows={2} className="rounded-md border border-line px-3 py-2" /></label>
-            <div className="grid grid-cols-3 gap-3">
-              <label className="grid gap-1 text-sm font-medium">Gatilhos<input name="triggers" className="h-10 rounded-md border border-line px-3" /></label>
-              <PeopleMultiSelect name="owner" label="Responsavel" people={people} />
-              <label className="grid gap-1 text-sm font-medium">Ultima revisao<input name="lastReviewAt" type="date" className="h-10 rounded-md border border-line px-3" /></label>
+
+            <div>
+              <p className={sectionTitle}>Responsável e acompanhamento</p>
+              <div className="mt-2 grid grid-cols-3 gap-3">
+                <label className={labelClass}>
+                  Gatilhos
+                  <input name="triggers" className={inputClass} placeholder="Sinais de alerta" />
+                </label>
+                <PeopleMultiSelect name="owner" label="Responsável" people={people} />
+                <label className={labelClass}>
+                  Última revisão
+                  <input name="lastReviewAt" type="date" className={inputClass} />
+                </label>
+              </div>
+              <label className={`${labelClass} mt-3`}>
+                Observações
+                <textarea name="notes" rows={2} className={textareaClass} placeholder="Notas adicionais" />
+              </label>
             </div>
-            <label className="grid gap-1 text-sm font-medium">Observacoes<textarea name="notes" rows={2} className="rounded-md border border-line px-3 py-2" /></label>
-            <button className="w-fit rounded-md bg-brand-600 px-4 py-2 text-sm font-semibold text-white">Cadastrar risco</button>
+
+            <div className="flex justify-end border-t border-line pt-3 dark:border-slate-700">
+              <button type="submit" className="inline-flex h-10 items-center justify-center gap-2 rounded-md bg-brand-600 px-5 text-sm font-semibold text-white transition-colors hover:bg-brand-700">
+                Cadastrar risco
+              </button>
+            </div>
           </form>
         </DialogAction>
         <DialogAction title="Cadastrar bloqueio" description="Registre um impedimento do projeto ou de uma tarefa." trigger="create" triggerLabel="Novo bloqueio">
-          <form action={upsertBlockerAction} className="grid gap-3">
+          <form action={upsertBlockerAction} className="grid gap-4">
             <input type="hidden" name="projectId" value={project.id} />
-            <label className="grid gap-1 text-sm font-medium">
-              Titulo
-              <input name="title" required placeholder="Titulo do bloqueio" className="h-10 rounded-md border border-line px-3" />
-            </label>
-            <div className="grid grid-cols-2 gap-3">
-              <label className="grid gap-1 text-sm font-medium">
-                Data de abertura
-                <input name="openedAt" type="date" defaultValue={new Date().toISOString().slice(0, 10)} className="h-10 rounded-md border border-line px-3" />
-              </label>
-              <label className="grid gap-1 text-sm font-medium">
-                Previsao de resolucao
-                <input name="expectedResolutionAt" type="date" className="h-10 rounded-md border border-line px-3" />
-              </label>
+
+            <div>
+              <p className={sectionTitle}>Identificação</p>
+              <div className="mt-2 grid gap-3">
+                <label className={labelClass}>
+                  Título <span className="text-red-500">*</span>
+                  <input name="title" required placeholder="Título do bloqueio" className={inputClass} />
+                </label>
+                <div className="grid grid-cols-2 gap-3">
+                  <label className={labelClass}>
+                    Data de abertura
+                    <input name="openedAt" type="date" defaultValue={new Date().toISOString().slice(0, 10)} className={inputClass} />
+                  </label>
+                  <label className={labelClass}>
+                    Previsão de resolução
+                    <input name="expectedResolutionAt" type="date" className={inputClass} />
+                  </label>
+                </div>
+                <label className={labelClass}>
+                  Descrição
+                  <textarea name="description" rows={3} placeholder="Descrição do bloqueio" className={textareaClass} />
+                </label>
+              </div>
             </div>
-            <label className="grid gap-1 text-sm font-medium">
-              Descricao
-              <textarea name="description" rows={3} placeholder="Descricao do bloqueio" className="rounded-md border border-line px-3 py-2" />
-            </label>
-            <div className="grid grid-cols-2 gap-3">
-              <label className="grid gap-1 text-sm font-medium">
-                Tarefa relacionada
-                <select name="taskId" className="h-10 rounded-md border border-line px-3">
-                  <option value="">Projeto geral</option>
-                  {project.tasks.map((task) => <option key={task.id} value={task.id}>{task.name}</option>)}
-                </select>
-              </label>
-              <label className="grid gap-1 text-sm font-medium">
-                Empresa responsavel
-                <input name="responsibleCompany" className="h-10 rounded-md border border-line px-3" />
-              </label>
+
+            <div>
+              <p className={sectionTitle}>Vínculos e responsável</p>
+              <div className="mt-2 grid gap-3">
+                <div className="grid grid-cols-2 gap-3">
+                  <label className={labelClass}>
+                    Tarefa relacionada
+                    <select name="taskId" className={selectClass}>
+                      <option value="">Projeto geral</option>
+                      {project.tasks.map((task) => <option key={task.id} value={task.id}>{task.name}</option>)}
+                    </select>
+                  </label>
+                  <label className={labelClass}>
+                    Empresa responsável
+                    <input name="responsibleCompany" className={inputClass} placeholder="Empresa ou área" />
+                  </label>
+                </div>
+                <PeopleMultiSelect name="responsiblePerson" label="Pessoa responsável" people={people} />
+                <div className="grid grid-cols-2 gap-3">
+                  <label className={labelClass}>
+                    Status
+                    <select name="status" defaultValue="OPEN" className={selectClass}>
+                      <option value="OPEN">Aberto</option>
+                      <option value="IN_PROGRESS">Em andamento</option>
+                      <option value="RESOLVED">Resolvido</option>
+                      <option value="CANCELED">Cancelado</option>
+                    </select>
+                  </label>
+                  <label className={labelClass}>
+                    Criticidade
+                    <select name="criticality" defaultValue="MEDIUM" className={selectClass}>
+                      <option value="LOW">Baixa</option>
+                      <option value="MEDIUM">Média</option>
+                      <option value="HIGH">Alta</option>
+                      <option value="CRITICAL">Crítica</option>
+                    </select>
+                  </label>
+                </div>
+                <label className={labelClass}>
+                  Responsável pela resolução
+                  <select name="resolverId" className={selectClass}>
+                    <option value="">Selecione</option>
+                    {users.map((user) => <option key={user.id} value={user.id}>{user.name}</option>)}
+                  </select>
+                </label>
+              </div>
             </div>
-            <PeopleMultiSelect name="responsiblePerson" label="Pessoa responsavel" people={people} />
-            <div className="grid grid-cols-2 gap-3">
-              <label className="grid gap-1 text-sm font-medium">
-                Status
-                <select name="status" defaultValue="OPEN" className="h-10 rounded-md border border-line px-3">
-                  <option value="OPEN">Aberto</option>
-                  <option value="IN_PROGRESS">Em andamento</option>
-                  <option value="RESOLVED">Resolvido</option>
-                  <option value="CANCELED">Cancelado</option>
-                </select>
-              </label>
-              <label className="grid gap-1 text-sm font-medium">
-                Criticidade
-                <select name="criticality" defaultValue="MEDIUM" className="h-10 rounded-md border border-line px-3">
-                  <option value="LOW">Baixa</option>
-                  <option value="MEDIUM">Média</option>
-                  <option value="HIGH">Alta</option>
-                  <option value="CRITICAL">Crítica</option>
-                </select>
-              </label>
+
+            <div>
+              <p className={sectionTitle}>Impacto</p>
+              <div className="mt-2 grid gap-3">
+                <div className="grid grid-cols-2 gap-3">
+                  <label className={labelClass}>
+                    Impacto no cronograma (dias)
+                    <input name="scheduleImpactDays" type="number" defaultValue="0" placeholder="Dias de atraso" className={inputClass} />
+                  </label>
+                  <label className={labelClass}>
+                    Impacto financeiro
+                    <input name="financialImpact" type="number" step="0.01" defaultValue="0" placeholder="Valor em R$" className={inputClass} />
+                  </label>
+                </div>
+                <label className={labelClass}>
+                  Impacto no projeto
+                  <textarea name="impactDescription" rows={2} className={textareaClass} placeholder="Descreva o impacto" />
+                </label>
+                <label className={labelClass}>
+                  Próxima ação
+                  <textarea name="nextAction" rows={2} className={textareaClass} placeholder="Próxima ação a ser tomada" />
+                </label>
+              </div>
             </div>
-            <div className="grid grid-cols-2 gap-3">
-              <label className="grid gap-1 text-sm font-medium">
-                Responsavel pela resolucao
-                <select name="resolverId" className="h-10 rounded-md border border-line px-3">
-                  <option value="">Responsavel</option>
-                  {users.map((user) => <option key={user.id} value={user.id}>{user.name}</option>)}
-                </select>
-              </label>
+
+            <div className="flex justify-end border-t border-line pt-3 dark:border-slate-700">
+              <button type="submit" className="inline-flex h-10 items-center justify-center gap-2 rounded-md bg-brand-600 px-5 text-sm font-semibold text-white transition-colors hover:bg-brand-700">
+                Cadastrar bloqueio
+              </button>
             </div>
-            <div className="grid grid-cols-2 gap-3">
-              <label className="grid gap-1 text-sm font-medium">
-                Impacto no cronograma em dias
-                <input name="scheduleImpactDays" type="number" defaultValue="0" placeholder="Impacto em dias" className="h-10 rounded-md border border-line px-3" />
-              </label>
-              <label className="grid gap-1 text-sm font-medium">
-                Impacto financeiro
-                <input name="financialImpact" type="number" step="0.01" defaultValue="0" placeholder="Impacto financeiro" className="h-10 rounded-md border border-line px-3" />
-              </label>
-            </div>
-            <label className="grid gap-1 text-sm font-medium">
-              Impacto no projeto
-              <textarea name="impactDescription" rows={2} className="rounded-md border border-line px-3 py-2" />
-            </label>
-            <label className="grid gap-1 text-sm font-medium">
-              Proxima acao
-              <textarea name="nextAction" rows={2} className="rounded-md border border-line px-3 py-2" />
-            </label>
-            <button className="w-fit rounded-md bg-brand-600 px-4 py-2 text-sm font-semibold text-white">Cadastrar bloqueio</button>
           </form>
         </DialogAction>
         <DialogAction title="Cadastrar pendência" description="Registre um ponto de atenção que não bloqueia o projeto." trigger="create" triggerLabel="Nova pendência">
@@ -269,19 +409,115 @@ export default async function ProjectBlockersPage({ params }: { params: { id: st
                 <div className="flex items-start gap-2">
                   <span className="rounded-full bg-red-50 px-3 py-1 text-xs font-bold text-red-700">{risk.classification}</span>
                   <DialogAction title="Editar risco" description={risk.name} trigger="edit">
-                    <form action={updateRiskAction} className="grid gap-3">
+                    <form action={updateRiskAction} className="grid gap-4">
                       <input type="hidden" name="riskId" value={risk.id} />
                       <input type="hidden" name="projectId" value={project.id} />
-                      <div className="grid grid-cols-2 gap-3"><label className="grid gap-1 text-sm font-medium">Nome do risco<input name="name" required defaultValue={risk.name} className="h-10 rounded-md border border-line px-3" /></label><label className="grid gap-1 text-sm font-medium">Classificacao<select name="classification" defaultValue={risk.classification} className="h-10 rounded-md border border-line px-3"><option value="LOW">Baixo</option><option value="MEDIUM">Medio</option><option value="HIGH">Alto</option><option value="CRITICAL">Critico</option></select></label></div>
-                      <label className="grid gap-1 text-sm font-medium">Descricao<textarea name="description" defaultValue={risk.description ?? ""} rows={3} className="rounded-md border border-line px-3 py-2" /></label>
-                      <div className="grid grid-cols-3 gap-3"><label className="grid gap-1 text-sm font-medium">Probabilidade<select name="probability" defaultValue={risk.probability} className="h-10 rounded-md border border-line px-3"><option value="LOW">Baixa</option><option value="MEDIUM">Media</option><option value="HIGH">Alta</option></select></label><label className="grid gap-1 text-sm font-medium">Estrategia<select name="responseStrategy" defaultValue={risk.responseStrategy} className="h-10 rounded-md border border-line px-3"><option value="MITIGATE">Mitigar</option><option value="ACCEPT">Aceitar</option><option value="TRANSFER">Transferir</option><option value="AVOID">Evitar</option></select></label><label className="grid gap-1 text-sm font-medium">Status<select name="status" defaultValue={risk.status} className="h-10 rounded-md border border-line px-3"><option value="OPEN">Aberto</option><option value="IN_TREATMENT">Em tratamento</option><option value="MATERIALIZED">Materializado</option><option value="CLOSED">Encerrado</option></select></label></div>
-                      <div className="grid grid-cols-2 gap-3"><label className="grid gap-1 text-sm font-medium">Causa<input name="cause" defaultValue={risk.cause ?? ""} className="h-10 rounded-md border border-line px-3" /></label><label className="grid gap-1 text-sm font-medium">Evento<input name="event" defaultValue={risk.event ?? ""} className="h-10 rounded-md border border-line px-3" /></label></div>
-                      <label className="grid gap-1 text-sm font-medium">Impacto<textarea name="impact" defaultValue={risk.impact ?? ""} rows={2} className="rounded-md border border-line px-3 py-2" /></label>
-                      <label className="grid gap-1 text-sm font-medium">Acoes preventivas<textarea name="preventiveActions" defaultValue={risk.preventiveActions ?? ""} rows={2} className="rounded-md border border-line px-3 py-2" /></label>
-                      <label className="grid gap-1 text-sm font-medium">Plano de contingencia<textarea name="contingencyPlan" defaultValue={risk.contingencyPlan ?? ""} rows={2} className="rounded-md border border-line px-3 py-2" /></label>
-                      <div className="grid grid-cols-3 gap-3"><label className="grid gap-1 text-sm font-medium">Gatilhos<input name="triggers" defaultValue={risk.triggers ?? ""} className="h-10 rounded-md border border-line px-3" /></label><PeopleMultiSelect name="owner" label="Responsavel" people={people} defaultValue={risk.owner ?? ""} /><label className="grid gap-1 text-sm font-medium">Ultima revisao<input name="lastReviewAt" type="date" defaultValue={inputDate(risk.lastReviewAt)} className="h-10 rounded-md border border-line px-3" /></label></div>
-                      <label className="grid gap-1 text-sm font-medium">Observacoes<textarea name="notes" defaultValue={risk.notes ?? ""} rows={2} className="rounded-md border border-line px-3 py-2" /></label>
-                      <button className="w-fit rounded-md bg-brand-600 px-4 py-2 text-sm font-semibold text-white">Salvar</button>
+
+                      <div>
+                        <p className={sectionTitle}>Identificação</p>
+                        <div className="mt-2 grid grid-cols-2 gap-3">
+                          <label className={labelClass}>
+                            Nome do risco <span className="text-red-500">*</span>
+                            <input name="name" required defaultValue={risk.name} className={inputClass} />
+                          </label>
+                          <label className={labelClass}>
+                            Classificação
+                            <select name="classification" defaultValue={risk.classification} className={selectClass}>
+                              <option value="LOW">Baixo</option>
+                              <option value="MEDIUM">Médio</option>
+                              <option value="HIGH">Alto</option>
+                              <option value="CRITICAL">Crítico</option>
+                            </select>
+                          </label>
+                        </div>
+                        <label className={`${labelClass} mt-3`}>
+                          Descrição
+                          <textarea name="description" defaultValue={risk.description ?? ""} rows={3} className={textareaClass} />
+                        </label>
+                      </div>
+
+                      <div>
+                        <p className={sectionTitle}>Análise</p>
+                        <div className="mt-2 grid grid-cols-3 gap-3">
+                          <label className={labelClass}>
+                            Probabilidade
+                            <select name="probability" defaultValue={risk.probability} className={selectClass}>
+                              <option value="LOW">Baixa</option>
+                              <option value="MEDIUM">Média</option>
+                              <option value="HIGH">Alta</option>
+                            </select>
+                          </label>
+                          <label className={labelClass}>
+                            Estratégia
+                            <select name="responseStrategy" defaultValue={risk.responseStrategy} className={selectClass}>
+                              <option value="MITIGATE">Mitigar</option>
+                              <option value="ACCEPT">Aceitar</option>
+                              <option value="TRANSFER">Transferir</option>
+                              <option value="AVOID">Evitar</option>
+                            </select>
+                          </label>
+                          <label className={labelClass}>
+                            Status
+                            <select name="status" defaultValue={risk.status} className={selectClass}>
+                              <option value="OPEN">Aberto</option>
+                              <option value="IN_TREATMENT">Em tratamento</option>
+                              <option value="MATERIALIZED">Materializado</option>
+                              <option value="CLOSED">Encerrado</option>
+                            </select>
+                          </label>
+                        </div>
+                        <div className="mt-3 grid grid-cols-2 gap-3">
+                          <label className={labelClass}>
+                            Causa
+                            <input name="cause" defaultValue={risk.cause ?? ""} className={inputClass} />
+                          </label>
+                          <label className={labelClass}>
+                            Evento
+                            <input name="event" defaultValue={risk.event ?? ""} className={inputClass} />
+                          </label>
+                        </div>
+                      </div>
+
+                      <div>
+                        <p className={sectionTitle}>Impacto e resposta</p>
+                        <div className="mt-2 grid gap-3">
+                          <label className={labelClass}>
+                            Impacto
+                            <textarea name="impact" defaultValue={risk.impact ?? ""} rows={2} className={textareaClass} />
+                          </label>
+                          <label className={labelClass}>
+                            Ações preventivas
+                            <textarea name="preventiveActions" defaultValue={risk.preventiveActions ?? ""} rows={2} className={textareaClass} />
+                          </label>
+                          <label className={labelClass}>
+                            Plano de contingência
+                            <textarea name="contingencyPlan" defaultValue={risk.contingencyPlan ?? ""} rows={2} className={textareaClass} />
+                          </label>
+                        </div>
+                      </div>
+
+                      <div>
+                        <p className={sectionTitle}>Responsável e acompanhamento</p>
+                        <div className="mt-2 grid grid-cols-3 gap-3">
+                          <label className={labelClass}>
+                            Gatilhos
+                            <input name="triggers" defaultValue={risk.triggers ?? ""} className={inputClass} />
+                          </label>
+                          <PeopleMultiSelect name="owner" label="Responsável" people={people} defaultValue={risk.owner ?? ""} />
+                          <label className={labelClass}>
+                            Última revisão
+                            <input name="lastReviewAt" type="date" defaultValue={inputDate(risk.lastReviewAt)} className={inputClass} />
+                          </label>
+                        </div>
+                        <label className={`${labelClass} mt-3`}>
+                          Observações
+                          <textarea name="notes" defaultValue={risk.notes ?? ""} rows={2} className={textareaClass} />
+                        </label>
+                      </div>
+
+                      <div className="flex justify-end border-t border-line pt-3 dark:border-slate-700">
+                        <button type="submit" className="inline-flex h-10 items-center justify-center gap-2 rounded-md bg-brand-600 px-5 text-sm font-semibold text-white transition-colors hover:bg-brand-700">Salvar</button>
+                      </div>
                     </form>
                   </DialogAction>
                   <DialogAction title="Excluir risco" description={`Deseja realmente excluir "${risk.name}"?`} trigger="delete">
@@ -345,89 +581,108 @@ export default async function ProjectBlockersPage({ params }: { params: { id: st
                 <BlockerCriticalityBadge value={blocker.criticality} />
                 <StatusBadge status={blocker.status} />
                 <DialogAction title="Editar bloqueio" description={blocker.title} trigger="edit">
-                  <form action={upsertBlockerAction} className="grid gap-3">
+                  <form action={upsertBlockerAction} className="grid gap-4">
                     <input type="hidden" name="blockerId" value={blocker.id} />
                     <input type="hidden" name="projectId" value={project.id} />
-                    <label className="grid gap-1 text-sm font-medium">
-                      Titulo
-                      <input name="title" defaultValue={blocker.title} className="h-10 rounded-md border border-line px-3" />
-                    </label>
-                    <div className="grid grid-cols-2 gap-3">
-                      <label className="grid gap-1 text-sm font-medium">
-                        Data de abertura
-                        <input name="openedAt" type="date" defaultValue={inputDate(blocker.openedAt)} className="h-10 rounded-md border border-line px-3" />
-                      </label>
-                      <label className="grid gap-1 text-sm font-medium">
-                        Previsao de resolucao
-                        <input name="expectedResolutionAt" type="date" defaultValue={inputDate(blocker.expectedResolutionAt)} className="h-10 rounded-md border border-line px-3" />
-                      </label>
+
+                    <div>
+                      <p className={sectionTitle}>Identificação</p>
+                      <div className="mt-2 grid gap-3">
+                        <label className={labelClass}>
+                          Título
+                          <input name="title" defaultValue={blocker.title} className={inputClass} />
+                        </label>
+                        <div className="grid grid-cols-2 gap-3">
+                          <label className={labelClass}>
+                            Data de abertura
+                            <input name="openedAt" type="date" defaultValue={inputDate(blocker.openedAt)} className={inputClass} />
+                          </label>
+                          <label className={labelClass}>
+                            Previsão de resolução
+                            <input name="expectedResolutionAt" type="date" defaultValue={inputDate(blocker.expectedResolutionAt)} className={inputClass} />
+                          </label>
+                        </div>
+                        <label className={labelClass}>
+                          Descrição
+                          <textarea name="description" defaultValue={blocker.description ?? ""} rows={3} className={textareaClass} />
+                        </label>
+                      </div>
                     </div>
-                    <label className="grid gap-1 text-sm font-medium">
-                      Descricao
-                      <textarea name="description" defaultValue={blocker.description ?? ""} rows={3} className="rounded-md border border-line px-3 py-2" />
-                    </label>
-                    <div className="grid grid-cols-2 gap-3">
-                      <label className="grid gap-1 text-sm font-medium">
-                        Tarefa relacionada
-                        <select name="taskId" defaultValue={blocker.taskId ?? ""} className="h-10 rounded-md border border-line px-3">
-                          <option value="">Projeto geral</option>
-                          {project.tasks.map((task) => <option key={task.id} value={task.id}>{task.name}</option>)}
-                        </select>
-                      </label>
-                      <label className="grid gap-1 text-sm font-medium">
-                        Empresa responsavel
-                        <input name="responsibleCompany" defaultValue={blocker.responsibleCompany ?? ""} className="h-10 rounded-md border border-line px-3" />
-                      </label>
+
+                    <div>
+                      <p className={sectionTitle}>Vínculos e responsável</p>
+                      <div className="mt-2 grid gap-3">
+                        <div className="grid grid-cols-2 gap-3">
+                          <label className={labelClass}>
+                            Tarefa relacionada
+                            <select name="taskId" defaultValue={blocker.taskId ?? ""} className={selectClass}>
+                              <option value="">Projeto geral</option>
+                              {project.tasks.map((task) => <option key={task.id} value={task.id}>{task.name}</option>)}
+                            </select>
+                          </label>
+                          <label className={labelClass}>
+                            Empresa responsável
+                            <input name="responsibleCompany" defaultValue={blocker.responsibleCompany ?? ""} className={inputClass} />
+                          </label>
+                        </div>
+                        <PeopleMultiSelect name="responsiblePerson" label="Pessoa responsável" people={people} defaultValue={blocker.responsiblePerson ?? ""} />
+                        <div className="grid grid-cols-2 gap-3">
+                          <label className={labelClass}>
+                            Status
+                            <select name="status" defaultValue={blocker.status} className={selectClass}>
+                              <option value="OPEN">Aberto</option>
+                              <option value="IN_PROGRESS">Em andamento</option>
+                              <option value="RESOLVED">Resolvido</option>
+                              <option value="CANCELED">Cancelado</option>
+                            </select>
+                          </label>
+                          <label className={labelClass}>
+                            Criticidade
+                            <select name="criticality" defaultValue={blocker.criticality} className={selectClass}>
+                              <option value="LOW">Baixa</option>
+                              <option value="MEDIUM">Média</option>
+                              <option value="HIGH">Alta</option>
+                              <option value="CRITICAL">Crítica</option>
+                            </select>
+                          </label>
+                        </div>
+                        <label className={labelClass}>
+                          Responsável pela resolução
+                          <select name="resolverId" defaultValue={blocker.resolverId ?? ""} className={selectClass}>
+                            <option value="">Selecione</option>
+                            {users.map((user) => <option key={user.id} value={user.id}>{user.name}</option>)}
+                          </select>
+                        </label>
+                      </div>
                     </div>
-                    <PeopleMultiSelect name="responsiblePerson" label="Pessoa responsavel" people={people} defaultValue={blocker.responsiblePerson ?? ""} />
-                    <div className="grid grid-cols-2 gap-3">
-                      <label className="grid gap-1 text-sm font-medium">
-                        Status
-                        <select name="status" defaultValue={blocker.status} className="h-10 rounded-md border border-line px-3">
-                          <option value="OPEN">Aberto</option>
-                          <option value="IN_PROGRESS">Em andamento</option>
-                          <option value="RESOLVED">Resolvido</option>
-                          <option value="CANCELED">Cancelado</option>
-                        </select>
-                      </label>
-                      <label className="grid gap-1 text-sm font-medium">
-                        Criticidade
-                        <select name="criticality" defaultValue={blocker.criticality} className="h-10 rounded-md border border-line px-3">
-                          <option value="LOW">Baixa</option>
-                          <option value="MEDIUM">Média</option>
-                          <option value="HIGH">Alta</option>
-                          <option value="CRITICAL">Crítica</option>
-                        </select>
-                      </label>
+
+                    <div>
+                      <p className={sectionTitle}>Impacto</p>
+                      <div className="mt-2 grid gap-3">
+                        <div className="grid grid-cols-2 gap-3">
+                          <label className={labelClass}>
+                            Impacto no cronograma (dias)
+                            <input name="scheduleImpactDays" type="number" defaultValue={blocker.scheduleImpactDays} className={inputClass} />
+                          </label>
+                          <label className={labelClass}>
+                            Impacto financeiro
+                            <input name="financialImpact" type="number" step="0.01" defaultValue={Number(blocker.financialImpact)} className={inputClass} />
+                          </label>
+                        </div>
+                        <label className={labelClass}>
+                          Impacto no projeto
+                          <textarea name="impactDescription" defaultValue={blocker.impactDescription ?? ""} rows={2} className={textareaClass} />
+                        </label>
+                        <label className={labelClass}>
+                          Próxima ação
+                          <textarea name="nextAction" defaultValue={blocker.nextAction ?? ""} rows={2} className={textareaClass} />
+                        </label>
+                      </div>
                     </div>
-                    <div className="grid grid-cols-2 gap-3">
-                      <label className="grid gap-1 text-sm font-medium">
-                        Responsavel pela resolucao
-                        <select name="resolverId" defaultValue={blocker.resolverId ?? ""} className="h-10 rounded-md border border-line px-3">
-                          <option value="">Responsavel</option>
-                          {users.map((user) => <option key={user.id} value={user.id}>{user.name}</option>)}
-                        </select>
-                      </label>
+
+                    <div className="flex justify-end border-t border-line pt-3 dark:border-slate-700">
+                      <button type="submit" className="inline-flex h-10 items-center justify-center gap-2 rounded-md bg-brand-600 px-5 text-sm font-semibold text-white transition-colors hover:bg-brand-700">Salvar bloqueio</button>
                     </div>
-                    <div className="grid grid-cols-2 gap-3">
-                      <label className="grid gap-1 text-sm font-medium">
-                        Impacto no cronograma em dias
-                        <input name="scheduleImpactDays" type="number" defaultValue={blocker.scheduleImpactDays} className="h-10 rounded-md border border-line px-3" />
-                      </label>
-                      <label className="grid gap-1 text-sm font-medium">
-                        Impacto financeiro
-                        <input name="financialImpact" type="number" step="0.01" defaultValue={Number(blocker.financialImpact)} className="h-10 rounded-md border border-line px-3" />
-                      </label>
-                    </div>
-                    <label className="grid gap-1 text-sm font-medium">
-                      Impacto no projeto
-                      <textarea name="impactDescription" defaultValue={blocker.impactDescription ?? ""} rows={2} className="rounded-md border border-line px-3 py-2" />
-                    </label>
-                    <label className="grid gap-1 text-sm font-medium">
-                      Proxima acao
-                      <textarea name="nextAction" defaultValue={blocker.nextAction ?? ""} rows={2} className="rounded-md border border-line px-3 py-2" />
-                    </label>
-                    <button className="w-fit rounded-md bg-brand-600 px-4 py-2 text-sm font-semibold text-white">Salvar bloqueio</button>
                   </form>
                 </DialogAction>
                 <DialogAction title="Excluir bloqueio" description={`Deseja realmente excluir "${blocker.title}"?`} trigger="delete">

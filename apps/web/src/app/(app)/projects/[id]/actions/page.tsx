@@ -136,122 +136,156 @@ function Metric({ label, value, tone }: { label: string; value: number; tone: "s
 
 function ActionForm({ project, people, action }: { project: any; people: string[]; action?: any }) {
   const isEdit = Boolean(action);
+  const inputClass = "h-10 rounded-md border border-line bg-white px-3 text-sm text-ink outline-none transition-colors placeholder:text-slate-400 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white dark:placeholder-slate-500";
+  const selectClass = "h-10 rounded-md border border-line bg-white px-3 text-sm text-ink outline-none transition-colors focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white";
+  const textareaClass = "min-h-[80px] rounded-md border border-line bg-white px-3 py-2 text-sm text-ink outline-none transition-colors placeholder:text-slate-400 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white dark:placeholder-slate-500";
+  const labelClass = "grid gap-1.5 text-sm font-medium text-slate-700 dark:text-slate-300";
+  const sectionTitle = "text-xs font-bold uppercase tracking-wide text-slate-500 dark:text-slate-400";
+
   return (
-    <form action={upsertProjectActionAction} className="grid gap-3">
+    <form action={upsertProjectActionAction} className="grid gap-4">
       {isEdit ? <input type="hidden" name="actionId" value={action.id} /> : null}
       <input type="hidden" name="projectId" value={project.id} />
-      <div className="grid gap-3 md:grid-cols-[160px_1fr]">
-        <label className="grid gap-1 text-sm font-medium">
-          Código
-          <input name="code" defaultValue={action?.code ?? ""} placeholder="AC-001" className="h-10 rounded-md border border-line px-3" />
-        </label>
-        <label className="grid gap-1 text-sm font-medium">
-          Descrição
-          <input name="description" required defaultValue={action?.description ?? ""} className="h-10 rounded-md border border-line px-3" />
+
+      <div>
+        <p className={sectionTitle}>Identificação</p>
+        <div className="mt-2 grid gap-3 md:grid-cols-[160px_1fr]">
+          <label className={labelClass}>
+            Código
+            <input name="code" defaultValue={action?.code ?? ""} placeholder="AC-001" className={inputClass} />
+          </label>
+          <label className={labelClass}>
+            Descrição <span className="text-red-500">*</span>
+            <input name="description" required defaultValue={action?.description ?? ""} className={inputClass} placeholder="Descrição da ação" />
+          </label>
+        </div>
+      </div>
+
+      <div>
+        <p className={sectionTitle}>Responsável e prazo</p>
+        <div className="mt-2 grid gap-3 md:grid-cols-3">
+          <PeopleMultiSelect name="responsible" label="Responsável" people={people} defaultValue={action?.responsible ?? ""} />
+          <label className={labelClass}>
+            Prazo
+            <input name="dueDate" type="date" defaultValue={inputDate(action?.dueDate)} className={inputClass} />
+          </label>
+          <label className={labelClass}>
+            Origem
+            <select name="origin" defaultValue={action?.origin ?? "Manual"} className={selectClass}>
+              <option value="Manual">Manual</option>
+              <option value="Risco">Risco</option>
+              <option value="Pendência">Pendência</option>
+              <option value="Bloqueio">Bloqueio</option>
+              <option value="Tarefa">Tarefa</option>
+            </select>
+          </label>
+        </div>
+      </div>
+
+      <div>
+        <p className={sectionTitle}>Status e classificação</p>
+        <div className="mt-2 grid gap-3 md:grid-cols-4">
+          <label className={labelClass}>
+            Status
+            <select name="status" defaultValue={action?.status ?? "OPEN"} className={selectClass}>
+              <option value="OPEN">Aberta</option>
+              <option value="IN_PROGRESS">Em andamento</option>
+              <option value="DONE">Concluída</option>
+              <option value="CANCELED">Cancelada</option>
+            </select>
+          </label>
+          <label className={labelClass}>
+            Prioridade
+            <select name="priority" defaultValue={action?.priority ?? "MEDIUM"} className={selectClass}>
+              <option value="LOW">Baixa</option>
+              <option value="MEDIUM">Média</option>
+              <option value="HIGH">Alta</option>
+              <option value="CRITICAL">Crítica</option>
+            </select>
+          </label>
+          <label className={labelClass}>
+            Semáforo
+            <select name="trafficLight" defaultValue={action?.trafficLight ?? "GREEN"} className={selectClass}>
+              <option value="GREEN">Verde</option>
+              <option value="YELLOW">Amarelo</option>
+              <option value="RED">Vermelho</option>
+            </select>
+          </label>
+          <label className="mt-6 flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-300">
+            <input name="visibleToClient" type="checkbox" defaultChecked={action?.visibleToClient ?? false} className="h-4 w-4 rounded border-slate-300 text-brand-600 focus:ring-brand-500" />
+            Visível ao cliente
+          </label>
+        </div>
+      </div>
+
+      <div>
+        <p className={sectionTitle}>Vínculos</p>
+        <div className="mt-2 grid gap-3 md:grid-cols-4">
+          <label className={labelClass}>
+            Risco relacionado
+            <select name="riskId" defaultValue={action?.riskId ?? ""} className={selectClass}>
+              <option value="">Sem risco</option>
+              {project.risks.map((risk: any) => <option key={risk.id} value={risk.id}>{risk.name}</option>)}
+            </select>
+          </label>
+          <label className={labelClass}>
+            Pendência relacionada
+            <select name="pendingIssueId" defaultValue={action?.pendingIssueId ?? ""} className={selectClass}>
+              <option value="">Sem pendência</option>
+              {project.pendingIssues.map((pending: any) => <option key={pending.id} value={pending.id}>{pending.title}</option>)}
+            </select>
+          </label>
+          <label className={labelClass}>
+            Bloqueio relacionado
+            <select name="blockerId" defaultValue={action?.blockerId ?? ""} className={selectClass}>
+              <option value="">Sem bloqueio</option>
+              {project.blockers.map((blocker: any) => <option key={blocker.id} value={blocker.id}>{blocker.title}</option>)}
+            </select>
+          </label>
+          <label className={labelClass}>
+            Tarefa relacionada
+            <select name="taskId" defaultValue={action?.taskId ?? ""} className={selectClass}>
+              <option value="">Sem tarefa</option>
+              {project.tasks.map((task: any) => <option key={task.id} value={task.id}>{task.wbsCode ? `${task.wbsCode} - ` : ""}{task.name}</option>)}
+            </select>
+          </label>
+        </div>
+      </div>
+
+      <div>
+        <p className={sectionTitle}>Progresso e horas</p>
+        <div className="mt-2 grid gap-3 md:grid-cols-4">
+          <label className={labelClass}>
+            Progresso planejado (%)
+            <input name="plannedProgress" type="number" min="0" max="100" defaultValue={Number(action?.plannedProgress ?? 0)} className={inputClass} />
+          </label>
+          <label className={labelClass}>
+            Progresso realizado (%)
+            <input name="actualProgress" type="number" min="0" max="100" defaultValue={Number(action?.actualProgress ?? 0)} className={inputClass} />
+          </label>
+          <label className={labelClass}>
+            Horas estimadas
+            <input name="estimatedHours" type="number" min="0" step="0.5" defaultValue={Number(action?.estimatedHours ?? 0)} className={inputClass} />
+          </label>
+          <label className={labelClass}>
+            Horas realizadas
+            <input name="workedHours" type="number" min="0" step="0.5" defaultValue={Number(action?.workedHours ?? 0)} className={inputClass} />
+          </label>
+        </div>
+      </div>
+
+      <div>
+        <p className={sectionTitle}>Próxima ação</p>
+        <label className={`${labelClass} mt-2`}>
+          <textarea name="nextAction" rows={2} defaultValue={action?.nextAction ?? ""} className={textareaClass} placeholder="Próxima ação a ser tomada" />
         </label>
       </div>
-      <div className="grid gap-3 md:grid-cols-3">
-        <PeopleMultiSelect name="responsible" label="Responsável" people={people} defaultValue={action?.responsible ?? ""} />
-        <label className="grid gap-1 text-sm font-medium">
-          Prazo
-          <input name="dueDate" type="date" defaultValue={inputDate(action?.dueDate)} className="h-10 rounded-md border border-line px-3" />
-        </label>
-        <label className="grid gap-1 text-sm font-medium">
-          Origem
-          <select name="origin" defaultValue={action?.origin ?? "Manual"} className="h-10 rounded-md border border-line px-3">
-            <option value="Manual">Manual</option>
-            <option value="Risco">Risco</option>
-            <option value="Pendência">Pendência</option>
-            <option value="Bloqueio">Bloqueio</option>
-            <option value="Tarefa">Tarefa</option>
-          </select>
-        </label>
+
+      <div className="flex justify-end border-t border-line pt-3 dark:border-slate-700">
+        <button type="submit" className="inline-flex h-10 items-center justify-center gap-2 rounded-md bg-brand-600 px-5 text-sm font-semibold text-white transition-colors hover:bg-brand-700">
+          {isEdit ? "Salvar ação" : "Cadastrar ação"}
+        </button>
       </div>
-      <div className="grid gap-3 md:grid-cols-4">
-        <label className="grid gap-1 text-sm font-medium">
-          Status
-          <select name="status" defaultValue={action?.status ?? "OPEN"} className="h-10 rounded-md border border-line px-3">
-            <option value="OPEN">Aberta</option>
-            <option value="IN_PROGRESS">Em andamento</option>
-            <option value="DONE">Concluída</option>
-            <option value="CANCELED">Cancelada</option>
-          </select>
-        </label>
-        <label className="grid gap-1 text-sm font-medium">
-          Prioridade
-          <select name="priority" defaultValue={action?.priority ?? "MEDIUM"} className="h-10 rounded-md border border-line px-3">
-            <option value="LOW">Baixa</option>
-            <option value="MEDIUM">Média</option>
-            <option value="HIGH">Alta</option>
-            <option value="CRITICAL">Crítica</option>
-          </select>
-        </label>
-        <label className="grid gap-1 text-sm font-medium">
-          Semáforo
-          <select name="trafficLight" defaultValue={action?.trafficLight ?? "GREEN"} className="h-10 rounded-md border border-line px-3">
-            <option value="GREEN">Verde</option>
-            <option value="YELLOW">Amarelo</option>
-            <option value="RED">Vermelho</option>
-          </select>
-        </label>
-        <label className="mt-6 flex items-center gap-2 text-sm font-medium">
-          <input name="visibleToClient" type="checkbox" defaultChecked={action?.visibleToClient ?? false} />
-          Visível ao cliente
-        </label>
-      </div>
-      <div className="grid gap-3 md:grid-cols-4">
-        <label className="grid gap-1 text-sm font-medium">
-          Risco relacionado
-          <select name="riskId" defaultValue={action?.riskId ?? ""} className="h-10 rounded-md border border-line px-3">
-            <option value="">Sem risco</option>
-            {project.risks.map((risk: any) => <option key={risk.id} value={risk.id}>{risk.name}</option>)}
-          </select>
-        </label>
-        <label className="grid gap-1 text-sm font-medium">
-          Pendência relacionada
-          <select name="pendingIssueId" defaultValue={action?.pendingIssueId ?? ""} className="h-10 rounded-md border border-line px-3">
-            <option value="">Sem pendência</option>
-            {project.pendingIssues.map((pending: any) => <option key={pending.id} value={pending.id}>{pending.title}</option>)}
-          </select>
-        </label>
-        <label className="grid gap-1 text-sm font-medium">
-          Bloqueio relacionado
-          <select name="blockerId" defaultValue={action?.blockerId ?? ""} className="h-10 rounded-md border border-line px-3">
-            <option value="">Sem bloqueio</option>
-            {project.blockers.map((blocker: any) => <option key={blocker.id} value={blocker.id}>{blocker.title}</option>)}
-          </select>
-        </label>
-        <label className="grid gap-1 text-sm font-medium">
-          Tarefa relacionada
-          <select name="taskId" defaultValue={action?.taskId ?? ""} className="h-10 rounded-md border border-line px-3">
-            <option value="">Sem tarefa</option>
-            {project.tasks.map((task: any) => <option key={task.id} value={task.id}>{task.wbsCode ? `${task.wbsCode} - ` : ""}{task.name}</option>)}
-          </select>
-        </label>
-      </div>
-      <div className="grid gap-3 md:grid-cols-4">
-        <label className="grid gap-1 text-sm font-medium">
-          Progresso planejado (%)
-          <input name="plannedProgress" type="number" min="0" max="100" defaultValue={Number(action?.plannedProgress ?? 0)} className="h-10 rounded-md border border-line px-3" />
-        </label>
-        <label className="grid gap-1 text-sm font-medium">
-          Progresso realizado (%)
-          <input name="actualProgress" type="number" min="0" max="100" defaultValue={Number(action?.actualProgress ?? 0)} className="h-10 rounded-md border border-line px-3" />
-        </label>
-        <label className="grid gap-1 text-sm font-medium">
-          Horas estimadas
-          <input name="estimatedHours" type="number" min="0" step="0.5" defaultValue={Number(action?.estimatedHours ?? 0)} className="h-10 rounded-md border border-line px-3" />
-        </label>
-        <label className="grid gap-1 text-sm font-medium">
-          Horas realizadas
-          <input name="workedHours" type="number" min="0" step="0.5" defaultValue={Number(action?.workedHours ?? 0)} className="h-10 rounded-md border border-line px-3" />
-        </label>
-      </div>
-      <label className="grid gap-1 text-sm font-medium">
-        Próxima ação
-        <textarea name="nextAction" rows={2} defaultValue={action?.nextAction ?? ""} className="rounded-md border border-line px-3 py-2" />
-      </label>
-      <button className="w-fit rounded-md bg-brand-600 px-4 py-2 text-sm font-semibold text-white">{isEdit ? "Salvar ação" : "Cadastrar ação"}</button>
     </form>
   );
 }

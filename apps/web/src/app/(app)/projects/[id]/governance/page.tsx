@@ -32,28 +32,95 @@ export default async function ProjectGovernancePage({ params }: { params: { id: 
       <ProjectTabs projectId={project.id} />
       <div className="mb-4 flex justify-end">
         <DialogAction title="Cadastrar parte interessada" description="Adicione uma nova parte interessada ao mapa de governança." trigger="create" triggerLabel="Nova parte interessada">
-          <form action={createStakeholderAction} className="grid gap-3">
+          <form action={createStakeholderAction} className="grid gap-4">
             <input type="hidden" name="projectId" value={project.id} />
-            <div className="grid grid-cols-2 gap-3">
-              <label className="grid gap-1 text-sm font-medium">Nome<input name="name" required className="h-10 rounded-md border border-line px-3" /></label>
-              <label className="grid gap-1 text-sm font-medium">Empresa/Área<input name="company" className="h-10 rounded-md border border-line px-3" /></label>
+
+            <div>
+              <p className="text-xs font-bold uppercase tracking-wide text-slate-500 dark:text-slate-400">Identificação</p>
+              <div className="mt-2 grid grid-cols-2 gap-3">
+                <label className="grid gap-1.5 text-sm font-medium text-slate-700 dark:text-slate-300">
+                  Nome <span className="text-red-500">*</span>
+                  <input name="name" required className="h-10 rounded-md border border-line bg-white px-3 text-sm text-ink outline-none transition-colors placeholder:text-slate-400 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white" placeholder="Nome da pessoa" />
+                </label>
+                <label className="grid gap-1.5 text-sm font-medium text-slate-700 dark:text-slate-300">
+                  Empresa/Área
+                  <input name="company" className="h-10 rounded-md border border-line bg-white px-3 text-sm text-ink outline-none transition-colors placeholder:text-slate-400 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white" placeholder="Empresa ou área" />
+                </label>
+              </div>
+              <div className="mt-3 grid grid-cols-2 gap-3">
+                <label className="grid gap-1.5 text-sm font-medium text-slate-700 dark:text-slate-300">
+                  Cargo
+                  <input name="jobTitle" className="h-10 rounded-md border border-line bg-white px-3 text-sm text-ink outline-none transition-colors placeholder:text-slate-400 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white" placeholder="Cargo" />
+                </label>
+                <label className="grid gap-1.5 text-sm font-medium text-slate-700 dark:text-slate-300">
+                  Papel no projeto
+                  <input name="projectRole" className="h-10 rounded-md border border-line bg-white px-3 text-sm text-ink outline-none transition-colors placeholder:text-slate-400 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white" placeholder="Papel no projeto" />
+                </label>
+              </div>
             </div>
-            <div className="grid grid-cols-2 gap-3">
-              <label className="grid gap-1 text-sm font-medium">Cargo<input name="jobTitle" className="h-10 rounded-md border border-line px-3" /></label>
-              <label className="grid gap-1 text-sm font-medium">Papel no projeto<input name="projectRole" className="h-10 rounded-md border border-line px-3" /></label>
+
+            <div>
+              <p className="text-xs font-bold uppercase tracking-wide text-slate-500 dark:text-slate-400">Classificação</p>
+              <div className="mt-2 grid grid-cols-3 gap-3">
+                <label className="grid gap-1.5 text-sm font-medium text-slate-700 dark:text-slate-300">
+                  Tipo
+                  <select name="type" defaultValue="CLIENT" className="h-10 rounded-md border border-line bg-white px-3 text-sm text-ink outline-none transition-colors focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white">
+                    <option value="INTERNAL">Interno</option>
+                    <option value="CLIENT">Cliente</option>
+                    <option value="PARTNER">Parceiro</option>
+                    <option value="SUPPLIER">Fornecedor</option>
+                    <option value="SPONSOR">Patrocinador</option>
+                  </select>
+                </label>
+                <label className="grid gap-1.5 text-sm font-medium text-slate-700 dark:text-slate-300">
+                  Influência
+                  <select name="influence" defaultValue="LOW" className="h-10 rounded-md border border-line bg-white px-3 text-sm text-ink outline-none transition-colors focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white">
+                    <option value="LOW">Baixa</option>
+                    <option value="HIGH">Alta</option>
+                  </select>
+                </label>
+                <label className="grid gap-1.5 text-sm font-medium text-slate-700 dark:text-slate-300">
+                  Interesse
+                  <select name="interest" defaultValue="LOW" className="h-10 rounded-md border border-line bg-white px-3 text-sm text-ink outline-none transition-colors focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white">
+                    <option value="LOW">Baixo</option>
+                    <option value="HIGH">Alto</option>
+                  </select>
+                </label>
+              </div>
+              <label className="mt-3 grid gap-1.5 text-sm font-medium text-slate-700 dark:text-slate-300">
+                Classificação de comunicação
+                <select name="classification" defaultValue="Manter informado" className="h-10 rounded-md border border-line bg-white px-3 text-sm text-ink outline-none transition-colors focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white">
+                  <option value="Gerenciar de perto">Gerenciar de perto</option>
+                  <option value="Manter satisfeito">Manter satisfeito</option>
+                  <option value="Manter informado">Manter informado</option>
+                  <option value="Monitorar">Monitorar</option>
+                </select>
+              </label>
             </div>
-            <div className="grid grid-cols-3 gap-3">
-              <label className="grid gap-1 text-sm font-medium">Tipo<select name="type" defaultValue="CLIENT" className="h-10 rounded-md border border-line px-3"><option value="INTERNAL">Interno</option><option value="CLIENT">Cliente</option><option value="PARTNER">Parceiro</option><option value="SUPPLIER">Fornecedor</option><option value="SPONSOR">Patrocinador</option></select></label>
-              <label className="grid gap-1 text-sm font-medium">Influência<select name="influence" defaultValue="LOW" className="h-10 rounded-md border border-line px-3"><option value="LOW">Baixa</option><option value="HIGH">Alta</option></select></label>
-              <label className="grid gap-1 text-sm font-medium">Interesse<select name="interest" defaultValue="LOW" className="h-10 rounded-md border border-line px-3"><option value="LOW">Baixo</option><option value="HIGH">Alto</option></select></label>
+
+            <div>
+              <p className="text-xs font-bold uppercase tracking-wide text-slate-500 dark:text-slate-400">Contato</p>
+              <div className="mt-2 grid grid-cols-2 gap-3">
+                <label className="grid gap-1.5 text-sm font-medium text-slate-700 dark:text-slate-300">
+                  E-mail
+                  <input name="email" type="email" className="h-10 rounded-md border border-line bg-white px-3 text-sm text-ink outline-none transition-colors placeholder:text-slate-400 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white" placeholder="email@exemplo.com" />
+                </label>
+                <label className="grid gap-1.5 text-sm font-medium text-slate-700 dark:text-slate-300">
+                  Telefone
+                  <input name="phone" className="h-10 rounded-md border border-line bg-white px-3 text-sm text-ink outline-none transition-colors placeholder:text-slate-400 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white" placeholder="(00) 00000-0000" />
+                </label>
+              </div>
+              <label className="mt-3 grid gap-1.5 text-sm font-medium text-slate-700 dark:text-slate-300">
+                Observações
+                <textarea name="notes" rows={3} className="min-h-[80px] rounded-md border border-line bg-white px-3 py-2 text-sm text-ink outline-none transition-colors placeholder:text-slate-400 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white" placeholder="Notas adicionais" />
+              </label>
             </div>
-            <div className="grid grid-cols-2 gap-3">
-              <label className="grid gap-1 text-sm font-medium">E-mail<input name="email" type="email" className="h-10 rounded-md border border-line px-3" /></label>
-              <label className="grid gap-1 text-sm font-medium">Telefone<input name="phone" className="h-10 rounded-md border border-line px-3" /></label>
+
+            <div className="flex justify-end border-t border-line pt-3 dark:border-slate-700">
+              <button type="submit" className="inline-flex h-10 items-center justify-center gap-2 rounded-md bg-brand-600 px-5 text-sm font-semibold text-white transition-colors hover:bg-brand-700">
+                Cadastrar
+              </button>
             </div>
-            <label className="grid gap-1 text-sm font-medium">Classificação<select name="classification" defaultValue="Manter informado" className="h-10 rounded-md border border-line px-3"><option value="Gerenciar de perto">Gerenciar de perto</option><option value="Manter satisfeito">Manter satisfeito</option><option value="Manter informado">Manter informado</option><option value="Monitorar">Monitorar</option></select></label>
-            <label className="grid gap-1 text-sm font-medium">Observações<textarea name="notes" rows={3} className="rounded-md border border-line px-3 py-2" /></label>
-            <button className="w-fit rounded-md bg-brand-600 px-4 py-2 text-sm font-semibold text-white">Cadastrar</button>
           </form>
         </DialogAction>
       </div>
@@ -96,16 +163,94 @@ export default async function ProjectGovernancePage({ params }: { params: { id: 
                 </div>
                 <div className="flex gap-2">
                   <DialogAction title="Editar parte interessada" description={item.name} trigger="edit">
-                    <form action={updateStakeholderAction} className="grid gap-3">
+                    <form action={updateStakeholderAction} className="grid gap-4">
                       <input type="hidden" name="stakeholderId" value={item.id} />
                       <input type="hidden" name="projectId" value={project.id} />
-                      <div className="grid grid-cols-2 gap-3"><label className="grid gap-1 text-sm font-medium">Nome<input name="name" required defaultValue={item.name} className="h-10 rounded-md border border-line px-3" /></label><label className="grid gap-1 text-sm font-medium">Empresa/Área<input name="company" defaultValue={item.company ?? ""} className="h-10 rounded-md border border-line px-3" /></label></div>
-                      <div className="grid grid-cols-2 gap-3"><label className="grid gap-1 text-sm font-medium">Cargo<input name="jobTitle" defaultValue={item.jobTitle ?? ""} className="h-10 rounded-md border border-line px-3" /></label><label className="grid gap-1 text-sm font-medium">Papel no projeto<input name="projectRole" defaultValue={item.projectRole ?? ""} className="h-10 rounded-md border border-line px-3" /></label></div>
-                      <div className="grid grid-cols-3 gap-3"><label className="grid gap-1 text-sm font-medium">Tipo<select name="type" defaultValue={item.type} className="h-10 rounded-md border border-line px-3"><option value="INTERNAL">Interno</option><option value="CLIENT">Cliente</option><option value="PARTNER">Parceiro</option><option value="SUPPLIER">Fornecedor</option><option value="SPONSOR">Patrocinador</option></select></label><label className="grid gap-1 text-sm font-medium">Influência<select name="influence" defaultValue={item.influence} className="h-10 rounded-md border border-line px-3"><option value="LOW">Baixa</option><option value="HIGH">Alta</option></select></label><label className="grid gap-1 text-sm font-medium">Interesse<select name="interest" defaultValue={item.interest} className="h-10 rounded-md border border-line px-3"><option value="LOW">Baixo</option><option value="HIGH">Alto</option></select></label></div>
-                      <div className="grid grid-cols-2 gap-3"><label className="grid gap-1 text-sm font-medium">E-mail<input name="email" type="email" defaultValue={item.email ?? ""} className="h-10 rounded-md border border-line px-3" /></label><label className="grid gap-1 text-sm font-medium">Telefone<input name="phone" defaultValue={item.phone ?? ""} className="h-10 rounded-md border border-line px-3" /></label></div>
-                      <label className="grid gap-1 text-sm font-medium">Classificação<select name="classification" defaultValue={item.classification ?? "Manter informado"} className="h-10 rounded-md border border-line px-3"><option value="Gerenciar de perto">Gerenciar de perto</option><option value="Manter satisfeito">Manter satisfeito</option><option value="Manter informado">Manter informado</option><option value="Monitorar">Monitorar</option></select></label>
-                      <label className="grid gap-1 text-sm font-medium">Observações<textarea name="notes" defaultValue={item.notes ?? ""} rows={3} className="rounded-md border border-line px-3 py-2" /></label>
-                      <button className="w-fit rounded-md bg-brand-600 px-4 py-2 text-sm font-semibold text-white">Salvar</button>
+
+                      <div>
+                        <p className="text-xs font-bold uppercase tracking-wide text-slate-500 dark:text-slate-400">Identificação</p>
+                        <div className="mt-2 grid grid-cols-2 gap-3">
+                          <label className="grid gap-1.5 text-sm font-medium text-slate-700 dark:text-slate-300">
+                            Nome <span className="text-red-500">*</span>
+                            <input name="name" required defaultValue={item.name} className="h-10 rounded-md border border-line bg-white px-3 text-sm text-ink outline-none transition-colors focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white" />
+                          </label>
+                          <label className="grid gap-1.5 text-sm font-medium text-slate-700 dark:text-slate-300">
+                            Empresa/Área
+                            <input name="company" defaultValue={item.company ?? ""} className="h-10 rounded-md border border-line bg-white px-3 text-sm text-ink outline-none transition-colors focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white" />
+                          </label>
+                        </div>
+                        <div className="mt-3 grid grid-cols-2 gap-3">
+                          <label className="grid gap-1.5 text-sm font-medium text-slate-700 dark:text-slate-300">
+                            Cargo
+                            <input name="jobTitle" defaultValue={item.jobTitle ?? ""} className="h-10 rounded-md border border-line bg-white px-3 text-sm text-ink outline-none transition-colors focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white" />
+                          </label>
+                          <label className="grid gap-1.5 text-sm font-medium text-slate-700 dark:text-slate-300">
+                            Papel no projeto
+                            <input name="projectRole" defaultValue={item.projectRole ?? ""} className="h-10 rounded-md border border-line bg-white px-3 text-sm text-ink outline-none transition-colors focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white" />
+                          </label>
+                        </div>
+                      </div>
+
+                      <div>
+                        <p className="text-xs font-bold uppercase tracking-wide text-slate-500 dark:text-slate-400">Classificação</p>
+                        <div className="mt-2 grid grid-cols-3 gap-3">
+                          <label className="grid gap-1.5 text-sm font-medium text-slate-700 dark:text-slate-300">
+                            Tipo
+                            <select name="type" defaultValue={item.type} className="h-10 rounded-md border border-line bg-white px-3 text-sm text-ink outline-none transition-colors focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white">
+                              <option value="INTERNAL">Interno</option>
+                              <option value="CLIENT">Cliente</option>
+                              <option value="PARTNER">Parceiro</option>
+                              <option value="SUPPLIER">Fornecedor</option>
+                              <option value="SPONSOR">Patrocinador</option>
+                            </select>
+                          </label>
+                          <label className="grid gap-1.5 text-sm font-medium text-slate-700 dark:text-slate-300">
+                            Influência
+                            <select name="influence" defaultValue={item.influence} className="h-10 rounded-md border border-line bg-white px-3 text-sm text-ink outline-none transition-colors focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white">
+                              <option value="LOW">Baixa</option>
+                              <option value="HIGH">Alta</option>
+                            </select>
+                          </label>
+                          <label className="grid gap-1.5 text-sm font-medium text-slate-700 dark:text-slate-300">
+                            Interesse
+                            <select name="interest" defaultValue={item.interest} className="h-10 rounded-md border border-line bg-white px-3 text-sm text-ink outline-none transition-colors focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white">
+                              <option value="LOW">Baixo</option>
+                              <option value="HIGH">Alto</option>
+                            </select>
+                          </label>
+                        </div>
+                        <label className="mt-3 grid gap-1.5 text-sm font-medium text-slate-700 dark:text-slate-300">
+                          Classificação de comunicação
+                          <select name="classification" defaultValue={item.classification ?? "Manter informado"} className="h-10 rounded-md border border-line bg-white px-3 text-sm text-ink outline-none transition-colors focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white">
+                            <option value="Gerenciar de perto">Gerenciar de perto</option>
+                            <option value="Manter satisfeito">Manter satisfeito</option>
+                            <option value="Manter informado">Manter informado</option>
+                            <option value="Monitorar">Monitorar</option>
+                          </select>
+                        </label>
+                      </div>
+
+                      <div>
+                        <p className="text-xs font-bold uppercase tracking-wide text-slate-500 dark:text-slate-400">Contato</p>
+                        <div className="mt-2 grid grid-cols-2 gap-3">
+                          <label className="grid gap-1.5 text-sm font-medium text-slate-700 dark:text-slate-300">
+                            E-mail
+                            <input name="email" type="email" defaultValue={item.email ?? ""} className="h-10 rounded-md border border-line bg-white px-3 text-sm text-ink outline-none transition-colors focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white" />
+                          </label>
+                          <label className="grid gap-1.5 text-sm font-medium text-slate-700 dark:text-slate-300">
+                            Telefone
+                            <input name="phone" defaultValue={item.phone ?? ""} className="h-10 rounded-md border border-line bg-white px-3 text-sm text-ink outline-none transition-colors focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white" />
+                          </label>
+                        </div>
+                        <label className="mt-3 grid gap-1.5 text-sm font-medium text-slate-700 dark:text-slate-300">
+                          Observações
+                          <textarea name="notes" defaultValue={item.notes ?? ""} rows={3} className="min-h-[80px] rounded-md border border-line bg-white px-3 py-2 text-sm text-ink outline-none transition-colors focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white" />
+                        </label>
+                      </div>
+
+                      <div className="flex justify-end border-t border-line pt-3 dark:border-slate-700">
+                        <button type="submit" className="inline-flex h-10 items-center justify-center gap-2 rounded-md bg-brand-600 px-5 text-sm font-semibold text-white transition-colors hover:bg-brand-700">Salvar</button>
+                      </div>
                     </form>
                   </DialogAction>
                   <DialogAction title="Excluir parte interessada" description={`Deseja realmente excluir "${item.name}"?`} trigger="delete">

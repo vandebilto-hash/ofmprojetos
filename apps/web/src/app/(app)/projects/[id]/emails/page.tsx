@@ -129,18 +129,84 @@ function EmailAttachments({ email }: { email: any }) {
 }
 
 function EmailForm({ projectId, parentId, email, people, defaultSubject }: { projectId: string; parentId?: string; email?: any; people: string[]; defaultSubject?: string }) {
+  const inputClass = "h-10 rounded-md border border-line bg-white px-3 text-sm text-ink outline-none transition-colors placeholder:text-slate-400 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white dark:placeholder-slate-500";
+  const selectClass = "h-10 rounded-md border border-line bg-white px-3 text-sm text-ink outline-none transition-colors focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white";
+  const textareaClass = "min-h-[80px] rounded-md border border-line bg-white px-3 py-2 text-sm text-ink outline-none transition-colors placeholder:text-slate-400 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white dark:placeholder-slate-500";
+  const labelClass = "grid gap-1.5 text-sm font-medium text-slate-700 dark:text-slate-300";
+  const sectionTitle = "text-xs font-bold uppercase tracking-wide text-slate-500 dark:text-slate-400";
+
   return (
-    <form action={upsertImportantEmailAction} className="grid gap-3">
+    <form action={upsertImportantEmailAction} className="grid gap-4">
       {email ? <input type="hidden" name="emailId" value={email.id} /> : null}
       <input type="hidden" name="projectId" value={projectId} />
       <input type="hidden" name="parentId" value={parentId ?? email?.parentId ?? ""} />
-      <label className="grid gap-1 text-sm font-medium">Assunto<input name="subject" required defaultValue={email?.subject ?? defaultSubject ?? ""} className="h-10 rounded-md border border-line px-3" /></label>
-      <label className="grid gap-1 text-sm font-medium">Resumo<textarea name="summary" defaultValue={email?.summary ?? ""} rows={3} className="rounded-md border border-line px-3 py-2" /></label>
-      <div className="grid grid-cols-2 gap-3"><PeopleMultiSelect name="origin" label="Origem" people={people} defaultValue={email?.origin ?? ""} /><PeopleMultiSelect name="involved" label="Envolvidos" people={people} defaultValue={email?.involved ?? ""} /></div>
-      <div className="grid grid-cols-3 gap-3"><label className="grid gap-1 text-sm font-medium">Categoria<select name="category" defaultValue={email?.category ?? "E-mail Formal"} className="h-10 rounded-md border border-line px-3"><option value="E-mail Formal">E-mail formal</option><option value="Solicitação">Solicitação</option><option value="Decisão">Decisão</option><option value="Pendência">Pendência</option><option value="Aprovação">Aprovação</option><option value="Alinhamento">Alinhamento</option></select></label><label className="grid gap-1 text-sm font-medium">Status<select name="status" defaultValue={email?.status ?? "Solucionado"} className="h-10 rounded-md border border-line px-3"><option value="Aberto">Aberto</option><option value="Em andamento">Em andamento</option><option value="Aguardando retorno">Aguardando retorno</option><option value="Solucionado">Solucionado</option><option value="Cancelado">Cancelado</option></select></label><label className="grid gap-1 text-sm font-medium">Data<input name="date" type="date" required defaultValue={inputDate(email?.date ?? null)} className="h-10 rounded-md border border-line px-3" /></label></div>
-      <FileUpload name="attachmentUrl" label="Arquivo do e-mail" defaultValue={email?.attachmentUrl ?? ""} />
-      <MultiFileUpload name="attachments" label="Arquivos relacionados" defaultValue={(email?.attachments ?? []).map((attachment: any) => ({ name: attachment.name, fileUrl: attachment.fileUrl }))} />
-      <button className="w-fit rounded-md bg-brand-600 px-4 py-2 text-sm font-semibold text-white">Salvar</button>
+
+      <div>
+        <p className={sectionTitle}>Identificação</p>
+        <div className="mt-2 grid gap-3">
+          <label className={labelClass}>
+            Assunto <span className="text-red-500">*</span>
+            <input name="subject" required defaultValue={email?.subject ?? defaultSubject ?? ""} className={inputClass} placeholder="Assunto do e-mail" />
+          </label>
+          <label className={labelClass}>
+            Resumo
+            <textarea name="summary" defaultValue={email?.summary ?? ""} rows={3} className={textareaClass} placeholder="Resumo do conteúdo" />
+          </label>
+        </div>
+      </div>
+
+      <div>
+        <p className={sectionTitle}>Pessoas</p>
+        <div className="mt-2 grid grid-cols-2 gap-3">
+          <PeopleMultiSelect name="origin" label="Origem" people={people} defaultValue={email?.origin ?? ""} />
+          <PeopleMultiSelect name="involved" label="Envolvidos" people={people} defaultValue={email?.involved ?? ""} />
+        </div>
+      </div>
+
+      <div>
+        <p className={sectionTitle}>Classificação</p>
+        <div className="mt-2 grid grid-cols-3 gap-3">
+          <label className={labelClass}>
+            Categoria
+            <select name="category" defaultValue={email?.category ?? "E-mail Formal"} className={selectClass}>
+              <option value="E-mail Formal">E-mail formal</option>
+              <option value="Solicitação">Solicitação</option>
+              <option value="Decisão">Decisão</option>
+              <option value="Pendência">Pendência</option>
+              <option value="Aprovação">Aprovação</option>
+              <option value="Alinhamento">Alinhamento</option>
+            </select>
+          </label>
+          <label className={labelClass}>
+            Status
+            <select name="status" defaultValue={email?.status ?? "Solucionado"} className={selectClass}>
+              <option value="Aberto">Aberto</option>
+              <option value="Em andamento">Em andamento</option>
+              <option value="Aguardando retorno">Aguardando retorno</option>
+              <option value="Solucionado">Solucionado</option>
+              <option value="Cancelado">Cancelado</option>
+            </select>
+          </label>
+          <label className={labelClass}>
+            Data <span className="text-red-500">*</span>
+            <input name="date" type="date" required defaultValue={inputDate(email?.date ?? null)} className={inputClass} />
+          </label>
+        </div>
+      </div>
+
+      <div>
+        <p className={sectionTitle}>Anexos</p>
+        <div className="mt-2 grid gap-3">
+          <FileUpload name="attachmentUrl" label="Arquivo do e-mail" defaultValue={email?.attachmentUrl ?? ""} />
+          <MultiFileUpload name="attachments" label="Arquivos relacionados" defaultValue={(email?.attachments ?? []).map((attachment: any) => ({ name: attachment.name, fileUrl: attachment.fileUrl }))} />
+        </div>
+      </div>
+
+      <div className="flex justify-end border-t border-line pt-3 dark:border-slate-700">
+        <button type="submit" className="inline-flex h-10 items-center justify-center gap-2 rounded-md bg-brand-600 px-5 text-sm font-semibold text-white transition-colors hover:bg-brand-700">
+          Salvar
+        </button>
+      </div>
     </form>
   );
 }

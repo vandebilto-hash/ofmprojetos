@@ -67,16 +67,74 @@ export default async function ProjectMinutesPage({ params }: { params: { id: str
 }
 
 function MinuteForm({ projectId, minute, people }: { projectId: string; minute?: any; people: string[] }) {
+  const inputClass = "h-10 rounded-md border border-line bg-white px-3 text-sm text-ink outline-none transition-colors placeholder:text-slate-400 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white dark:placeholder-slate-500";
+  const selectClass = "h-10 rounded-md border border-line bg-white px-3 text-sm text-ink outline-none transition-colors focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white";
+  const textareaClass = "min-h-[80px] rounded-md border border-line bg-white px-3 py-2 text-sm text-ink outline-none transition-colors placeholder:text-slate-400 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white dark:placeholder-slate-500";
+  const labelClass = "grid gap-1.5 text-sm font-medium text-slate-700 dark:text-slate-300";
+  const sectionTitle = "text-xs font-bold uppercase tracking-wide text-slate-500 dark:text-slate-400";
+
   return (
-    <form action={upsertMeetingMinuteAction} className="grid gap-3">
+    <form action={upsertMeetingMinuteAction} className="grid gap-4">
       {minute ? <input type="hidden" name="minuteId" value={minute.id} /> : null}
       <input type="hidden" name="projectId" value={projectId} />
-      <label className="grid gap-1 text-sm font-medium">Titulo<input name="title" required defaultValue={minute?.title ?? ""} className="h-10 rounded-md border border-line px-3" /></label>
-      <label className="grid gap-1 text-sm font-medium">Resumo<textarea name="summary" defaultValue={minute?.summary ?? ""} rows={3} className="rounded-md border border-line px-3 py-2" /></label>
-      <div className="grid grid-cols-3 gap-3"><label className="grid gap-1 text-sm font-medium">Data<input name="meetingDate" type="date" required defaultValue={inputDate(minute?.meetingDate ?? null)} className="h-10 rounded-md border border-line px-3" /></label><label className="grid gap-1 text-sm font-medium">Tipo<select name="meetingType" defaultValue={minute?.meetingType ?? "Reunião de acompanhamento"} className="h-10 rounded-md border border-line px-3"><option value="Reunião de acompanhamento">Reunião de acompanhamento</option><option value="Reunião executiva">Reunião executiva</option><option value="Reunião técnica">Reunião técnica</option><option value="Comitê do projeto">Comitê do projeto</option><option value="Workshop">Workshop</option><option value="Outro">Outro</option></select></label><label className="grid gap-1 text-sm font-medium">Status<select name="status" defaultValue={minute?.status ?? "Publicado"} className="h-10 rounded-md border border-line px-3"><option value="Rascunho">Rascunho</option><option value="Em revisão">Em revisão</option><option value="Publicado">Publicado</option><option value="Cancelado">Cancelado</option></select></label></div>
-      <PeopleMultiSelect name="participants" label="Participantes" people={people} defaultValue={minute?.participants ?? ""} />
-      <FileUpload name="fileUrl" label="Arquivo" defaultValue={minute?.fileUrl ?? ""} />
-      <button className="w-fit rounded-md bg-brand-600 px-4 py-2 text-sm font-semibold text-white">Salvar</button>
+
+      <div>
+        <p className={sectionTitle}>Identificação</p>
+        <div className="mt-2 grid gap-3">
+          <label className={labelClass}>
+            Título <span className="text-red-500">*</span>
+            <input name="title" required defaultValue={minute?.title ?? ""} className={inputClass} placeholder="Título da ata" />
+          </label>
+          <label className={labelClass}>
+            Resumo
+            <textarea name="summary" defaultValue={minute?.summary ?? ""} rows={3} className={textareaClass} placeholder="Resumo da reunião" />
+          </label>
+        </div>
+      </div>
+
+      <div>
+        <p className={sectionTitle}>Detalhes</p>
+        <div className="mt-2 grid grid-cols-3 gap-3">
+          <label className={labelClass}>
+            Data <span className="text-red-500">*</span>
+            <input name="meetingDate" type="date" required defaultValue={inputDate(minute?.meetingDate ?? null)} className={inputClass} />
+          </label>
+          <label className={labelClass}>
+            Tipo
+            <select name="meetingType" defaultValue={minute?.meetingType ?? "Reunião de acompanhamento"} className={selectClass}>
+              <option value="Reunião de acompanhamento">Reunião de acompanhamento</option>
+              <option value="Reunião executiva">Reunião executiva</option>
+              <option value="Reunião técnica">Reunião técnica</option>
+              <option value="Comitê do projeto">Comitê do projeto</option>
+              <option value="Workshop">Workshop</option>
+              <option value="Outro">Outro</option>
+            </select>
+          </label>
+          <label className={labelClass}>
+            Status
+            <select name="status" defaultValue={minute?.status ?? "Publicado"} className={selectClass}>
+              <option value="Rascunho">Rascunho</option>
+              <option value="Em revisão">Em revisão</option>
+              <option value="Publicado">Publicado</option>
+              <option value="Cancelado">Cancelado</option>
+            </select>
+          </label>
+        </div>
+      </div>
+
+      <div>
+        <p className={sectionTitle}>Participantes e anexo</p>
+        <div className="mt-2 grid gap-3">
+          <PeopleMultiSelect name="participants" label="Participantes" people={people} defaultValue={minute?.participants ?? ""} />
+          <FileUpload name="fileUrl" label="Arquivo" defaultValue={minute?.fileUrl ?? ""} />
+        </div>
+      </div>
+
+      <div className="flex justify-end border-t border-line pt-3 dark:border-slate-700">
+        <button type="submit" className="inline-flex h-10 items-center justify-center gap-2 rounded-md bg-brand-600 px-5 text-sm font-semibold text-white transition-colors hover:bg-brand-700">
+          Salvar
+        </button>
+      </div>
     </form>
   );
 }

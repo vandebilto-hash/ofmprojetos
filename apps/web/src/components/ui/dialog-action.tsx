@@ -105,7 +105,7 @@ export function DialogAction({ title, description, trigger, triggerLabel, trigge
             <X size={16} />
           </button>
         </div>
-        <div className="p-5">{children}</div>
+        <div className="max-h-[80vh] overflow-y-auto p-5">{children}</div>
       </dialog>
     </>
   );

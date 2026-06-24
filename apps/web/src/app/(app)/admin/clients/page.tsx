@@ -12,36 +12,45 @@ export default async function AdminClientsPage() {
       <PageHeader title="Clientes" description="Cadastro de clientes e vinculos com projetos e usuarios." />
       <div className="mb-4 flex justify-end">
         <DialogAction title="Criar cliente" description="Cadastre dados comerciais e contato principal." trigger="create" triggerLabel="Novo cliente">
-          <form action={createClientAction} className="grid gap-3">
-            <label className="grid gap-1 text-sm font-medium">
-              Nome do cliente
-              <input name="name" required className="h-10 rounded-md border border-line px-3" />
-            </label>
-            <div className="grid grid-cols-2 gap-3">
-              <label className="grid gap-1 text-sm font-medium">
-                CNPJ/Identificador
-                <input name="identifier" className="h-10 rounded-md border border-line px-3" />
-              </label>
-              <label className="grid gap-1 text-sm font-medium">
-                Responsavel principal
-                <input name="mainContact" className="h-10 rounded-md border border-line px-3" />
-              </label>
+          <form action={createClientAction} className="grid gap-4">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-wide text-slate-500 dark:text-slate-400">Dados do cliente</p>
+              <div className="mt-2 grid gap-3">
+                <label className="grid gap-1.5 text-sm font-medium text-slate-700 dark:text-slate-300">
+                  Nome do cliente <span className="text-red-500">*</span>
+                  <input name="name" required className="h-10 rounded-md border border-line bg-white px-3 text-sm text-ink outline-none transition-colors placeholder:text-slate-400 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white" placeholder="Nome do cliente" />
+                </label>
+                <div className="grid grid-cols-2 gap-3">
+                  <label className="grid gap-1.5 text-sm font-medium text-slate-700 dark:text-slate-300">
+                    CNPJ/Identificador
+                    <input name="identifier" className="h-10 rounded-md border border-line bg-white px-3 text-sm text-ink outline-none transition-colors placeholder:text-slate-400 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white" placeholder="00.000.000/0001-00" />
+                  </label>
+                  <label className="grid gap-1.5 text-sm font-medium text-slate-700 dark:text-slate-300">
+                    Responsável principal
+                    <input name="mainContact" className="h-10 rounded-md border border-line bg-white px-3 text-sm text-ink outline-none transition-colors placeholder:text-slate-400 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white" placeholder="Nome do responsável" />
+                  </label>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <label className="grid gap-1.5 text-sm font-medium text-slate-700 dark:text-slate-300">
+                    E-mail
+                    <input name="email" type="email" className="h-10 rounded-md border border-line bg-white px-3 text-sm text-ink outline-none transition-colors placeholder:text-slate-400 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white" placeholder="email@exemplo.com" />
+                  </label>
+                  <label className="grid gap-1.5 text-sm font-medium text-slate-700 dark:text-slate-300">
+                    Telefone
+                    <input name="phone" className="h-10 rounded-md border border-line bg-white px-3 text-sm text-ink outline-none transition-colors placeholder:text-slate-400 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white" placeholder="(00) 00000-0000" />
+                  </label>
+                </div>
+                <label className="grid gap-1.5 text-sm font-medium text-slate-700 dark:text-slate-300">
+                  Observações
+                  <textarea name="notes" rows={3} className="min-h-[80px] rounded-md border border-line bg-white px-3 py-2 text-sm text-ink outline-none transition-colors placeholder:text-slate-400 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white" placeholder="Notas adicionais" />
+                </label>
+              </div>
             </div>
-            <div className="grid grid-cols-2 gap-3">
-              <label className="grid gap-1 text-sm font-medium">
-                E-mail
-                <input name="email" type="email" className="h-10 rounded-md border border-line px-3" />
-              </label>
-              <label className="grid gap-1 text-sm font-medium">
-                Telefone
-                <input name="phone" className="h-10 rounded-md border border-line px-3" />
-              </label>
+            <div className="flex justify-end border-t border-line pt-3 dark:border-slate-700">
+              <button type="submit" className="inline-flex h-10 items-center justify-center gap-2 rounded-md bg-brand-600 px-5 text-sm font-semibold text-white transition-colors hover:bg-brand-700">
+                Criar cliente
+              </button>
             </div>
-            <label className="grid gap-1 text-sm font-medium">
-              Observacoes
-              <textarea name="notes" rows={3} className="rounded-md border border-line px-3 py-2" />
-            </label>
-            <button className="w-fit rounded-md bg-brand-600 px-4 py-2 text-sm font-semibold text-white">Criar cliente</button>
           </form>
         </DialogAction>
       </div>
