@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { DialogAction } from "@/components/ui/dialog-action";
+import { FileUpload } from "@/components/ui/file-upload";
 import { PageHeader } from "@/components/ui/page-header";
 import { ProjectTabs } from "@/features/projects/project-tabs";
 import { prisma } from "@/lib/prisma/client";
@@ -14,19 +15,19 @@ export default async function ProjectDocumentsPage({ params }: { params: { id: s
 
   return (
     <>
-      <PageHeader title={`Planos | ${project.name}`} description="Planos do projeto cadastrados como links, embeds e downloads do Google Drive." action={{ href: `/projects/${project.id}/dashboard`, label: "Painel" }} />
+      <PageHeader title={`Planos | ${project.name}`} description="Planos do projeto cadastrados como arquivos enviados diretamente no app." action={{ href: `/projects/${project.id}/dashboard`, label: "Painel" }} />
       <ProjectTabs projectId={project.id} />
       <div className="mb-4 flex justify-end">
-        <DialogAction title="Adicionar plano" description="Cadastre um documento do Google Drive para o projeto." trigger="create" triggerLabel="Novo documento">
+        <DialogAction title="Adicionar plano" description="Envie um arquivo de ate 10 MB para o projeto." trigger="create" triggerLabel="Novo documento">
           <form action={createProjectDocumentAction} className="grid gap-3">
             <input type="hidden" name="projectId" value={project.id} />
             <div className="grid grid-cols-2 gap-3">
               <label className="grid gap-1 text-sm font-medium">Nome<input name="name" required className="h-10 rounded-md border border-line px-3" /></label>
               <label className="grid gap-1 text-sm font-medium">Tipo<select name="type" defaultValue="Plano do projeto" required className="h-10 rounded-md border border-line px-3"><option value="Plano do projeto">Plano do projeto</option><option value="Cronograma">Cronograma</option><option value="Relatório">Relatório</option><option value="Evidência">Evidência</option><option value="Contrato">Contrato</option><option value="Outro documento">Outro documento</option></select></label>
             </div>
-            <label className="grid gap-1 text-sm font-medium">Link Google Drive<input name="externalUrl" type="url" placeholder="https://drive.google.com/..." className="h-10 rounded-md border border-line px-3" /></label>
-            <label className="grid gap-1 text-sm font-medium">Link embed/visualizacao<input name="embedUrl" type="url" className="h-10 rounded-md border border-line px-3" /></label>
-            <label className="grid gap-1 text-sm font-medium">Link download<input name="downloadUrl" type="url" className="h-10 rounded-md border border-line px-3" /></label>
+            <input type="hidden" name="externalUrl" value="" />
+            <input type="hidden" name="embedUrl" value="" />
+            <FileUpload name="downloadUrl" label="Arquivo" required />
             <div className="grid grid-cols-3 gap-3">
               <label className="grid gap-1 text-sm font-medium">Versao<input name="version" placeholder="v1.0" className="h-10 rounded-md border border-line px-3" /></label>
               <label className="grid gap-1 text-sm font-medium">Status<select name="status" defaultValue="Aprovado" className="h-10 rounded-md border border-line px-3"><option value="Rascunho">Rascunho</option><option value="Em revisão">Em revisão</option><option value="Aprovado">Aprovado</option><option value="Publicado">Publicado</option><option value="Obsoleto">Obsoleto</option></select></label>
@@ -54,9 +55,9 @@ export default async function ProjectDocumentsPage({ params }: { params: { id: s
                       <input type="hidden" name="documentId" value={document.id} />
                       <input type="hidden" name="projectId" value={project.id} />
                       <div className="grid grid-cols-2 gap-3"><label className="grid gap-1 text-sm font-medium">Nome<input name="name" required defaultValue={document.name} className="h-10 rounded-md border border-line px-3" /></label><label className="grid gap-1 text-sm font-medium">Tipo<select name="type" required defaultValue={document.type} className="h-10 rounded-md border border-line px-3"><option value="Plano do projeto">Plano do projeto</option><option value="Cronograma">Cronograma</option><option value="Relatório">Relatório</option><option value="Evidência">Evidência</option><option value="Contrato">Contrato</option><option value="Outro documento">Outro documento</option></select></label></div>
-                      <label className="grid gap-1 text-sm font-medium">Link Google Drive<input name="externalUrl" type="url" defaultValue={document.externalUrl ?? ""} className="h-10 rounded-md border border-line px-3" /></label>
-                      <label className="grid gap-1 text-sm font-medium">Link embed/visualizacao<input name="embedUrl" type="url" defaultValue={document.embedUrl ?? ""} className="h-10 rounded-md border border-line px-3" /></label>
-                      <label className="grid gap-1 text-sm font-medium">Link download<input name="downloadUrl" type="url" defaultValue={document.downloadUrl ?? ""} className="h-10 rounded-md border border-line px-3" /></label>
+                      <input type="hidden" name="externalUrl" value={document.externalUrl ?? ""} />
+                      <input type="hidden" name="embedUrl" value={document.embedUrl ?? ""} />
+                      <FileUpload name="downloadUrl" label="Arquivo" defaultValue={document.downloadUrl ?? document.externalUrl ?? ""} />
                       <div className="grid grid-cols-3 gap-3"><label className="grid gap-1 text-sm font-medium">Versao<input name="version" defaultValue={document.version ?? ""} className="h-10 rounded-md border border-line px-3" /></label><label className="grid gap-1 text-sm font-medium">Status<select name="status" defaultValue={document.status ?? "Aprovado"} className="h-10 rounded-md border border-line px-3"><option value="Rascunho">Rascunho</option><option value="Em revisão">Em revisão</option><option value="Aprovado">Aprovado</option><option value="Publicado">Publicado</option><option value="Obsoleto">Obsoleto</option></select></label><label className="grid gap-1 text-sm font-medium">Visibilidade<select name="visibility" defaultValue={document.visibility} className="h-10 rounded-md border border-line px-3"><option value="CLIENT_VISIBLE">Cliente</option><option value="PROJECT_TEAM">Equipe</option><option value="INTERNAL">Interno</option></select></label></div>
                       <label className="flex items-center gap-2 text-sm font-medium"><input name="clientDownloadAllowed" type="checkbox" defaultChecked={document.clientDownloadAllowed} /> Permitir download pelo cliente</label>
                       <button className="w-fit rounded-md bg-brand-600 px-4 py-2 text-sm font-semibold text-white">Salvar</button>

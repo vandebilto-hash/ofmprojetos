@@ -157,6 +157,16 @@ const documentSchema = z.object({
   clientDownloadAllowed: z.coerce.boolean().optional()
 });
 
+const MAX_UPLOADED_FILE_SIZE = 10 * 1024 * 1024;
+
+function validateUploadedFileValue(value?: string | null) {
+  if (!value?.startsWith("data:")) return;
+  const base64 = value.split(",", 2)[1] ?? "";
+  const padding = base64.endsWith("==") ? 2 : base64.endsWith("=") ? 1 : 0;
+  const size = Math.floor((base64.length * 3) / 4) - padding;
+  if (size > MAX_UPLOADED_FILE_SIZE) throw new Error("Arquivo muito grande. O limite e 10 MB.");
+}
+
 const milestoneSchema = z.object({
   milestoneId: z.string().optional(),
   projectId: z.string().min(1),
@@ -560,13 +570,15 @@ export async function createProjectDocumentAction(formData: FormData) {
   const session = await getServerSession(authOptions);
   if (!canManageProject(session?.user.role)) throw new Error("Sem permissao para criar documento.");
   const data = documentSchema.parse(Object.fromEntries(formData));
+  if (!data.downloadUrl) throw new Error("Envie um arquivo para criar o documento.");
+  validateUploadedFileValue(data.downloadUrl);
   const document = await prisma.document.create({
     data: {
       projectId: data.projectId,
       uploadedById: session!.user.id,
       name: data.name,
       type: data.type,
-      sourceType: "GOOGLE_DRIVE",
+      sourceType: data.downloadUrl.startsWith("data:") ? "INTERNAL_FILE" : "GOOGLE_DRIVE",
       externalUrl: data.externalUrl || null,
       embedUrl: data.embedUrl || null,
       downloadUrl: data.downloadUrl || data.externalUrl || null,
@@ -585,6 +597,7 @@ export async function updateProjectDocumentAction(formData: FormData) {
   if (!canManageProject(session?.user.role)) throw new Error("Sem permissao para editar documento.");
   const data = documentSchema.parse(Object.fromEntries(formData));
   if (!data.documentId) throw new Error("Documento invalido.");
+  validateUploadedFileValue(data.downloadUrl);
   const before = await prisma.document.findUniqueOrThrow({ where: { id: data.documentId } });
   const document = await prisma.document.update({
     where: { id: data.documentId },
@@ -608,6 +621,7 @@ export async function createMilestoneAction(formData: FormData) {
   const session = await getServerSession(authOptions);
   if (!canManageProject(session?.user.role)) throw new Error("Sem permissao para criar marco.");
   const data = milestoneSchema.parse(Object.fromEntries(formData));
+  validateUploadedFileValue(data.evidenceUrl);
   const milestone = await prisma.milestone.create({
     data: {
       projectId: data.projectId,
@@ -631,6 +645,7 @@ export async function updateMilestoneAction(formData: FormData) {
   if (!canManageProject(session?.user.role)) throw new Error("Sem permissao para editar marco.");
   const data = milestoneSchema.parse(Object.fromEntries(formData));
   if (!data.milestoneId) throw new Error("Marco invalido.");
+  validateUploadedFileValue(data.evidenceUrl);
   const before = await prisma.milestone.findUniqueOrThrow({ where: { id: data.milestoneId } });
   const milestone = await prisma.milestone.update({
     where: { id: data.milestoneId },
@@ -767,6 +782,7 @@ export async function upsertImportantEmailAction(formData: FormData) {
   const session = await getServerSession(authOptions);
   if (!canManageProject(session?.user.role)) throw new Error("Sem permissao para salvar e-mail.");
   const data = importantEmailSchema.parse(Object.fromEntries(formData));
+  validateUploadedFileValue(data.attachmentUrl);
   const payload = {
     projectId: data.projectId,
     subject: data.subject,
@@ -801,6 +817,7 @@ export async function upsertMeetingMinuteAction(formData: FormData) {
   const session = await getServerSession(authOptions);
   if (!canManageProject(session?.user.role)) throw new Error("Sem permissao para salvar ata.");
   const data = meetingMinuteSchema.parse(Object.fromEntries(formData));
+  validateUploadedFileValue(data.fileUrl);
   const payload = {
     projectId: data.projectId,
     title: data.title,

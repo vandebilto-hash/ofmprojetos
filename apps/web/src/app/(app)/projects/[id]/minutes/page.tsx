@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { DialogAction } from "@/components/ui/dialog-action";
+import { FileUpload } from "@/components/ui/file-upload";
 import { PeopleMultiSelect } from "@/components/ui/people-multi-select";
 import { PageHeader } from "@/components/ui/page-header";
 import { ProjectTabs } from "@/features/projects/project-tabs";
@@ -74,7 +75,7 @@ function MinuteForm({ projectId, minute, people }: { projectId: string; minute?:
       <label className="grid gap-1 text-sm font-medium">Resumo<textarea name="summary" defaultValue={minute?.summary ?? ""} rows={3} className="rounded-md border border-line px-3 py-2" /></label>
       <div className="grid grid-cols-3 gap-3"><label className="grid gap-1 text-sm font-medium">Data<input name="meetingDate" type="date" required defaultValue={inputDate(minute?.meetingDate ?? null)} className="h-10 rounded-md border border-line px-3" /></label><label className="grid gap-1 text-sm font-medium">Tipo<select name="meetingType" defaultValue={minute?.meetingType ?? "Reunião de acompanhamento"} className="h-10 rounded-md border border-line px-3"><option value="Reunião de acompanhamento">Reunião de acompanhamento</option><option value="Reunião executiva">Reunião executiva</option><option value="Reunião técnica">Reunião técnica</option><option value="Comitê do projeto">Comitê do projeto</option><option value="Workshop">Workshop</option><option value="Outro">Outro</option></select></label><label className="grid gap-1 text-sm font-medium">Status<select name="status" defaultValue={minute?.status ?? "Publicado"} className="h-10 rounded-md border border-line px-3"><option value="Rascunho">Rascunho</option><option value="Em revisão">Em revisão</option><option value="Publicado">Publicado</option><option value="Cancelado">Cancelado</option></select></label></div>
       <PeopleMultiSelect name="participants" label="Participantes" people={people} defaultValue={minute?.participants ?? ""} />
-      <label className="grid gap-1 text-sm font-medium">Arquivo/link<input name="fileUrl" type="url" defaultValue={minute?.fileUrl ?? ""} className="h-10 rounded-md border border-line px-3" /></label>
+      <FileUpload name="fileUrl" label="Arquivo" defaultValue={minute?.fileUrl ?? ""} />
       <button className="w-fit rounded-md bg-brand-600 px-4 py-2 text-sm font-semibold text-white">Salvar</button>
     </form>
   );

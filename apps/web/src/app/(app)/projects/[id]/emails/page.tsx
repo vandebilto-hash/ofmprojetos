@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { DialogAction } from "@/components/ui/dialog-action";
+import { FileUpload } from "@/components/ui/file-upload";
 import { PeopleMultiSelect } from "@/components/ui/people-multi-select";
 import { PageHeader } from "@/components/ui/page-header";
 import { ProjectTabs } from "@/features/projects/project-tabs";
@@ -74,7 +75,7 @@ function EmailForm({ projectId, email, people }: { projectId: string; email?: an
       <label className="grid gap-1 text-sm font-medium">Resumo<textarea name="summary" defaultValue={email?.summary ?? ""} rows={3} className="rounded-md border border-line px-3 py-2" /></label>
       <div className="grid grid-cols-2 gap-3"><label className="grid gap-1 text-sm font-medium">Origem<input name="origin" defaultValue={email?.origin ?? ""} className="h-10 rounded-md border border-line px-3" /></label><PeopleMultiSelect name="involved" label="Envolvidos" people={people} defaultValue={email?.involved ?? ""} /></div>
       <div className="grid grid-cols-3 gap-3"><label className="grid gap-1 text-sm font-medium">Categoria<select name="category" defaultValue={email?.category ?? "E-mail Formal"} className="h-10 rounded-md border border-line px-3"><option value="E-mail Formal">E-mail formal</option><option value="Solicitação">Solicitação</option><option value="Decisão">Decisão</option><option value="Pendência">Pendência</option><option value="Aprovação">Aprovação</option><option value="Alinhamento">Alinhamento</option></select></label><label className="grid gap-1 text-sm font-medium">Status<select name="status" defaultValue={email?.status ?? "Solucionado"} className="h-10 rounded-md border border-line px-3"><option value="Aberto">Aberto</option><option value="Em andamento">Em andamento</option><option value="Aguardando retorno">Aguardando retorno</option><option value="Solucionado">Solucionado</option><option value="Cancelado">Cancelado</option></select></label><label className="grid gap-1 text-sm font-medium">Data<input name="date" type="date" required defaultValue={inputDate(email?.date ?? null)} className="h-10 rounded-md border border-line px-3" /></label></div>
-      <label className="grid gap-1 text-sm font-medium">Anexo/link<input name="attachmentUrl" type="url" defaultValue={email?.attachmentUrl ?? ""} className="h-10 rounded-md border border-line px-3" /></label>
+      <FileUpload name="attachmentUrl" label="Anexo" defaultValue={email?.attachmentUrl ?? ""} />
       <button className="w-fit rounded-md bg-brand-600 px-4 py-2 text-sm font-semibold text-white">Salvar</button>
     </form>
   );
