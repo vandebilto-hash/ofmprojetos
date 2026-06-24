@@ -15,10 +15,10 @@ export default async function ProjectDocumentsPage({ params }: { params: { id: s
 
   return (
     <>
-      <PageHeader title={`Planos | ${project.name}`} description="Planos do projeto cadastrados como arquivos enviados diretamente no app." action={{ href: `/projects/${project.id}/dashboard`, label: "Painel" }} />
+      <PageHeader title={`Documentos importantes | ${project.name}`} description="Documentos importantes do projeto enviados diretamente no app." action={{ href: `/projects/${project.id}/dashboard`, label: "Painel" }} />
       <ProjectTabs projectId={project.id} />
       <div className="mb-4 flex justify-end">
-        <DialogAction title="Adicionar plano" description="Envie um arquivo de ate 10 MB para o projeto." trigger="create" triggerLabel="Novo documento">
+        <DialogAction title="Adicionar documento" description="Envie um arquivo de ate 10 MB para o projeto." trigger="create" triggerLabel="Novo documento">
           <form action={createProjectDocumentAction} className="grid gap-3">
             <input type="hidden" name="projectId" value={project.id} />
             <div className="grid grid-cols-2 gap-3">
@@ -49,7 +49,7 @@ export default async function ProjectDocumentsPage({ params }: { params: { id: s
                 </div>
                 <div className="flex gap-2">
                   {document.embedUrl ? <a href={document.embedUrl} target="_blank" className="rounded-md border border-line px-3 py-1.5 font-semibold">Ver</a> : null}
-                  {document.downloadUrl || document.externalUrl ? <a href={document.downloadUrl ?? document.externalUrl ?? "#"} target="_blank" className="rounded-md bg-brand-600 px-3 py-1.5 font-semibold text-white">Baixar</a> : null}
+                  {document.downloadUrl || document.externalUrl ? <a href={getDocumentHref(document)} target="_blank" className="rounded-md bg-brand-600 px-3 py-1.5 font-semibold text-white">Acessar</a> : null}
                   <DialogAction title="Editar documento" description={document.name} trigger="edit">
                     <form action={updateProjectDocumentAction} className="grid gap-3">
                       <input type="hidden" name="documentId" value={document.id} />
@@ -79,4 +79,9 @@ export default async function ProjectDocumentsPage({ params }: { params: { id: s
       </div>
     </>
   );
+}
+
+function getDocumentHref(document: { id: string; downloadUrl?: string | null; externalUrl?: string | null }) {
+  const href = document.downloadUrl ?? document.externalUrl ?? "#";
+  return href.startsWith("data:") ? `/api/files/document?documentId=${document.id}` : href;
 }

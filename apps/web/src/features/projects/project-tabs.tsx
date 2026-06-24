@@ -5,7 +5,7 @@ const tabs = [
   ["governance", "Governanca"],
   ["emails", "E-mails"],
   ["minutes", "Atas"],
-  ["documents", "Planos"],
+  ["documents", "Documentos importantes"],
   ["milestones", "Marcos"],
   ["gantt", "Planejamento"],
   ["blockers", "Riscos e pendencias"],

@@ -19,7 +19,7 @@ export const portalModules = [
   },
   {
     key: "downloads",
-    label: "Downloads",
+    label: "Documentos importantes",
     description: "Central de documentos importantes para visualizacao e download.",
     href: "downloads"
   },

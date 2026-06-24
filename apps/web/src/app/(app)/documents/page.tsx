@@ -9,7 +9,7 @@ export default async function DocumentsPage() {
 
   return (
     <>
-      <PageHeader title="Documentos" description="Planos e documentos vinculados aos projetos, incluindo links do Google Drive." />
+      <PageHeader title="Documentos importantes" description="Documentos importantes vinculados aos projetos." />
       <div className="rounded-lg border border-line bg-white p-5 shadow-soft">
         {documents.map((document) => (
           <div key={document.id} className="border-b border-line py-3 text-sm last:border-b-0">

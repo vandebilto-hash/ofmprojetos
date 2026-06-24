@@ -60,7 +60,7 @@ const moduleIcon: Record<string, React.ElementType> = {
   home: Home,
   governance: Users,
   plans: FileText,
-  downloads: Download,
+  downloads: FileText,
   emails: Mail,
   minutes: ScrollText,
   milestones: Milestone,
@@ -630,7 +630,7 @@ function PlansModule({ project }: { project: any }) {
 function DownloadsModule({ project }: { project: any }) {
   return (
     <ModulePage
-      eyebrow="Downloads"
+      eyebrow="Documentos importantes"
       icon={Download}
       title="Documentos importantes"
       description="Central de arquivos liberados para consulta e download pelo cliente."
@@ -647,7 +647,7 @@ function DownloadsModule({ project }: { project: any }) {
             </p>
             {doc.downloadUrl || doc.externalUrl ? (
               <Link
-                href={doc.downloadUrl ?? doc.externalUrl}
+                href={getDocumentDownloadHref(doc)}
                 target="_blank"
                 className="mt-4 inline-flex items-center gap-1.5 rounded-lg bg-[#062553] px-3 py-2 text-xs font-bold text-white hover:bg-[#0f1b3d]"
               >
@@ -665,6 +665,11 @@ function DownloadsModule({ project }: { project: any }) {
       </div>
     </ModulePage>
   );
+}
+
+function getDocumentDownloadHref(doc: { id: string; downloadUrl?: string | null; externalUrl?: string | null }) {
+  const href = doc.downloadUrl ?? doc.externalUrl ?? "#";
+  return href.startsWith("data:") ? `/api/files/document?documentId=${doc.id}` : href;
 }
 
 function EmailAttachmentLinks({ email, compact = false }: { email: any; compact?: boolean }) {
