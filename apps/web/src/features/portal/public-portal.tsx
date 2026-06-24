@@ -667,6 +667,31 @@ function DownloadsModule({ project }: { project: any }) {
   );
 }
 
+function EmailAttachmentLinks({ email, compact = false }: { email: any; compact?: boolean }) {
+  const links = [
+    ...(email.attachments ?? []).map((attachment: any) => ({ name: attachment.name, href: attachment.fileUrl })),
+    ...(email.attachmentUrl ? [{ name: "Acessar e-mail", href: email.attachmentUrl }] : [])
+  ];
+
+  if (!links.length) return null;
+
+  return (
+    <div className={compact ? "mt-2 flex flex-wrap gap-1.5" : "mt-4 flex flex-wrap gap-2"}>
+      {links.map((attachment, index) => (
+        <Link
+          key={`${attachment.name}-${index}`}
+          href={attachment.href}
+          target="_blank"
+          className="inline-flex w-fit items-center gap-1.5 rounded-lg bg-[#062553] px-3 py-2 text-xs font-bold text-white hover:bg-[#0f1b3d]"
+        >
+          <Mail size={12} />
+          {attachment.name}
+        </Link>
+      ))}
+    </div>
+  );
+}
+
 function EmailsModule({ project }: { project: any }) {
   const categories = countBy(project.importantEmails ?? [], "category");
   const emails = project.importantEmails ?? [];
@@ -713,15 +738,19 @@ function EmailsModule({ project }: { project: any }) {
                     <strong className="text-slate-700">Tipo:</strong> {email.category}
                   </p>
                 </div>
-                {email.attachmentUrl ? (
-                  <Link
-                    href={email.attachmentUrl}
-                    target="_blank"
-                    className="mt-4 inline-flex w-fit items-center gap-1.5 rounded-lg bg-[#062553] px-3 py-2 text-xs font-bold text-white hover:bg-[#0f1b3d]"
-                  >
-                    <Mail size={12} />
-                    Acessar e-mail
-                  </Link>
+                <EmailAttachmentLinks email={email} />
+                {email.replies?.length ? (
+                  <div className="mt-4 grid gap-2 border-l-2 border-slate-200 pl-3">
+                    <p className="text-[10px] font-black uppercase tracking-wide text-slate-400">Respostas relacionadas</p>
+                    {email.replies.map((reply: any) => (
+                      <div key={reply.id} className="rounded-lg bg-white p-3 ring-1 ring-slate-200">
+                        <p className="text-[11px] font-bold text-slate-400">{formatDate(reply.date)} | {reply.status}</p>
+                        <h4 className="mt-1 text-xs font-black text-slate-900">{reply.subject}</h4>
+                        <p className="mt-1 text-xs leading-5 text-slate-500">{reply.summary}</p>
+                        <EmailAttachmentLinks email={reply} compact />
+                      </div>
+                    ))}
+                  </div>
                 ) : null}
               </div>
             );

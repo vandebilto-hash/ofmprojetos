@@ -204,6 +204,7 @@ const riskSchema = z.object({
 const importantEmailSchema = z.object({
   emailId: z.string().optional(),
   projectId: z.string().min(1),
+  parentId: z.string().optional(),
   subject: z.string().min(2),
   summary: z.string().optional(),
   origin: z.string().optional(),
@@ -211,8 +212,20 @@ const importantEmailSchema = z.object({
   category: z.string().optional(),
   status: z.string().optional(),
   date: dateField,
-  attachmentUrl: z.string().optional()
+  attachmentUrl: z.string().optional(),
+  attachments: z.string().optional()
 });
+
+const uploadedAttachmentSchema = z.object({
+  name: z.string().min(1),
+  fileUrl: z.string().min(1)
+});
+
+function parseUploadedAttachments(value?: string | null) {
+  if (!value) return [];
+  const parsed = JSON.parse(value);
+  return z.array(uploadedAttachmentSchema).parse(parsed);
+}
 
 const meetingMinuteSchema = z.object({
   minuteId: z.string().optional(),
@@ -783,8 +796,11 @@ export async function upsertImportantEmailAction(formData: FormData) {
   if (!canManageProject(session?.user.role)) throw new Error("Sem permissao para salvar e-mail.");
   const data = importantEmailSchema.parse(Object.fromEntries(formData));
   validateUploadedFileValue(data.attachmentUrl);
+  const attachments = parseUploadedAttachments(data.attachments);
+  attachments.forEach((attachment) => validateUploadedFileValue(attachment.fileUrl));
   const payload = {
     projectId: data.projectId,
+    parentId: data.parentId || null,
     subject: data.subject,
     summary: data.summary || null,
     origin: data.origin || null,
@@ -796,8 +812,22 @@ export async function upsertImportantEmailAction(formData: FormData) {
   };
   const before = data.emailId ? await prisma.importantEmail.findUnique({ where: { id: data.emailId } }) : null;
   const email = data.emailId
-    ? await prisma.importantEmail.update({ where: { id: data.emailId }, data: payload })
-    : await prisma.importantEmail.create({ data: payload });
+    ? await prisma.importantEmail.update({
+        where: { id: data.emailId },
+        data: {
+          ...payload,
+          attachments: {
+            deleteMany: {},
+            create: attachments.map((attachment) => ({ name: attachment.name, fileUrl: attachment.fileUrl }))
+          }
+        }
+      })
+    : await prisma.importantEmail.create({
+        data: {
+          ...payload,
+          attachments: { create: attachments.map((attachment) => ({ name: attachment.name, fileUrl: attachment.fileUrl })) }
+        }
+      });
   await logProjectChange({ actorId: session?.user.id, projectId: data.projectId, entityType: "ImportantEmail", entityId: email.id, action: data.emailId ? "UPDATE" : "CREATE", description: `${data.emailId ? "Atualizou" : "Adicionou"} o e-mail ${email.subject}.`, before, after: email });
   revalidateProjectModule(data.projectId);
 }

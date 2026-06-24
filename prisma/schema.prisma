@@ -235,36 +235,36 @@ model Permission {
 }
 
 model User {
-  id                   String               @id @default(cuid())
-  name                 String
-  email                String               @unique
-  emailVerified        DateTime?
-  passwordHash         String?
-  image                String?
-  roleId               String
-  clientId             String?
-  jobTitle             String?
-  weeklyCapacityHours  Decimal              @default(40) @db.Decimal(8, 2)
-  dailyCapacityHours   Decimal              @default(8) @db.Decimal(8, 2)
-  hourlyRate           Decimal?             @db.Decimal(12, 2)
-  mustChangePassword   Boolean              @default(false)
-  status               UserStatus           @default(ACTIVE)
-  role                 Role                 @relation(fields: [roleId], references: [id])
-  client               Client?              @relation(fields: [clientId], references: [id])
-  accounts             Account[]
-  sessions             Session[]
-  managedProjects      Project[]            @relation("ProjectManager")
-  ownedTasks           Task[]               @relation("TaskOwner")
-  taskParticipants     TaskParticipant[]
-  comments             TaskComment[]
-  timeEntries          TimeEntry[]
-  allocations          ResourceAllocation[]
-  notifications        Notification[]
-  uploadedDocuments    Document[]           @relation("UploadedDocuments")
-  auditLogs            AuditLog[]           @relation("AuditActor")
-  passwordResetTokens  PasswordResetToken[]
-  createdAt            DateTime             @default(now())
-  updatedAt            DateTime             @updatedAt
+  id                  String               @id @default(cuid())
+  name                String
+  email               String               @unique
+  emailVerified       DateTime?
+  passwordHash        String?
+  image               String?
+  roleId              String
+  clientId            String?
+  jobTitle            String?
+  weeklyCapacityHours Decimal              @default(40) @db.Decimal(8, 2)
+  dailyCapacityHours  Decimal              @default(8) @db.Decimal(8, 2)
+  hourlyRate          Decimal?             @db.Decimal(12, 2)
+  mustChangePassword  Boolean              @default(false)
+  status              UserStatus           @default(ACTIVE)
+  role                Role                 @relation(fields: [roleId], references: [id])
+  client              Client?              @relation(fields: [clientId], references: [id])
+  accounts            Account[]
+  sessions            Session[]
+  managedProjects     Project[]            @relation("ProjectManager")
+  ownedTasks          Task[]               @relation("TaskOwner")
+  taskParticipants    TaskParticipant[]
+  comments            TaskComment[]
+  timeEntries         TimeEntry[]
+  allocations         ResourceAllocation[]
+  notifications       Notification[]
+  uploadedDocuments   Document[]           @relation("UploadedDocuments")
+  auditLogs           AuditLog[]           @relation("AuditActor")
+  passwordResetTokens PasswordResetToken[]
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
 }
 
 model Client {
@@ -284,79 +284,95 @@ model Client {
 }
 
 model Project {
-  id             String               @id @default(cuid())
-  name           String
-  description    String?
-  clientId       String
-  managerId      String
-  status         ProjectStatus        @default(PLANNED)
-  plannedStart   DateTime
-  plannedEnd     DateTime
-  currentEnd     DateTime
-  progressPercent Decimal             @default(0) @db.Decimal(5, 2)
-  progressManual Boolean              @default(false)
-  plannedHours   Decimal              @default(0) @db.Decimal(10, 2)
-  actualHours    Decimal              @default(0) @db.Decimal(10, 2)
-  remainingHours Decimal              @default(0) @db.Decimal(10, 2)
-  financialCost  Decimal              @default(0) @db.Decimal(14, 2)
-  notes          String?
-  client         Client               @relation(fields: [clientId], references: [id])
-  manager        User                 @relation("ProjectManager", fields: [managerId], references: [id])
-  tasks          Task[]
-  baselines      Baseline[]
-  blockers       Blocker[]
-  delays         Delay[]
-  replannings    Replanning[]
-  timeEntries    TimeEntry[]
-  allocations    ResourceAllocation[]
-  documents      Document[]
-  reports        Report[]
-  shareLinks     ProjectShareLink[]
-  moduleSettings ProjectModuleSetting[]
-  home           ProjectHome?
-  partners       Partner[]
-  stakeholders   Stakeholder[]
-  milestones     Milestone[]
-  todos          PortalTodo[]
-  risks          Risk[]
+  id              String                 @id @default(cuid())
+  name            String
+  description     String?
+  clientId        String
+  managerId       String
+  status          ProjectStatus          @default(PLANNED)
+  plannedStart    DateTime
+  plannedEnd      DateTime
+  currentEnd      DateTime
+  progressPercent Decimal                @default(0) @db.Decimal(5, 2)
+  progressManual  Boolean                @default(false)
+  plannedHours    Decimal                @default(0) @db.Decimal(10, 2)
+  actualHours     Decimal                @default(0) @db.Decimal(10, 2)
+  remainingHours  Decimal                @default(0) @db.Decimal(10, 2)
+  financialCost   Decimal                @default(0) @db.Decimal(14, 2)
+  notes           String?
+  client          Client                 @relation(fields: [clientId], references: [id])
+  manager         User                   @relation("ProjectManager", fields: [managerId], references: [id])
+  tasks           Task[]
+  baselines       Baseline[]
+  blockers        Blocker[]
+  delays          Delay[]
+  replannings     Replanning[]
+  timeEntries     TimeEntry[]
+  allocations     ResourceAllocation[]
+  documents       Document[]
+  reports         Report[]
+  shareLinks      ProjectShareLink[]
+  moduleSettings  ProjectModuleSetting[]
+  home            ProjectHome?
+  partners        Partner[]
+  stakeholders    Stakeholder[]
+  milestones      Milestone[]
+  todos           PortalTodo[]
+  risks           Risk[]
   importantEmails ImportantEmail[]
   meetingMinutes  MeetingMinute[]
-  accessLogs     ClientAccessLog[]
-  createdAt      DateTime             @default(now())
-  updatedAt      DateTime             @updatedAt
+  accessLogs      ClientAccessLog[]
+  createdAt       DateTime               @default(now())
+  updatedAt       DateTime               @updatedAt
 }
 
 model ImportantEmail {
-  id          String   @id @default(cuid())
-  projectId   String
-  subject     String
-  summary     String?
-  origin      String?
-  involved    String?
-  category    String   @default("E-mail Formal")
-  status      String   @default("Solucionado")
-  date        DateTime
+  id            String                     @id @default(cuid())
+  projectId     String
+  parentId      String?
+  subject       String
+  summary       String?
+  origin        String?
+  involved      String?
+  category      String                     @default("E-mail Formal")
+  status        String                     @default("Solucionado")
+  date          DateTime
   attachmentUrl String?
-  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  project       Project                    @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  parent        ImportantEmail?            @relation("EmailThread", fields: [parentId], references: [id], onDelete: Cascade)
+  replies       ImportantEmail[]           @relation("EmailThread")
+  attachments   ImportantEmailAttachment[]
+  createdAt     DateTime                   @default(now())
+  updatedAt     DateTime                   @updatedAt
 
   @@index([projectId, date, status])
+  @@index([parentId, date])
+}
+
+model ImportantEmailAttachment {
+  id        String         @id @default(cuid())
+  emailId   String
+  name      String
+  fileUrl   String
+  email     ImportantEmail @relation(fields: [emailId], references: [id], onDelete: Cascade)
+  createdAt DateTime       @default(now())
+
+  @@index([emailId])
 }
 
 model MeetingMinute {
-  id          String   @id @default(cuid())
-  projectId   String
-  title       String
-  summary     String?
-  meetingDate DateTime
-  meetingType String?
+  id           String   @id @default(cuid())
+  projectId    String
+  title        String
+  summary      String?
+  meetingDate  DateTime
+  meetingType  String?
   participants String?
-  status      String   @default("Publicado")
-  fileUrl     String?
-  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  status       String   @default("Publicado")
+  fileUrl      String?
+  project      Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
   @@index([projectId, meetingDate, status])
 }
@@ -431,23 +447,23 @@ model Partner {
 }
 
 model Stakeholder {
-  id             String           @id @default(cuid())
+  id             String          @id @default(cuid())
   projectId      String
   name           String
   company        String?
   jobTitle       String?
-  type           StakeholderType  @default(CLIENT)
+  type           StakeholderType @default(CLIENT)
   email          String?
   phone          String?
   projectRole    String?
-  influence      InfluenceLevel   @default(MEDIUM)
-  interest       InterestLevel    @default(MEDIUM)
+  influence      InfluenceLevel  @default(MEDIUM)
+  interest       InterestLevel   @default(MEDIUM)
   classification String?
   notes          String?
-  active         Boolean          @default(true)
-  project        Project          @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  createdAt      DateTime         @default(now())
-  updatedAt      DateTime         @updatedAt
+  active         Boolean         @default(true)
+  project        Project         @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
 
   @@index([projectId, influence, interest])
 }
@@ -472,57 +488,57 @@ model Milestone {
 }
 
 model PortalTodo {
-  id               String       @id @default(cuid())
-  projectId        String
-  taskId           String?
-  riskId           String?
-  blockerId        String?
-  code             String?
-  trafficLight     TrafficLight @default(GREEN)
-  origin           String       @default("Manual")
-  description      String
-  responsible      String?
-  priority         Priority     @default(MEDIUM)
-  status           TodoStatus   @default(OPEN)
-  dueDate          DateTime?
-  plannedProgress  Decimal      @default(0) @db.Decimal(5, 2)
-  actualProgress   Decimal      @default(0) @db.Decimal(5, 2)
-  estimatedHours   Decimal      @default(0) @db.Decimal(10, 2)
-  workedHours      Decimal      @default(0) @db.Decimal(10, 2)
-  nextAction       String?
-  project          Project      @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  task             Task?        @relation(fields: [taskId], references: [id], onDelete: SetNull)
-  risk             Risk?        @relation(fields: [riskId], references: [id], onDelete: SetNull)
-  blocker          Blocker?     @relation(fields: [blockerId], references: [id], onDelete: SetNull)
-  createdAt        DateTime     @default(now())
-  updatedAt        DateTime     @updatedAt
+  id              String       @id @default(cuid())
+  projectId       String
+  taskId          String?
+  riskId          String?
+  blockerId       String?
+  code            String?
+  trafficLight    TrafficLight @default(GREEN)
+  origin          String       @default("Manual")
+  description     String
+  responsible     String?
+  priority        Priority     @default(MEDIUM)
+  status          TodoStatus   @default(OPEN)
+  dueDate         DateTime?
+  plannedProgress Decimal      @default(0) @db.Decimal(5, 2)
+  actualProgress  Decimal      @default(0) @db.Decimal(5, 2)
+  estimatedHours  Decimal      @default(0) @db.Decimal(10, 2)
+  workedHours     Decimal      @default(0) @db.Decimal(10, 2)
+  nextAction      String?
+  project         Project      @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  task            Task?        @relation(fields: [taskId], references: [id], onDelete: SetNull)
+  risk            Risk?        @relation(fields: [riskId], references: [id], onDelete: SetNull)
+  blocker         Blocker?     @relation(fields: [blockerId], references: [id], onDelete: SetNull)
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
 
   @@index([projectId, status, priority])
 }
 
 model Risk {
-  id                    String               @id @default(cuid())
-  projectId             String
-  name                  String
-  description           String?
-  classification        RiskClassification   @default(MEDIUM)
-  registeredAt          DateTime             @default(now())
-  cause                 String?
-  event                 String?
-  impact                String?
-  probability           InfluenceLevel       @default(MEDIUM)
-  responseStrategy      RiskResponseStrategy @default(MITIGATE)
-  preventiveActions     String?
-  contingencyPlan       String?
-  triggers              String?
-  owner                 String?
-  status                RiskStatus           @default(OPEN)
-  lastReviewAt          DateTime?
-  notes                 String?
-  project               Project              @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  todos                 PortalTodo[]
-  createdAt             DateTime             @default(now())
-  updatedAt             DateTime             @updatedAt
+  id                String               @id @default(cuid())
+  projectId         String
+  name              String
+  description       String?
+  classification    RiskClassification   @default(MEDIUM)
+  registeredAt      DateTime             @default(now())
+  cause             String?
+  event             String?
+  impact            String?
+  probability       InfluenceLevel       @default(MEDIUM)
+  responseStrategy  RiskResponseStrategy @default(MITIGATE)
+  preventiveActions String?
+  contingencyPlan   String?
+  triggers          String?
+  owner             String?
+  status            RiskStatus           @default(OPEN)
+  lastReviewAt      DateTime?
+  notes             String?
+  project           Project              @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  todos             PortalTodo[]
+  createdAt         DateTime             @default(now())
+  updatedAt         DateTime             @updatedAt
 
   @@index([projectId, classification, status])
 }
@@ -576,10 +592,10 @@ model Task {
   createdAt          DateTime             @default(now())
   updatedAt          DateTime             @updatedAt
 
+  @@unique([projectId, legacySource, legacyItemCode])
   @@index([projectId, status])
   @@index([ownerId])
   @@index([plannedEnd])
-  @@unique([projectId, legacySource, legacyItemCode])
 }
 
 model TaskParticipant {
@@ -644,66 +660,66 @@ model BaselineTask {
 }
 
 model Blocker {
-  id                    String        @id @default(cuid())
-  projectId             String
-  taskId                String?
-  title                 String
-  description           String?
-  resolverId            String?
-  responsibleCompany    String?
-  responsiblePerson     String?
-  openedAt              DateTime      @default(now())
-  expectedResolutionAt  DateTime?
-  resolvedAt            DateTime?
-  status                BlockerStatus @default(OPEN)
-  criticality           Priority      @default(MEDIUM)
-  scheduleImpactDays    Int           @default(0)
-  impactDescription     String?
-  nextAction            String?
-  financialImpact       Decimal       @default(0) @db.Decimal(14, 2)
-  project               Project       @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  task                  Task?         @relation(fields: [taskId], references: [id])
-  portalTodos           PortalTodo[]
-  createdAt             DateTime      @default(now())
-  updatedAt             DateTime      @updatedAt
+  id                   String        @id @default(cuid())
+  projectId            String
+  taskId               String?
+  title                String
+  description          String?
+  resolverId           String?
+  responsibleCompany   String?
+  responsiblePerson    String?
+  openedAt             DateTime      @default(now())
+  expectedResolutionAt DateTime?
+  resolvedAt           DateTime?
+  status               BlockerStatus @default(OPEN)
+  criticality          Priority      @default(MEDIUM)
+  scheduleImpactDays   Int           @default(0)
+  impactDescription    String?
+  nextAction           String?
+  financialImpact      Decimal       @default(0) @db.Decimal(14, 2)
+  project              Project       @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  task                 Task?         @relation(fields: [taskId], references: [id])
+  portalTodos          PortalTodo[]
+  createdAt            DateTime      @default(now())
+  updatedAt            DateTime      @updatedAt
 }
 
 model Delay {
-  id                  String   @id @default(cuid())
-  projectId           String
-  taskId              String?
-  originalDate        DateTime
-  newDate             DateTime
-  reason              String
-  technicalJustify    String?
-  responsibleId       String
-  scheduleImpactDays  Int      @default(0)
-  hoursImpact         Decimal  @default(0) @db.Decimal(10, 2)
-  financialImpact     Decimal  @default(0) @db.Decimal(14, 2)
-  baselineId          String?
-  project             Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  task                Task?    @relation(fields: [taskId], references: [id])
-  createdAt           DateTime @default(now())
-  updatedAt           DateTime @updatedAt
+  id                 String   @id @default(cuid())
+  projectId          String
+  taskId             String?
+  originalDate       DateTime
+  newDate            DateTime
+  reason             String
+  technicalJustify   String?
+  responsibleId      String
+  scheduleImpactDays Int      @default(0)
+  hoursImpact        Decimal  @default(0) @db.Decimal(10, 2)
+  financialImpact    Decimal  @default(0) @db.Decimal(14, 2)
+  baselineId         String?
+  project            Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  task               Task?    @relation(fields: [taskId], references: [id])
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
 }
 
 model Replanning {
-  id                  String   @id @default(cuid())
-  projectId           String
-  taskId              String?
-  originalDate        DateTime
-  newDate             DateTime
-  reason              String
-  technicalJustify    String?
-  responsibleId       String
-  scheduleImpactDays  Int      @default(0)
-  hoursImpact         Decimal  @default(0) @db.Decimal(10, 2)
-  financialImpact     Decimal  @default(0) @db.Decimal(14, 2)
-  baselineId          String?
-  project             Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  task                Task?    @relation(fields: [taskId], references: [id])
-  createdAt           DateTime @default(now())
-  updatedAt           DateTime @updatedAt
+  id                 String   @id @default(cuid())
+  projectId          String
+  taskId             String?
+  originalDate       DateTime
+  newDate            DateTime
+  reason             String
+  technicalJustify   String?
+  responsibleId      String
+  scheduleImpactDays Int      @default(0)
+  hoursImpact        Decimal  @default(0) @db.Decimal(10, 2)
+  financialImpact    Decimal  @default(0) @db.Decimal(14, 2)
+  baselineId         String?
+  project            Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  task               Task?    @relation(fields: [taskId], references: [id])
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
 }
 
 model TimeEntry {
@@ -740,30 +756,30 @@ model ResourceAllocation {
 }
 
 model Document {
-  id          String             @id @default(cuid())
-  name        String
-  type        String             @default("Plano do projeto")
-  sourceType  DocumentSourceType @default(INTERNAL_FILE)
-  mimeType    String             @default("application/octet-stream")
-  size        Int                @default(0)
-  bucket      String?
-  storagePath String?
-  externalUrl String?
-  embedUrl    String?
-  downloadUrl String?
-  version     String?
-  status      String             @default("Aprovado")
-  clientDownloadAllowed Boolean  @default(true)
-  visibility  DocumentVisibility @default(PROJECT_TEAM)
-  uploadedById String
-  clientId    String?
-  projectId   String?
-  taskId      String?
-  uploadedBy  User               @relation("UploadedDocuments", fields: [uploadedById], references: [id])
-  client      Client?            @relation(fields: [clientId], references: [id])
-  project     Project?           @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  task        Task?              @relation(fields: [taskId], references: [id], onDelete: Cascade)
-  createdAt   DateTime           @default(now())
+  id                    String             @id @default(cuid())
+  name                  String
+  type                  String             @default("Plano do projeto")
+  sourceType            DocumentSourceType @default(INTERNAL_FILE)
+  mimeType              String             @default("application/octet-stream")
+  size                  Int                @default(0)
+  bucket                String?
+  storagePath           String?
+  externalUrl           String?
+  embedUrl              String?
+  downloadUrl           String?
+  version               String?
+  status                String             @default("Aprovado")
+  clientDownloadAllowed Boolean            @default(true)
+  visibility            DocumentVisibility @default(PROJECT_TEAM)
+  uploadedById          String
+  clientId              String?
+  projectId             String?
+  taskId                String?
+  uploadedBy            User               @relation("UploadedDocuments", fields: [uploadedById], references: [id])
+  client                Client?            @relation(fields: [clientId], references: [id])
+  project               Project?           @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  task                  Task?              @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  createdAt             DateTime           @default(now())
 }
 
 model Notification {
@@ -794,17 +810,17 @@ model Report {
 }
 
 model AuditLog {
-  id         String   @id @default(cuid())
-  actorId    String?
-  projectId  String?
-  entityType String
-  entityId   String
-  action     String
+  id          String   @id @default(cuid())
+  actorId     String?
+  projectId   String?
+  entityType  String
+  entityId    String
+  action      String
   description String?
-  before     Json?
-  after      Json?
-  actor      User?    @relation("AuditActor", fields: [actorId], references: [id])
-  createdAt  DateTime @default(now())
+  before      Json?
+  after       Json?
+  actor       User?    @relation("AuditActor", fields: [actorId], references: [id])
+  createdAt   DateTime @default(now())
 
   @@index([projectId, createdAt])
   @@index([actorId, createdAt])

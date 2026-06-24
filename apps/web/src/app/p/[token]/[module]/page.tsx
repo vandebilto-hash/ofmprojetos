@@ -29,7 +29,14 @@ export default async function PublicProjectModulePage({ params }: { params: { to
             where: { visibility: "CLIENT_VISIBLE", clientDownloadAllowed: true },
             orderBy: { createdAt: "desc" }
           },
-          importantEmails: { orderBy: { date: "desc" } },
+          importantEmails: {
+            where: { parentId: null },
+            include: {
+              attachments: { orderBy: { createdAt: "asc" } },
+              replies: { include: { attachments: { orderBy: { createdAt: "asc" } } }, orderBy: { date: "asc" } }
+            },
+            orderBy: { date: "desc" }
+          },
           meetingMinutes: { orderBy: { meetingDate: "desc" } },
           todos: { orderBy: [{ priority: "desc" }, { dueDate: "asc" }] },
           risks: { orderBy: [{ classification: "desc" }, { registeredAt: "desc" }] },

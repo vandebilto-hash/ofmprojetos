@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { DialogAction } from "@/components/ui/dialog-action";
-import { FileUpload } from "@/components/ui/file-upload";
+import { MultiFileUpload } from "@/components/ui/multi-file-upload";
 import { PeopleMultiSelect } from "@/components/ui/people-multi-select";
 import { PageHeader } from "@/components/ui/page-header";
 import { ProjectTabs } from "@/features/projects/project-tabs";
@@ -17,7 +17,14 @@ export default async function ProjectEmailsPage({ params }: { params: { id: stri
   const project = await prisma.project.findUnique({
     where: { id: params.id },
     include: {
-      importantEmails: { orderBy: { date: "desc" } },
+      importantEmails: {
+        where: { parentId: null },
+        include: {
+          attachments: { orderBy: { createdAt: "asc" } },
+          replies: { include: { attachments: { orderBy: { createdAt: "asc" } } }, orderBy: { date: "asc" } }
+        },
+        orderBy: { date: "desc" }
+      },
       manager: true,
       stakeholders: { orderBy: { name: "asc" } },
       allocations: { include: { user: true } }
@@ -44,8 +51,12 @@ export default async function ProjectEmailsPage({ params }: { params: { id: stri
                 <h2 className="mt-1 font-bold text-ink">{email.subject}</h2>
                 <p className="mt-1 text-slate-600">{email.summary}</p>
                 <p className="mt-2 text-xs text-slate-500">Origem: {email.origin ?? "-"} | Envolvidos: {email.involved ?? "-"}</p>
+                <EmailAttachments email={email} />
               </div>
               <div className="flex gap-2">
+                <DialogAction title="Adicionar resposta" description={email.subject} trigger="create" triggerLabel="Responder">
+                  <EmailForm projectId={project.id} parentId={email.id} people={people} defaultSubject={`RE: ${email.subject}`} />
+                </DialogAction>
                 <DialogAction title="Editar e-mail" description={email.subject} trigger="edit">
                   <EmailForm projectId={project.id} email={email} people={people} />
                 </DialogAction>
@@ -58,6 +69,36 @@ export default async function ProjectEmailsPage({ params }: { params: { id: stri
                 </DialogAction>
               </div>
             </div>
+            {email.replies.length ? (
+              <div className="mt-4 grid gap-3 border-l-2 border-brand-100 pl-4">
+                <p className="text-xs font-bold uppercase tracking-wide text-slate-400">Thread de respostas</p>
+                {email.replies.map((reply) => (
+                  <div key={reply.id} className="rounded-lg border border-line bg-slate-50 p-3">
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <p className="text-xs font-bold text-slate-500">{formatDate(reply.date)} | {reply.category} | {reply.status}</p>
+                        <h3 className="mt-1 font-bold text-ink">{reply.subject}</h3>
+                        <p className="mt-1 text-slate-600">{reply.summary}</p>
+                        <p className="mt-2 text-xs text-slate-500">Origem: {reply.origin ?? "-"} | Envolvidos: {reply.involved ?? "-"}</p>
+                        <EmailAttachments email={reply} />
+                      </div>
+                      <div className="flex gap-2">
+                        <DialogAction title="Editar resposta" description={reply.subject} trigger="edit">
+                          <EmailForm projectId={project.id} parentId={email.id} email={reply} people={people} />
+                        </DialogAction>
+                        <DialogAction title="Excluir resposta" description={`Deseja realmente excluir "${reply.subject}"?`} trigger="delete">
+                          <form action={deleteImportantEmailAction} className="flex justify-end">
+                            <input type="hidden" name="emailId" value={reply.id} />
+                            <input type="hidden" name="projectId" value={project.id} />
+                            <button className="rounded-md bg-red-600 px-4 py-2 text-sm font-semibold text-white">Sim, excluir</button>
+                          </form>
+                        </DialogAction>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : null}
           </article>
         ))}
         {!project.importantEmails.length ? <p className="rounded-lg border border-line bg-white p-6 text-sm text-slate-500">Nenhum e-mail cadastrado.</p> : null}
@@ -66,16 +107,38 @@ export default async function ProjectEmailsPage({ params }: { params: { id: stri
   );
 }
 
-function EmailForm({ projectId, email, people }: { projectId: string; email?: any; people: string[] }) {
+function EmailAttachments({ email }: { email: any }) {
+  const attachments = email.attachments ?? [];
+  const links = [
+    ...attachments.map((attachment: any) => ({ name: attachment.name, href: attachment.fileUrl })),
+    ...(email.attachmentUrl ? [{ name: "Anexo legado", href: email.attachmentUrl }] : [])
+  ];
+
+  if (!links.length) return null;
+
+  return (
+    <div className="mt-3 flex flex-wrap gap-2">
+      {links.map((attachment, index) => (
+        <a key={`${attachment.name}-${index}`} href={attachment.href} target="_blank" className="rounded-full bg-brand-50 px-3 py-1 text-xs font-bold text-brand-700 hover:bg-brand-100">
+          {attachment.name}
+        </a>
+      ))}
+    </div>
+  );
+}
+
+function EmailForm({ projectId, parentId, email, people, defaultSubject }: { projectId: string; parentId?: string; email?: any; people: string[]; defaultSubject?: string }) {
   return (
     <form action={upsertImportantEmailAction} className="grid gap-3">
       {email ? <input type="hidden" name="emailId" value={email.id} /> : null}
       <input type="hidden" name="projectId" value={projectId} />
-      <label className="grid gap-1 text-sm font-medium">Assunto<input name="subject" required defaultValue={email?.subject ?? ""} className="h-10 rounded-md border border-line px-3" /></label>
+      <input type="hidden" name="parentId" value={parentId ?? email?.parentId ?? ""} />
+      <input type="hidden" name="attachmentUrl" value={email?.attachmentUrl ?? ""} />
+      <label className="grid gap-1 text-sm font-medium">Assunto<input name="subject" required defaultValue={email?.subject ?? defaultSubject ?? ""} className="h-10 rounded-md border border-line px-3" /></label>
       <label className="grid gap-1 text-sm font-medium">Resumo<textarea name="summary" defaultValue={email?.summary ?? ""} rows={3} className="rounded-md border border-line px-3 py-2" /></label>
-      <div className="grid grid-cols-2 gap-3"><label className="grid gap-1 text-sm font-medium">Origem<input name="origin" defaultValue={email?.origin ?? ""} className="h-10 rounded-md border border-line px-3" /></label><PeopleMultiSelect name="involved" label="Envolvidos" people={people} defaultValue={email?.involved ?? ""} /></div>
+      <div className="grid grid-cols-2 gap-3"><PeopleMultiSelect name="origin" label="Origem" people={people} defaultValue={email?.origin ?? ""} /><PeopleMultiSelect name="involved" label="Envolvidos" people={people} defaultValue={email?.involved ?? ""} /></div>
       <div className="grid grid-cols-3 gap-3"><label className="grid gap-1 text-sm font-medium">Categoria<select name="category" defaultValue={email?.category ?? "E-mail Formal"} className="h-10 rounded-md border border-line px-3"><option value="E-mail Formal">E-mail formal</option><option value="Solicitação">Solicitação</option><option value="Decisão">Decisão</option><option value="Pendência">Pendência</option><option value="Aprovação">Aprovação</option><option value="Alinhamento">Alinhamento</option></select></label><label className="grid gap-1 text-sm font-medium">Status<select name="status" defaultValue={email?.status ?? "Solucionado"} className="h-10 rounded-md border border-line px-3"><option value="Aberto">Aberto</option><option value="Em andamento">Em andamento</option><option value="Aguardando retorno">Aguardando retorno</option><option value="Solucionado">Solucionado</option><option value="Cancelado">Cancelado</option></select></label><label className="grid gap-1 text-sm font-medium">Data<input name="date" type="date" required defaultValue={inputDate(email?.date ?? null)} className="h-10 rounded-md border border-line px-3" /></label></div>
-      <FileUpload name="attachmentUrl" label="Anexo" defaultValue={email?.attachmentUrl ?? ""} />
+      <MultiFileUpload name="attachments" label="Arquivos relacionados" defaultValue={(email?.attachments ?? []).map((attachment: any) => ({ name: attachment.name, fileUrl: attachment.fileUrl }))} />
       <button className="w-fit rounded-md bg-brand-600 px-4 py-2 text-sm font-semibold text-white">Salvar</button>
     </form>
   );
