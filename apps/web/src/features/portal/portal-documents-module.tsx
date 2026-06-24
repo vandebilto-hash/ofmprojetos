@@ -1,19 +1,8 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
 import { BookOpen, Download, FileText, Mail, ScrollText } from "lucide-react";
 import { formatDate } from "@/lib/format";
-
-const docTabKeys = ["emails", "atas", "planos", "documentos"] as const;
-type DocTabKey = (typeof docTabKeys)[number];
-
-const docTabLabels: Record<DocTabKey, string> = {
-  emails: "E-mails",
-  atas: "Atas",
-  planos: "Planos",
-  documentos: "Documentos importantes",
-};
 
 function ModulePage({
   eyebrow,
@@ -61,6 +50,18 @@ function Panel({ title, children, className }: { title?: string; children: React
         </div>
       ) : null}
       <div className="p-5">{children}</div>
+    </section>
+  );
+}
+
+function PortalDocumentSection({ title, description, children }: { title: string; description: string; children: React.ReactNode }) {
+  return (
+    <section className="rounded-2xl border border-slate-100 bg-white p-5 shadow-sm">
+      <div className="mb-4">
+        <h3 className="text-base font-black text-slate-950">{title}</h3>
+        <p className="mt-1 text-sm leading-6 text-slate-500">{description}</p>
+      </div>
+      {children}
     </section>
   );
 }
@@ -143,35 +144,30 @@ function PortalEmailAttachmentLinks({ email, compact = false }: { email: any; co
 }
 
 export function DocumentsModule({ project }: { project: any }) {
-  const [activeTab, setActiveTab] = useState<DocTabKey>("emails");
-
   return (
     <ModulePage
       eyebrow="Documentos"
       icon={FileText}
       title="Documentos do projeto"
-      description="E-mails, atas, planos e documentos importantes centralizados em um so lugar."
+      description="E-mails, atas, planos e documentos importantes centralizados em uma unica pagina."
     >
-      <div className="flex flex-wrap gap-2">
-        {docTabKeys.map((key) => (
-          <button
-            key={key}
-            onClick={() => setActiveTab(key)}
-            className={`rounded-full px-4 py-2 text-xs font-bold transition ${
-              activeTab === key
-                ? "bg-[#062553] text-white"
-                : "border border-slate-200 bg-white text-slate-600 hover:bg-slate-50"
-            }`}
-          >
-            {docTabLabels[key]}
-          </button>
-        ))}
-      </div>
+      <div className="grid gap-5">
+        <PortalDocumentSection title="E-mails importantes" description="Comunicacoes, pendencias e aprovacoes registradas para acompanhamento executivo.">
+          <PortalEmailsTab project={project} />
+        </PortalDocumentSection>
 
-      {activeTab === "emails" && <PortalEmailsTab project={project} />}
-      {activeTab === "atas" && <PortalAtasTab project={project} />}
-      {activeTab === "planos" && <PortalPlanosTab project={project} />}
-      {activeTab === "documentos" && <PortalDocumentosTab project={project} />}
+        <PortalDocumentSection title="Atas e reunioes" description="Registros formais de alinhamentos, comites e workshops do projeto.">
+          <PortalAtasTab project={project} />
+        </PortalDocumentSection>
+
+        <PortalDocumentSection title="Planos e contratos" description="Planos, cronogramas e contratos visiveis ao cliente.">
+          <PortalPlanosTab project={project} />
+        </PortalDocumentSection>
+
+        <PortalDocumentSection title="Documentos importantes" description="Relatorios, evidencias e demais arquivos compartilhados com o cliente.">
+          <PortalDocumentosTab project={project} />
+        </PortalDocumentSection>
+      </div>
     </ModulePage>
   );
 }

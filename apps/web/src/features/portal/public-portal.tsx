@@ -65,7 +65,8 @@ const moduleIcon: Record<string, React.ElementType> = {
 
 const navigationGroups = [
   { label: "Visão geral", keys: ["home", "milestones"] },
-  { label: "Governança", keys: ["governance", "documents"] },
+  { label: "Governança", keys: ["governance"] },
+  { label: "Documentos", keys: ["documents"] },
   { label: "Planejamento", keys: ["planning"] },
   { label: "Riscos e Bloqueios", keys: ["risks", "blockers"] },
 ];
@@ -73,6 +74,7 @@ const navigationGroups = [
 const groupNavIcon: Record<string, React.ElementType> = {
   "Visão geral": Home,
   Governança: GitBranch,
+  Documentos: FileText,
   Planejamento: CalendarDays,
   "Riscos e Bloqueios": AlertTriangle,
 };

@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { DialogAction } from "@/components/ui/dialog-action";
 import { FileUpload } from "@/components/ui/file-upload";
 import { MultiFileUpload } from "@/components/ui/multi-file-upload";
@@ -21,6 +22,18 @@ function inputDate(value: Date | null) {
   return value ? value.toISOString().slice(0, 10) : "";
 }
 
+const tabKeys = ["emails", "atas", "planos", "documentos"] as const;
+type TabKey = (typeof tabKeys)[number];
+
+const tabLabels: Record<TabKey, string> = {
+  emails: "E-mails",
+  atas: "Atas",
+  planos: "Planos",
+  documentos: "Documentos importantes",
+};
+
+const planDocumentTypes = ["Plano do projeto", "Cronograma", "Contrato"];
+
 export function UnifiedDocumentsClient({
   project,
   people,
@@ -28,41 +41,38 @@ export function UnifiedDocumentsClient({
   project: any;
   people: string[];
 }) {
+  const [activeTab, setActiveTab] = useState<TabKey>("emails");
+
   return (
     <>
       <PageHeader
         title={`Documentos | ${project.name}`}
-        description="Gerencie e-mails, atas e arquivos do projeto em uma unica pagina."
+        description="Gerencie e-mails, atas, planos e documentos importantes do projeto."
         action={{ href: `/projects/${project.id}/dashboard`, label: "Painel" }}
       />
       <ProjectTabs projectId={project.id} />
 
-      <div className="grid gap-6">
-        <DocumentsSection title="E-mails importantes" description="Comunicacoes, pendencias e aprovacoes relevantes para o projeto.">
-          <EmailsTab project={project} people={people} />
-        </DocumentsSection>
-
-        <DocumentsSection title="Atas e reunioes" description="Registros formais de alinhamentos, comites e workshops.">
-          <AtasTab project={project} people={people} />
-        </DocumentsSection>
-
-        <DocumentsSection title="Arquivos do projeto" description="Planos, cronogramas, contratos, relatorios, evidencias e demais documentos.">
-          <ProjectDocumentsTab project={project} />
-        </DocumentsSection>
+      <div className="mb-4 flex flex-wrap gap-2">
+        {tabKeys.map((key) => (
+          <button
+            key={key}
+            onClick={() => setActiveTab(key)}
+            className={`rounded-md border px-3 py-2 text-sm font-medium transition ${
+              activeTab === key
+                ? "border-brand-600 bg-brand-600 text-white"
+                : "border-line bg-white text-slate-700 hover:bg-brand-50"
+            }`}
+          >
+            {tabLabels[key]}
+          </button>
+        ))}
       </div>
+
+      {activeTab === "emails" && <EmailsTab project={project} people={people} />}
+      {activeTab === "atas" && <AtasTab project={project} people={people} />}
+      {activeTab === "planos" && <PlanosTab project={project} />}
+      {activeTab === "documentos" && <DocumentosTab project={project} />}
     </>
-  );
-}
-
-function DocumentsSection({ title, description, children }: { title: string; description: string; children: React.ReactNode }) {
-  return (
-    <section className="rounded-lg border border-line bg-slate-50/70 p-4 shadow-soft">
-      <div className="mb-4">
-        <h2 className="text-lg font-bold text-ink">{title}</h2>
-        <p className="mt-1 text-sm text-slate-600">{description}</p>
-      </div>
-      {children}
-    </section>
   );
 }
 
@@ -560,25 +570,70 @@ function MinuteForm({
   );
 }
 
-// ─── Arquivos do projeto ───────────────────────────────────────────────────
+// ─── Planos e Documentos ───────────────────────────────────────────────────
 
-function ProjectDocumentsTab({ project }: { project: any }) {
-  const docs = project.documents ?? [];
+function PlanosTab({ project }: { project: any }) {
+  const plans = (project.documents ?? []).filter(isPlanDocument);
+  return (
+    <ProjectDocumentsList
+      project={project}
+      documents={plans}
+      title="Adicionar plano"
+      description="Envie um plano, cronograma ou contrato do projeto."
+      triggerLabel="Novo plano"
+      emptyLabel="Nenhum plano cadastrado."
+      defaultType="Plano do projeto"
+    />
+  );
+}
+
+function DocumentosTab({ project }: { project: any }) {
+  const docs = (project.documents ?? []).filter((document: any) => !isPlanDocument(document));
+  return (
+    <ProjectDocumentsList
+      project={project}
+      documents={docs}
+      title="Adicionar documento"
+      description="Envie um arquivo de ate 10 MB para o projeto."
+      triggerLabel="Novo documento"
+      emptyLabel="Nenhum documento enviado."
+      defaultType="Relatório"
+    />
+  );
+}
+
+function ProjectDocumentsList({
+  project,
+  documents,
+  title,
+  description,
+  triggerLabel,
+  emptyLabel,
+  defaultType,
+}: {
+  project: any;
+  documents: any[];
+  title: string;
+  description: string;
+  triggerLabel: string;
+  emptyLabel: string;
+  defaultType: string;
+}) {
   return (
     <>
       <div className="mb-4 flex justify-end">
         <DialogAction
-          title="Adicionar documento"
-          description="Escolha o tipo no formulario e envie um arquivo de ate 10 MB."
+          title={title}
+          description={description}
           trigger="create"
-          triggerLabel="Novo documento"
+          triggerLabel={triggerLabel}
         >
-          <DocumentForm projectId={project.id} />
+          <DocumentForm projectId={project.id} defaultType={defaultType} />
         </DialogAction>
       </div>
       <div className="rounded-lg border border-line bg-white p-5 shadow-soft">
         <div className="grid gap-2">
-          {docs.map((document: any) => (
+          {documents.map((document: any) => (
             <div
               key={document.id}
               className="rounded-md border border-line p-3 text-sm"
@@ -617,6 +672,7 @@ function ProjectDocumentsTab({ project }: { project: any }) {
                     <DocumentForm
                       projectId={project.id}
                       document={document}
+                      defaultType={defaultType}
                     />
                   </DialogAction>
                   <DialogAction
@@ -647,9 +703,9 @@ function ProjectDocumentsTab({ project }: { project: any }) {
               </div>
             </div>
           ))}
-          {!docs.length ? (
+          {!documents.length ? (
             <p className="text-sm text-slate-500">
-              Nenhum arquivo cadastrado.
+              {emptyLabel}
             </p>
           ) : null}
         </div>
@@ -658,12 +714,18 @@ function ProjectDocumentsTab({ project }: { project: any }) {
   );
 }
 
+function isPlanDocument(document: any) {
+  return planDocumentTypes.includes(document.type);
+}
+
 function DocumentForm({
   projectId,
   document,
+  defaultType = "Relatório",
 }: {
   projectId: string;
   document?: any;
+  defaultType?: string;
 }) {
   const isEdit = !!document;
   return (
@@ -691,7 +753,7 @@ function DocumentForm({
           Tipo
           <select
             name="type"
-            defaultValue={document?.type ?? "Relatório"}
+            defaultValue={document?.type ?? defaultType}
             required
             className="h-10 rounded-md border border-line px-3"
           >
