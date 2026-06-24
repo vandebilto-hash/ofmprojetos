@@ -2,7 +2,7 @@ import { unstable_noStore as noStore } from "next/cache";
 import { cookies, headers } from "next/headers";
 import { notFound, redirect } from "next/navigation";
 import { PublicPortalModule, PublicPortalShell } from "@/features/portal/public-portal";
-import { portalModuleByKey, portalModules } from "@/features/portal/modules";
+import { portalModuleByKey, portalModules, portalModuleSettingFor } from "@/features/portal/modules";
 import { prisma } from "@/lib/prisma/client";
 
 export const dynamic = "force-dynamic";
@@ -81,7 +81,7 @@ export default async function PublicProjectModulePage({ params }: { params: { to
   const hasSavedSettings = shareLink.project.moduleSettings.length > 0;
   const visibleModules = portalModules
     .map((module) => {
-      const setting = settingsByKey.get(module.key);
+      const setting = portalModuleSettingFor(settingsByKey, module.key);
       if (hasSavedSettings && !setting) return null;
       if (setting && (!setting.enabled || !setting.visibleToClient)) return null;
       return { key: module.key, label: module.key === "dashboard" ? module.label : setting?.label ?? module.label };

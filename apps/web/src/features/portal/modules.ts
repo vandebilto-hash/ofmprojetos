@@ -51,6 +51,17 @@ export const portalModules = [
 
 export type PortalModuleKey = (typeof portalModules)[number]["key"];
 
+type PortalModuleSettingLike = {
+  key: string;
+  label?: string | null;
+  description?: string | null;
+  enabled?: boolean;
+  visibleToClient?: boolean;
+  sortOrder?: number | null;
+};
+
+const legacyDocumentModuleKeys = ["plans", "downloads", "emails", "minutes"];
+
 export function portalModuleByKey(key: string) {
   return portalModules.find((module) => module.key === key);
 }
@@ -65,4 +76,36 @@ export function defaultModuleSettings(projectId: string) {
     visibleToClient: true,
     sortOrder: index
   }));
+}
+
+export function portalModuleSettingFor(settingsByKey: Map<string, PortalModuleSettingLike>, key: string) {
+  const setting = settingsByKey.get(key);
+  if (setting || key !== "documents") return setting;
+
+  const module = portalModuleByKey("documents");
+  const legacySettings = legacyDocumentModuleKeys
+    .map((legacyKey) => settingsByKey.get(legacyKey))
+    .filter(Boolean) as PortalModuleSettingLike[];
+
+  if (!legacySettings.length) {
+    return {
+      key: "documents",
+      label: module?.label ?? "Documentos",
+      description: module?.description ?? "Documentos do projeto.",
+      enabled: true,
+      visibleToClient: true,
+      sortOrder: portalModules.findIndex((item) => item.key === "documents")
+    };
+  }
+
+  const enabled = legacySettings.some((legacy) => legacy.enabled ?? true);
+  const visibleToClient = legacySettings.some((legacy) => (legacy.enabled ?? true) && (legacy.visibleToClient ?? true));
+  return {
+    key: "documents",
+    label: module?.label ?? "Documentos",
+    description: module?.description ?? "Documentos do projeto.",
+    enabled,
+    visibleToClient,
+    sortOrder: Math.min(...legacySettings.map((legacy) => Number(legacy.sortOrder ?? 0)))
+  };
 }

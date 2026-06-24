@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { PageHeader } from "@/components/ui/page-header";
 import { AllowedEmailsManager } from "@/features/projects/allowed-emails-manager";
-import { portalModules } from "@/features/portal/modules";
+import { portalModules, portalModuleSettingFor } from "@/features/portal/modules";
 import { GenerateLinkButton } from "@/features/projects/generate-link-button";
 import { ProjectTabs } from "@/features/projects/project-tabs";
 import { prisma } from "@/lib/prisma/client";
@@ -64,7 +64,7 @@ export default async function ProjectPortalSettingsPage({ params }: { params: { 
 
         <div className="grid gap-3">
           {portalModules.map((module) => {
-            const setting = settingsByKey.get(module.key);
+            const setting = portalModuleSettingFor(settingsByKey, module.key);
             return (
               <div key={module.key} className="grid gap-3 rounded-lg border border-line p-4 md:grid-cols-[1fr_180px_180px] md:items-center">
                 <div>

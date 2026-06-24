@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import { DialogAction } from "@/components/ui/dialog-action";
 import { FileUpload } from "@/components/ui/file-upload";
 import { MultiFileUpload } from "@/components/ui/multi-file-upload";
@@ -22,16 +21,6 @@ function inputDate(value: Date | null) {
   return value ? value.toISOString().slice(0, 10) : "";
 }
 
-const tabKeys = ["emails", "atas", "planos", "documentos"] as const;
-type TabKey = (typeof tabKeys)[number];
-
-const tabLabels: Record<TabKey, string> = {
-  emails: "E-mails",
-  atas: "Atas",
-  planos: "Planos",
-  documentos: "Documentos importantes",
-};
-
 export function UnifiedDocumentsClient({
   project,
   people,
@@ -39,42 +28,41 @@ export function UnifiedDocumentsClient({
   project: any;
   people: string[];
 }) {
-  const [activeTab, setActiveTab] = useState<TabKey>("emails");
-
   return (
     <>
       <PageHeader
         title={`Documentos | ${project.name}`}
-        description="Gerencie e-mails, atas, planos e documentos importantes do projeto."
+        description="Gerencie e-mails, atas e arquivos do projeto em uma unica pagina."
         action={{ href: `/projects/${project.id}/dashboard`, label: "Painel" }}
       />
       <ProjectTabs projectId={project.id} />
 
-      <div className="mb-4 flex flex-wrap gap-2">
-        {tabKeys.map((key) => (
-          <button
-            key={key}
-            onClick={() => setActiveTab(key)}
-            className={`rounded-md border px-3 py-2 text-sm font-medium transition ${
-              activeTab === key
-                ? "border-brand-600 bg-brand-600 text-white"
-                : "border-line bg-white text-slate-700 hover:bg-brand-50"
-            }`}
-          >
-            {tabLabels[key]}
-          </button>
-        ))}
-      </div>
+      <div className="grid gap-6">
+        <DocumentsSection title="E-mails importantes" description="Comunicacoes, pendencias e aprovacoes relevantes para o projeto.">
+          <EmailsTab project={project} people={people} />
+        </DocumentsSection>
 
-      {activeTab === "emails" && (
-        <EmailsTab project={project} people={people} />
-      )}
-      {activeTab === "atas" && (
-        <AtasTab project={project} people={people} />
-      )}
-      {activeTab === "planos" && <PlanosTab project={project} />}
-      {activeTab === "documentos" && <DocumentosTab project={project} />}
+        <DocumentsSection title="Atas e reunioes" description="Registros formais de alinhamentos, comites e workshops.">
+          <AtasTab project={project} people={people} />
+        </DocumentsSection>
+
+        <DocumentsSection title="Arquivos do projeto" description="Planos, cronogramas, contratos, relatorios, evidencias e demais documentos.">
+          <ProjectDocumentsTab project={project} />
+        </DocumentsSection>
+      </div>
     </>
+  );
+}
+
+function DocumentsSection({ title, description, children }: { title: string; description: string; children: React.ReactNode }) {
+  return (
+    <section className="rounded-lg border border-line bg-slate-50/70 p-4 shadow-soft">
+      <div className="mb-4">
+        <h2 className="text-lg font-bold text-ink">{title}</h2>
+        <p className="mt-1 text-sm text-slate-600">{description}</p>
+      </div>
+      {children}
+    </section>
   );
 }
 
@@ -572,225 +560,16 @@ function MinuteForm({
   );
 }
 
-// ─── Planos Tab ─────────────────────────────────────────────────────────────
+// ─── Arquivos do projeto ───────────────────────────────────────────────────
 
-function PlanosTab({ project }: { project: any }) {
-  const plans = project.documents.filter(
-    (d: any) =>
-      d.type === "Plano do projeto" ||
-      d.type === "Cronograma" ||
-      d.type === "Contrato"
-  );
-  return (
-    <>
-      <div className="mb-4 flex justify-end">
-        <DialogAction
-          title="Adicionar plano"
-          description="Envie um plano, cronograma ou contrato do projeto."
-          trigger="create"
-          triggerLabel="Novo plano"
-        >
-          <PlanForm projectId={project.id} />
-        </DialogAction>
-      </div>
-      <div className="rounded-lg border border-line bg-white p-5 shadow-soft">
-        <div className="grid gap-2">
-          {plans.map((document: any) => (
-            <div
-              key={document.id}
-              className="rounded-md border border-line p-3 text-sm"
-            >
-              <div className="flex items-center justify-between gap-3">
-                <div>
-                  <p className="font-semibold text-ink">{document.name}</p>
-                  <p className="text-slate-500">
-                    {document.type} | {document.status} |{" "}
-                    {document.version ?? "sem versao"}
-                  </p>
-                </div>
-                <div className="flex gap-2">
-                  {document.embedUrl ? (
-                    <a
-                      href={document.embedUrl}
-                      target="_blank"
-                      className="rounded-md border border-line px-3 py-1.5 font-semibold"
-                    >
-                      Ver
-                    </a>
-                  ) : null}
-                  {document.downloadUrl || document.externalUrl ? (
-                    <a
-                      href={getDocumentHref(document)}
-                      target="_blank"
-                      className="rounded-md bg-brand-600 px-3 py-1.5 font-semibold text-white"
-                    >
-                      Acessar
-                    </a>
-                  ) : null}
-                  <DialogAction
-                    title="Editar plano"
-                    description={document.name}
-                    trigger="edit"
-                  >
-                    <PlanForm projectId={project.id} document={document} />
-                  </DialogAction>
-                  <DialogAction
-                    title="Excluir plano"
-                    description={`Deseja realmente excluir "${document.name}"?`}
-                    trigger="delete"
-                  >
-                    <form
-                      action={deleteProjectDocumentAction}
-                      className="flex justify-end"
-                    >
-                      <input
-                        type="hidden"
-                        name="documentId"
-                        value={document.id}
-                      />
-                      <input
-                        type="hidden"
-                        name="projectId"
-                        value={project.id}
-                      />
-                      <button className="rounded-md bg-red-600 px-4 py-2 text-sm font-semibold text-white">
-                        Sim, excluir
-                      </button>
-                    </form>
-                  </DialogAction>
-                </div>
-              </div>
-            </div>
-          ))}
-          {!plans.length ? (
-            <p className="text-sm text-slate-500">
-              Nenhum plano cadastrado.
-            </p>
-          ) : null}
-        </div>
-      </div>
-    </>
-  );
-}
-
-function PlanForm({
-  projectId,
-  document,
-}: {
-  projectId: string;
-  document?: any;
-}) {
-  const isEdit = !!document;
-  return (
-    <form
-      action={
-        isEdit ? updateProjectDocumentAction : createProjectDocumentAction
-      }
-      className="grid gap-3"
-    >
-      {isEdit ? (
-        <input type="hidden" name="documentId" value={document.id} />
-      ) : null}
-      <input type="hidden" name="projectId" value={projectId} />
-      <div className="grid grid-cols-2 gap-3">
-        <label className="grid gap-1 text-sm font-medium">
-          Nome
-          <input
-            name="name"
-            required
-            defaultValue={document?.name ?? ""}
-            className="h-10 rounded-md border border-line px-3"
-          />
-        </label>
-        <label className="grid gap-1 text-sm font-medium">
-          Tipo
-          <select
-            name="type"
-            defaultValue={document?.type ?? "Plano do projeto"}
-            required
-            className="h-10 rounded-md border border-line px-3"
-          >
-            <option value="Plano do projeto">Plano do projeto</option>
-            <option value="Cronograma">Cronograma</option>
-            <option value="Contrato">Contrato</option>
-          </select>
-        </label>
-      </div>
-      <input type="hidden" name="externalUrl" value={document?.externalUrl ?? ""} />
-      <input type="hidden" name="embedUrl" value={document?.embedUrl ?? ""} />
-      <FileUpload
-        name="downloadUrl"
-        label="Arquivo"
-        required={!isEdit}
-        defaultValue={document?.downloadUrl ?? document?.externalUrl ?? ""}
-      />
-      <div className="grid grid-cols-3 gap-3">
-        <label className="grid gap-1 text-sm font-medium">
-          Versao
-          <input
-            name="version"
-            placeholder="v1.0"
-            defaultValue={document?.version ?? ""}
-            className="h-10 rounded-md border border-line px-3"
-          />
-        </label>
-        <label className="grid gap-1 text-sm font-medium">
-          Status
-          <select
-            name="status"
-            defaultValue={document?.status ?? "Aprovado"}
-            className="h-10 rounded-md border border-line px-3"
-          >
-            <option value="Rascunho">Rascunho</option>
-            <option value="Em revisão">Em revisao</option>
-            <option value="Aprovado">Aprovado</option>
-            <option value="Publicado">Publicado</option>
-            <option value="Obsoleto">Obsoleto</option>
-          </select>
-        </label>
-        <label className="grid gap-1 text-sm font-medium">
-          Visibilidade
-          <select
-            name="visibility"
-            defaultValue={document?.visibility ?? "CLIENT_VISIBLE"}
-            className="h-10 rounded-md border border-line px-3"
-          >
-            <option value="CLIENT_VISIBLE">Cliente</option>
-            <option value="PROJECT_TEAM">Equipe</option>
-            <option value="INTERNAL">Interno</option>
-          </select>
-        </label>
-      </div>
-      <label className="flex items-center gap-2 text-sm font-medium">
-        <input
-          name="clientDownloadAllowed"
-          type="checkbox"
-          defaultChecked={document?.clientDownloadAllowed ?? true}
-        />{" "}
-        Permitir download pelo cliente
-      </label>
-      <button className="w-fit rounded-md bg-brand-600 px-4 py-2 text-sm font-semibold text-white">
-        {isEdit ? "Salvar" : "Adicionar plano"}
-      </button>
-    </form>
-  );
-}
-
-// ─── Documentos Tab ─────────────────────────────────────────────────────────
-
-function DocumentosTab({ project }: { project: any }) {
-  const docs = project.documents.filter(
-    (d: any) =>
-      d.type !== "Plano do projeto" &&
-      d.type !== "Cronograma" &&
-      d.type !== "Contrato"
-  );
+function ProjectDocumentsTab({ project }: { project: any }) {
+  const docs = project.documents ?? [];
   return (
     <>
       <div className="mb-4 flex justify-end">
         <DialogAction
           title="Adicionar documento"
-          description="Envie um arquivo de ate 10 MB para o projeto."
+          description="Escolha o tipo no formulario e envie um arquivo de ate 10 MB."
           trigger="create"
           triggerLabel="Novo documento"
         >
@@ -808,8 +587,7 @@ function DocumentosTab({ project }: { project: any }) {
                 <div>
                   <p className="font-semibold text-ink">{document.name}</p>
                   <p className="text-slate-500">
-                    {document.type} | {document.sourceType} |{" "}
-                    {document.visibility} | {document.status}
+                    {document.type} | {document.status} | {document.version ?? "sem versao"} | {document.visibility === "CLIENT_VISIBLE" ? "cliente" : document.visibility === "PROJECT_TEAM" ? "equipe" : "interno"}
                   </p>
                 </div>
                 <div className="flex gap-2">
@@ -871,7 +649,7 @@ function DocumentosTab({ project }: { project: any }) {
           ))}
           {!docs.length ? (
             <p className="text-sm text-slate-500">
-              Nenhum documento enviado.
+              Nenhum arquivo cadastrado.
             </p>
           ) : null}
         </div>
@@ -918,7 +696,11 @@ function DocumentForm({
             className="h-10 rounded-md border border-line px-3"
           >
             <option value="Relatório">Relatorio</option>
+            <option value="Plano do projeto">Plano do projeto</option>
+            <option value="Cronograma">Cronograma</option>
+            <option value="Contrato">Contrato</option>
             <option value="Evidência">Evidencia</option>
+            <option value="Ata complementar">Ata complementar</option>
             <option value="Outro documento">Outro documento</option>
           </select>
         </label>
