@@ -62,7 +62,8 @@ const forgotPasswordSchema = z.object({
 
 export async function forgotPasswordAction(formData: FormData) {
   const data = forgotPasswordSchema.parse(Object.fromEntries(formData));
-  const user = await prisma.user.findUnique({ where: { email: data.email } });
+  const email = data.email.trim().toLowerCase();
+  const user = await prisma.user.findUnique({ where: { email } });
 
   if (!user) {
     return { message: "Se o e-mail estiver cadastrado, voce recebera um link de recuperacao." };
@@ -163,8 +164,9 @@ const registerSchema = z
 
 export async function registerAction(formData: FormData) {
   const data = registerSchema.parse(Object.fromEntries(formData));
+  const email = data.email.trim().toLowerCase();
 
-  const existingUser = await prisma.user.findUnique({ where: { email: data.email } });
+  const existingUser = await prisma.user.findUnique({ where: { email } });
   if (existingUser) {
     throw new Error("Este e-mail ja esta cadastrado.");
   }
@@ -180,7 +182,7 @@ export async function registerAction(formData: FormData) {
   const user = await prisma.user.create({
     data: {
       name: data.name,
-      email: data.email,
+      email,
       passwordHash,
       roleId: clientRole.id,
       status: "ACTIVE",

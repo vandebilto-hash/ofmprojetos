@@ -78,8 +78,9 @@ export async function createUserAction(formData: FormData) {
     throw new Error(msg || "Dados invalidos.");
   }
   const data = parsed.data;
+  const email = data.email.trim().toLowerCase();
 
-  const existingUser = await prisma.user.findUnique({ where: { email: data.email } });
+  const existingUser = await prisma.user.findUnique({ where: { email } });
   if (existingUser) {
     throw new Error("Este e-mail ja esta cadastrado.");
   }
@@ -90,7 +91,7 @@ export async function createUserAction(formData: FormData) {
   const user = await prisma.user.create({
     data: {
       name: data.name,
-      email: data.email,
+      email,
       passwordHash,
       roleId: role.id,
       clientId: data.clientId || null,
