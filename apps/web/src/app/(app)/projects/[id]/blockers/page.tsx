@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { DialogAction } from "@/components/ui/dialog-action";
 import { PeopleMultiSelect } from "@/components/ui/people-multi-select";
 import { PeopleSelect } from "@/components/ui/people-select";
+import { CurrencyInput } from "@/components/ui/currency-input";
 import { PageHeader } from "@/components/ui/page-header";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { ProjectTabs } from "@/features/projects/project-tabs";
@@ -381,16 +382,7 @@ export default async function ProjectBlockersPage({ params }: { params: { id: st
                   </label>
                   <label className={labelClass}>
                     Impacto financeiro (R$) <span className="text-red-500">*</span>
-                    <input name="financialImpact" type="text" defaultValue="0" placeholder="R$ 0,00" className={inputClass} required
-                      onInput={(e) => {
-                        const input = e.currentTarget;
-                        let value = input.value.replace(/\D/g, "");
-                        if (value) {
-                          value = (parseInt(value) / 100).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-                        }
-                        input.value = value ? `R$ ${value}` : "";
-                      }}
-                    />
+                    <CurrencyInput name="financialImpact" type="text" defaultValue="0" placeholder="R$ 0,00" className={inputClass} required />
                   </label>
                 </div>
                 <label className={labelClass}>
