@@ -291,6 +291,11 @@ function EmailForm({
   people: string[];
   defaultSubject?: string;
 }) {
+  const inputClass = "h-10 rounded-md border border-line bg-white px-3 text-sm text-ink outline-none transition-colors placeholder:text-slate-400 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white dark:placeholder-slate-500";
+  const selectClass = "h-10 rounded-md border border-line bg-white px-3 text-sm text-ink outline-none transition-colors focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white";
+  const textareaClass = "min-h-[80px] rounded-md border border-line bg-white px-3 py-2 text-sm text-ink outline-none transition-colors placeholder:text-slate-400 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white dark:placeholder-slate-500";
+  const labelClass = "mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300";
+
   return (
     <form action={upsertImportantEmailAction} className="grid gap-3">
       {email ? (
@@ -302,22 +307,25 @@ function EmailForm({
         name="parentId"
         value={parentId ?? email?.parentId ?? ""}
       />
-      <label className="grid gap-1 text-sm font-medium">
-        Assunto
+      <label className={labelClass}>
+        Assunto <span className="text-red-500">*</span>
         <input
           name="subject"
           required
           defaultValue={email?.subject ?? defaultSubject ?? ""}
-          className="h-10 rounded-md border border-line px-3"
+          className={inputClass}
+          placeholder="Assunto do e-mail"
         />
       </label>
-      <label className="grid gap-1 text-sm font-medium">
-        Resumo
+      <label className={labelClass}>
+        Resumo <span className="text-red-500">*</span>
         <textarea
           name="summary"
+          required
           defaultValue={email?.summary ?? ""}
           rows={3}
-          className="rounded-md border border-line px-3 py-2"
+          className={textareaClass}
+          placeholder="Resumo do conteúdo"
         />
       </label>
       <div className="grid grid-cols-2 gap-3">
@@ -335,27 +343,29 @@ function EmailForm({
         />
       </div>
       <div className="grid grid-cols-3 gap-3">
-        <label className="grid gap-1 text-sm font-medium">
-          Categoria
+        <label className={labelClass}>
+          Categoria <span className="text-red-500">*</span>
           <select
             name="category"
             defaultValue={email?.category ?? "E-mail Formal"}
-            className="h-10 rounded-md border border-line px-3"
+            required
+            className={selectClass}
           >
             <option value="E-mail Formal">E-mail formal</option>
-            <option value="Solicitação">Solicitacao</option>
-            <option value="Decisão">Decisao</option>
-            <option value="Pendência">Pendencia</option>
-            <option value="Aprovação">Aprovacao</option>
+            <option value="Solicitação">Solicitação</option>
+            <option value="Decisão">Decisão</option>
+            <option value="Pendência">Pendência</option>
+            <option value="Aprovação">Aprovação</option>
             <option value="Alinhamento">Alinhamento</option>
           </select>
         </label>
-        <label className="grid gap-1 text-sm font-medium">
-          Status
+        <label className={labelClass}>
+          Status <span className="text-red-500">*</span>
           <select
             name="status"
             defaultValue={email?.status ?? "Solucionado"}
-            className="h-10 rounded-md border border-line px-3"
+            required
+            className={selectClass}
           >
             <option value="Aberto">Aberto</option>
             <option value="Em andamento">Em andamento</option>
@@ -364,14 +374,14 @@ function EmailForm({
             <option value="Cancelado">Cancelado</option>
           </select>
         </label>
-        <label className="grid gap-1 text-sm font-medium">
-          Data
+        <label className={labelClass}>
+          Data <span className="text-red-500">*</span>
           <input
             name="date"
             type="date"
             required
             defaultValue={inputDate(email?.date ?? null)}
-            className="h-10 rounded-md border border-line px-3"
+            className={inputClass}
           />
         </label>
       </div>
@@ -388,7 +398,7 @@ function EmailForm({
           fileUrl: attachment.fileUrl,
         }))}
       />
-      <button className="w-fit rounded-md bg-brand-600 px-4 py-2 text-sm font-semibold text-white">
+      <button className="w-fit inline-flex h-10 items-center justify-center gap-2 rounded-md bg-brand-600 px-5 text-sm font-semibold text-white transition-colors hover:bg-brand-700">
         Salvar
       </button>
     </form>
@@ -484,69 +494,79 @@ function MinuteForm({
   minute?: any;
   people: string[];
 }) {
+  const inputClass = "h-10 rounded-md border border-line bg-white px-3 text-sm text-ink outline-none transition-colors placeholder:text-slate-400 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white dark:placeholder-slate-500";
+  const selectClass = "h-10 rounded-md border border-line bg-white px-3 text-sm text-ink outline-none transition-colors focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white";
+  const textareaClass = "min-h-[80px] rounded-md border border-line bg-white px-3 py-2 text-sm text-ink outline-none transition-colors placeholder:text-slate-400 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white dark:placeholder-slate-500";
+  const labelClass = "mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300";
+
   return (
     <form action={upsertMeetingMinuteAction} className="grid gap-3">
       {minute ? (
         <input type="hidden" name="minuteId" value={minute.id} />
       ) : null}
       <input type="hidden" name="projectId" value={projectId} />
-      <label className="grid gap-1 text-sm font-medium">
-        Titulo
+      <label className={labelClass}>
+        Título <span className="text-red-500">*</span>
         <input
           name="title"
           required
           defaultValue={minute?.title ?? ""}
-          className="h-10 rounded-md border border-line px-3"
+          className={inputClass}
+          placeholder="Título da ata"
         />
       </label>
-      <label className="grid gap-1 text-sm font-medium">
-        Resumo
+      <label className={labelClass}>
+        Resumo <span className="text-red-500">*</span>
         <textarea
           name="summary"
+          required
           defaultValue={minute?.summary ?? ""}
           rows={3}
-          className="rounded-md border border-line px-3 py-2"
+          className={textareaClass}
+          placeholder="Resumo da reunião"
         />
       </label>
       <div className="grid grid-cols-3 gap-3">
-        <label className="grid gap-1 text-sm font-medium">
-          Data
+        <label className={labelClass}>
+          Data <span className="text-red-500">*</span>
           <input
             name="meetingDate"
             type="date"
             required
             defaultValue={inputDate(minute?.meetingDate ?? null)}
-            className="h-10 rounded-md border border-line px-3"
+            className={inputClass}
           />
         </label>
-        <label className="grid gap-1 text-sm font-medium">
-          Tipo
+        <label className={labelClass}>
+          Tipo <span className="text-red-500">*</span>
           <select
             name="meetingType"
             defaultValue={
               minute?.meetingType ?? "Reunião de acompanhamento"
             }
-            className="h-10 rounded-md border border-line px-3"
+            required
+            className={selectClass}
           >
             <option value="Reunião de acompanhamento">
-              Reuniao de acompanhamento
+              Reunião de acompanhamento
             </option>
-            <option value="Reunião executiva">Reuniao executiva</option>
-            <option value="Reunião técnica">Reuniao tecnica</option>
-            <option value="Comitê do projeto">Comite do projeto</option>
+            <option value="Reunião executiva">Reunião executiva</option>
+            <option value="Reunião técnica">Reunião técnica</option>
+            <option value="Comitê do projeto">Comitê do projeto</option>
             <option value="Workshop">Workshop</option>
             <option value="Outro">Outro</option>
           </select>
         </label>
-        <label className="grid gap-1 text-sm font-medium">
-          Status
+        <label className={labelClass}>
+          Status <span className="text-red-500">*</span>
           <select
             name="status"
             defaultValue={minute?.status ?? "Publicado"}
-            className="h-10 rounded-md border border-line px-3"
+            required
+            className={selectClass}
           >
             <option value="Rascunho">Rascunho</option>
-            <option value="Em revisão">Em revisao</option>
+            <option value="Em revisão">Em revisão</option>
             <option value="Publicado">Publicado</option>
             <option value="Cancelado">Cancelado</option>
           </select>
@@ -563,7 +583,7 @@ function MinuteForm({
         label="Arquivo"
         defaultValue={minute?.fileUrl ?? ""}
       />
-      <button className="w-fit rounded-md bg-brand-600 px-4 py-2 text-sm font-semibold text-white">
+      <button className="w-fit inline-flex h-10 items-center justify-center gap-2 rounded-md bg-brand-600 px-5 text-sm font-semibold text-white transition-colors hover:bg-brand-700">
         Salvar
       </button>
     </form>
@@ -728,6 +748,10 @@ function DocumentForm({
   defaultType?: string;
 }) {
   const isEdit = !!document;
+  const inputClass = "h-10 rounded-md border border-line bg-white px-3 text-sm text-ink outline-none transition-colors placeholder:text-slate-400 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white dark:placeholder-slate-500";
+  const selectClass = "h-10 rounded-md border border-line bg-white px-3 text-sm text-ink outline-none transition-colors focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white";
+  const labelClass = "mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300";
+
   return (
     <form
       action={
@@ -740,28 +764,29 @@ function DocumentForm({
       ) : null}
       <input type="hidden" name="projectId" value={projectId} />
       <div className="grid grid-cols-2 gap-3">
-        <label className="grid gap-1 text-sm font-medium">
-          Nome
+        <label className={labelClass}>
+          Nome <span className="text-red-500">*</span>
           <input
             name="name"
             required
             defaultValue={document?.name ?? ""}
-            className="h-10 rounded-md border border-line px-3"
+            className={inputClass}
+            placeholder="Nome do documento"
           />
         </label>
-        <label className="grid gap-1 text-sm font-medium">
-          Tipo
+        <label className={labelClass}>
+          Tipo <span className="text-red-500">*</span>
           <select
             name="type"
             defaultValue={document?.type ?? defaultType}
             required
-            className="h-10 rounded-md border border-line px-3"
+            className={selectClass}
           >
-            <option value="Relatório">Relatorio</option>
+            <option value="Relatório">Relatório</option>
             <option value="Plano do projeto">Plano do projeto</option>
             <option value="Cronograma">Cronograma</option>
             <option value="Contrato">Contrato</option>
-            <option value="Evidência">Evidencia</option>
+            <option value="Evidência">Evidência</option>
             <option value="Ata complementar">Ata complementar</option>
             <option value="Outro documento">Outro documento</option>
           </select>
@@ -776,35 +801,38 @@ function DocumentForm({
         defaultValue={document?.downloadUrl ?? document?.externalUrl ?? ""}
       />
       <div className="grid grid-cols-3 gap-3">
-        <label className="grid gap-1 text-sm font-medium">
-          Versao
+        <label className={labelClass}>
+          Versão <span className="text-red-500">*</span>
           <input
             name="version"
+            required
             placeholder="v1.0"
             defaultValue={document?.version ?? ""}
-            className="h-10 rounded-md border border-line px-3"
+            className={inputClass}
           />
         </label>
-        <label className="grid gap-1 text-sm font-medium">
-          Status
+        <label className={labelClass}>
+          Status <span className="text-red-500">*</span>
           <select
             name="status"
             defaultValue={document?.status ?? "Aprovado"}
-            className="h-10 rounded-md border border-line px-3"
+            required
+            className={selectClass}
           >
             <option value="Rascunho">Rascunho</option>
-            <option value="Em revisão">Em revisao</option>
+            <option value="Em revisão">Em revisão</option>
             <option value="Aprovado">Aprovado</option>
             <option value="Publicado">Publicado</option>
             <option value="Obsoleto">Obsoleto</option>
           </select>
         </label>
-        <label className="grid gap-1 text-sm font-medium">
-          Visibilidade
+        <label className={labelClass}>
+          Visibilidade <span className="text-red-500">*</span>
           <select
             name="visibility"
             defaultValue={document?.visibility ?? "CLIENT_VISIBLE"}
-            className="h-10 rounded-md border border-line px-3"
+            required
+            className={selectClass}
           >
             <option value="CLIENT_VISIBLE">Cliente</option>
             <option value="PROJECT_TEAM">Equipe</option>

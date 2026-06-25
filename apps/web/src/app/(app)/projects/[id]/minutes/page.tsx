@@ -70,7 +70,7 @@ function MinuteForm({ projectId, minute, people }: { projectId: string; minute?:
   const inputClass = "h-10 rounded-md border border-line bg-white px-3 text-sm text-ink outline-none transition-colors placeholder:text-slate-400 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white dark:placeholder-slate-500";
   const selectClass = "h-10 rounded-md border border-line bg-white px-3 text-sm text-ink outline-none transition-colors focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white";
   const textareaClass = "min-h-[80px] rounded-md border border-line bg-white px-3 py-2 text-sm text-ink outline-none transition-colors placeholder:text-slate-400 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white dark:placeholder-slate-500";
-  const labelClass = "grid gap-1.5 text-sm font-medium text-slate-700 dark:text-slate-300";
+  const labelClass = "mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300";
   const sectionTitle = "text-xs font-bold uppercase tracking-wide text-slate-500 dark:text-slate-400";
 
   return (
@@ -86,8 +86,8 @@ function MinuteForm({ projectId, minute, people }: { projectId: string; minute?:
             <input name="title" required defaultValue={minute?.title ?? ""} className={inputClass} placeholder="Título da ata" />
           </label>
           <label className={labelClass}>
-            Resumo
-            <textarea name="summary" defaultValue={minute?.summary ?? ""} rows={3} className={textareaClass} placeholder="Resumo da reunião" />
+            Resumo <span className="text-red-500">*</span>
+            <textarea name="summary" required defaultValue={minute?.summary ?? ""} rows={3} className={textareaClass} placeholder="Resumo da reunião" />
           </label>
         </div>
       </div>
@@ -100,8 +100,8 @@ function MinuteForm({ projectId, minute, people }: { projectId: string; minute?:
             <input name="meetingDate" type="date" required defaultValue={inputDate(minute?.meetingDate ?? null)} className={inputClass} />
           </label>
           <label className={labelClass}>
-            Tipo
-            <select name="meetingType" defaultValue={minute?.meetingType ?? "Reunião de acompanhamento"} className={selectClass}>
+            Tipo <span className="text-red-500">*</span>
+            <select name="meetingType" defaultValue={minute?.meetingType ?? "Reunião de acompanhamento"} className={selectClass} required>
               <option value="Reunião de acompanhamento">Reunião de acompanhamento</option>
               <option value="Reunião executiva">Reunião executiva</option>
               <option value="Reunião técnica">Reunião técnica</option>
@@ -111,8 +111,8 @@ function MinuteForm({ projectId, minute, people }: { projectId: string; minute?:
             </select>
           </label>
           <label className={labelClass}>
-            Status
-            <select name="status" defaultValue={minute?.status ?? "Publicado"} className={selectClass}>
+            Status <span className="text-red-500">*</span>
+            <select name="status" defaultValue={minute?.status ?? "Publicado"} className={selectClass} required>
               <option value="Rascunho">Rascunho</option>
               <option value="Em revisão">Em revisão</option>
               <option value="Publicado">Publicado</option>

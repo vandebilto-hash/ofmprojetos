@@ -3,7 +3,7 @@ import { createTaskAction } from "@/server/actions/projects";
 const inputClass = "h-10 rounded-md border border-line bg-white px-3 text-sm text-ink outline-none transition-colors placeholder:text-slate-400 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white dark:placeholder-slate-500";
 const selectClass = "h-10 rounded-md border border-line bg-white px-3 text-sm text-ink outline-none transition-colors focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white";
 const textareaClass = "min-h-[80px] rounded-md border border-line bg-white px-3 py-2 text-sm text-ink outline-none transition-colors placeholder:text-slate-400 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white dark:placeholder-slate-500";
-const labelClass = "grid gap-1.5 text-sm font-medium text-slate-700 dark:text-slate-300";
+const labelClass = "mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300";
 const required = <span className="text-red-500" aria-hidden="true">*</span>;
 
 export function TaskForm({
@@ -40,9 +40,9 @@ export function TaskForm({
             <input name="name" required className={inputClass} placeholder="Nome da tarefa" />
           </label>
           <label className={labelClass}>
-            Responsável
-            <select name="ownerId" className={selectClass}>
-              <option value="">Sem responsável</option>
+            Responsável {required}
+            <select name="ownerId" required className={selectClass}>
+              <option value="">Selecione o responsável</option>
               {users.map((user) => (
                 <option key={user.id} value={user.id}>{user.name}</option>
               ))}
@@ -73,22 +73,22 @@ export function TaskForm({
         <h3 className="text-sm font-bold uppercase tracking-wide text-slate-500 dark:text-slate-400">Classificação</h3>
         <div className="mt-3 grid grid-cols-3 gap-4">
           <label className={labelClass}>
-            Ocorrência
-            <input name="occurNumber" placeholder="Ex: 142637" className={inputClass} />
+            Ocorrência {required}
+            <input name="occurNumber" required placeholder="Ex: 142637" className={inputClass} />
           </label>
           <label className={labelClass}>
-            Tipo ocorrência
-            <input name="occurType" placeholder="Ex: IMPLANTAÇÃO" className={inputClass} />
+            Tipo ocorrência {required}
+            <input name="occurType" required placeholder="Ex: IMPLANTAÇÃO" className={inputClass} />
           </label>
           <label className={labelClass}>
-            Situação ocorrência
-            <input name="occurSituation" placeholder="Ex: PENDENTE" className={inputClass} />
+            Situação ocorrência {required}
+            <input name="occurSituation" required placeholder="Ex: PENDENTE" className={inputClass} />
           </label>
         </div>
         <div className="mt-4 grid grid-cols-2 gap-4">
           <label className={labelClass}>
-            Status
-            <select name="status" defaultValue="TODO" className={selectClass}>
+            Status {required}
+            <select name="status" defaultValue="TODO" required className={selectClass}>
               <option value="TODO">A fazer</option>
               <option value="IN_PROGRESS">Em andamento</option>
               <option value="IN_REVIEW">Em validação</option>
@@ -97,8 +97,8 @@ export function TaskForm({
             </select>
           </label>
           <label className={labelClass}>
-            Prioridade
-            <select name="priority" defaultValue="MEDIUM" className={selectClass}>
+            Prioridade {required}
+            <select name="priority" defaultValue="MEDIUM" required className={selectClass}>
               <option value="LOW">Baixa</option>
               <option value="MEDIUM">Média</option>
               <option value="HIGH">Alta</option>
@@ -112,8 +112,8 @@ export function TaskForm({
         <h3 className="text-sm font-bold uppercase tracking-wide text-slate-500 dark:text-slate-400">Cronograma e esforço</h3>
         <div className="mt-3 grid grid-cols-3 gap-4">
           <label className={labelClass}>
-            Horas estimadas
-            <input name="estimatedHours" type="number" step="0.5" min="0" placeholder="Horas" className={inputClass} />
+            Horas estimadas {required}
+            <input name="estimatedHours" type="number" step="0.5" min="0" required placeholder="Horas" className={inputClass} />
           </label>
           <label className={labelClass}>
             Início {required}

@@ -21,19 +21,19 @@ export default async function ProjectBaselinesPage({ params }: { params: { id: s
         <DialogAction title="Criar baseline" description="Salve um snapshot do cronograma atual e informe o motivo." trigger="create" triggerLabel="Nova baseline">
           <form action={createBaselineAction} className="grid gap-3">
             <input type="hidden" name="projectId" value={project.id} />
-            <label className="grid gap-1 text-sm font-medium">
-              Nome
-              <input name="name" placeholder="Nome da baseline" className="h-10 rounded-md border border-line px-3" />
+            <label className="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">
+              Nome <span className="text-red-500">*</span>
+              <input name="name" required placeholder="Nome da baseline" className="h-10 rounded-md border border-line bg-white px-3 text-sm text-ink outline-none transition-colors placeholder:text-slate-400 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white" />
             </label>
-            <label className="grid gap-1 text-sm font-medium">
-              Descricao
-              <input name="description" placeholder="Descricao" className="h-10 rounded-md border border-line px-3" />
+            <label className="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">
+              Descrição <span className="text-red-500">*</span>
+              <input name="description" required placeholder="Descrição" className="h-10 rounded-md border border-line bg-white px-3 text-sm text-ink outline-none transition-colors placeholder:text-slate-400 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white" />
             </label>
-            <label className="grid gap-1 text-sm font-medium">
+            <label className="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">
               Motivo <span className="text-red-500">*</span>
-              <textarea name="reason" placeholder="Justificativa obrigatoria para criacao da baseline" rows={3} required className="rounded-md border border-line px-3 py-2" />
+              <textarea name="reason" placeholder="Justificativa obrigatória para criação da baseline" rows={3} required className="min-h-[80px] rounded-md border border-line bg-white px-3 py-2 text-sm text-ink outline-none transition-colors placeholder:text-slate-400 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white" />
             </label>
-            <button className="w-fit rounded-md bg-brand-600 px-4 py-2 text-sm font-semibold text-white">Criar baseline</button>
+            <button className="w-fit inline-flex h-10 items-center justify-center gap-2 rounded-md bg-brand-600 px-5 text-sm font-semibold text-white transition-colors hover:bg-brand-700">Criar baseline</button>
           </form>
         </DialogAction>
       </div>
@@ -50,19 +50,19 @@ export default async function ProjectBaselinesPage({ params }: { params: { id: s
                   <form action={updateBaselineAction} className="grid gap-3">
                     <input type="hidden" name="baselineId" value={baseline.id} />
                     <input type="hidden" name="projectId" value={project.id} />
-                    <label className="grid gap-1 text-sm font-medium">
-                      Nome
-                      <input name="name" defaultValue={baseline.name} className="h-10 rounded-md border border-line px-3" />
+                    <label className="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">
+                      Nome <span className="text-red-500">*</span>
+                      <input name="name" required defaultValue={baseline.name} className="h-10 rounded-md border border-line bg-white px-3 text-sm text-ink outline-none transition-colors focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white" />
                     </label>
-                    <label className="grid gap-1 text-sm font-medium">
-                      Descricao e motivo
-                      <textarea name="description" defaultValue={baseline.description ?? ""} rows={5} className="rounded-md border border-line px-3 py-2" />
+                    <label className="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">
+                      Descrição e motivo
+                      <textarea name="description" defaultValue={baseline.description ?? ""} rows={5} className="min-h-[80px] rounded-md border border-line bg-white px-3 py-2 text-sm text-ink outline-none transition-colors focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white" />
                     </label>
-                    <label className="flex h-10 items-center gap-2 text-sm font-medium">
-                      <input name="isActive" type="checkbox" defaultChecked={baseline.isActive} value="true" />
+                    <label className="flex h-10 items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-300">
+                      <input name="isActive" type="checkbox" defaultChecked={baseline.isActive} value="true" className="h-4 w-4 rounded border-slate-300 text-brand-600 focus:ring-brand-500" />
                       Definir como baseline ativa
                     </label>
-                    <button className="w-fit rounded-md bg-brand-600 px-4 py-2 text-sm font-semibold text-white">
+                    <button className="w-fit inline-flex h-10 items-center justify-center gap-2 rounded-md bg-brand-600 px-5 text-sm font-semibold text-white transition-colors hover:bg-brand-700">
                       Salvar baseline
                     </button>
                   </form>
@@ -71,7 +71,7 @@ export default async function ProjectBaselinesPage({ params }: { params: { id: s
                   <form action={deleteBaselineAction} className="flex justify-end">
                     <input type="hidden" name="baselineId" value={baseline.id} />
                     <input type="hidden" name="projectId" value={project.id} />
-                    <button className="rounded-md bg-red-600 px-4 py-2 text-sm font-semibold text-white">
+                    <button className="rounded-md bg-red-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-red-700">
                       Sim, excluir
                     </button>
                   </form>

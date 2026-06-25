@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { DialogAction } from "@/components/ui/dialog-action";
 import { PeopleMultiSelect } from "@/components/ui/people-multi-select";
+import { PeopleSelect } from "@/components/ui/people-select";
 import { PageHeader } from "@/components/ui/page-header";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { ProjectTabs } from "@/features/projects/project-tabs";
@@ -38,7 +39,7 @@ function BlockerCriticalityBadge({ value }: { value: string }) {
 const inputClass = "h-10 rounded-md border border-line bg-white px-3 text-sm text-ink outline-none transition-colors placeholder:text-slate-400 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white dark:placeholder-slate-500";
 const selectClass = "h-10 rounded-md border border-line bg-white px-3 text-sm text-ink outline-none transition-colors focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white";
 const textareaClass = "min-h-[80px] rounded-md border border-line bg-white px-3 py-2 text-sm text-ink outline-none transition-colors placeholder:text-slate-400 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white dark:placeholder-slate-500";
-const labelClass = "grid gap-1.5 text-sm font-medium text-slate-700 dark:text-slate-300";
+const labelClass = "mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300";
 const sectionTitle = "text-xs font-bold uppercase tracking-wide text-slate-500 dark:text-slate-400";
 
 function PendingIssueForm({ project, people, pending }: { project: any; people: string[]; pending?: any }) {
@@ -55,8 +56,8 @@ function PendingIssueForm({ project, people, pending }: { project: any; people: 
             <input name="title" required defaultValue={pending?.title ?? ""} className={inputClass} placeholder="Título da pendência" />
           </label>
           <label className={labelClass}>
-            Descrição
-            <textarea name="description" rows={3} defaultValue={pending?.description ?? ""} className={textareaClass} placeholder="Descreva a pendência" />
+            Descrição <span className="text-red-500">*</span>
+            <textarea name="description" rows={3} defaultValue={pending?.description ?? ""} className={textareaClass} placeholder="Descreva a pendência" required />
           </label>
         </div>
       </div>
@@ -73,11 +74,15 @@ function PendingIssueForm({ project, people, pending }: { project: any; people: 
               </select>
             </label>
             <label className={labelClass}>
-              Empresa responsável
-              <input name="responsibleCompany" defaultValue={pending?.responsibleCompany ?? ""} className={inputClass} placeholder="Empresa ou área" />
+              Empresa responsável <span className="text-red-500">*</span>
+              <select name="responsibleCompany" defaultValue={pending?.responsibleCompany ?? ""} className={selectClass} required>
+                <option value="">Selecione</option>
+                <option value="OFM">OFM</option>
+                <option value={project.client?.name}>{project.client?.name}</option>
+              </select>
             </label>
           </div>
-          <PeopleMultiSelect name="responsiblePerson" label="Pessoa responsável" people={people} defaultValue={pending?.responsiblePerson ?? ""} />
+          <PeopleSelect name="responsiblePerson" label="Pessoa responsável" people={people} defaultValue={pending?.responsiblePerson ?? ""} required />
         </div>
       </div>
 
@@ -86,18 +91,18 @@ function PendingIssueForm({ project, people, pending }: { project: any; people: 
         <div className="mt-2 grid gap-3">
           <div className="grid grid-cols-2 gap-3">
             <label className={labelClass}>
-              Data de abertura
-              <input name="openedAt" type="date" defaultValue={inputDate(pending?.openedAt ?? new Date())} className={inputClass} />
+              Data de abertura <span className="text-red-500">*</span>
+              <input name="openedAt" type="date" defaultValue={inputDate(pending?.openedAt ?? new Date())} className={inputClass} required />
             </label>
             <label className={labelClass}>
-              Prazo
-              <input name="dueDate" type="date" defaultValue={inputDate(pending?.dueDate)} className={inputClass} />
+              Prazo <span className="text-red-500">*</span>
+              <input name="dueDate" type="date" defaultValue={inputDate(pending?.dueDate)} className={inputClass} required />
             </label>
           </div>
           <div className="grid grid-cols-3 gap-3">
             <label className={labelClass}>
-              Status
-              <select name="status" defaultValue={pending?.status ?? "OPEN"} className={selectClass}>
+              Status <span className="text-red-500">*</span>
+              <select name="status" defaultValue={pending?.status ?? "OPEN"} className={selectClass} required>
                 <option value="OPEN">Aberta</option>
                 <option value="IN_PROGRESS">Em andamento</option>
                 <option value="RESOLVED">Resolvida</option>
@@ -105,8 +110,8 @@ function PendingIssueForm({ project, people, pending }: { project: any; people: 
               </select>
             </label>
             <label className={labelClass}>
-              Prioridade
-              <select name="priority" defaultValue={pending?.priority ?? "MEDIUM"} className={selectClass}>
+              Prioridade <span className="text-red-500">*</span>
+              <select name="priority" defaultValue={pending?.priority ?? "MEDIUM"} className={selectClass} required>
                 <option value="LOW">Baixa</option>
                 <option value="MEDIUM">Média</option>
                 <option value="HIGH">Alta</option>
@@ -125,12 +130,12 @@ function PendingIssueForm({ project, people, pending }: { project: any; people: 
         <p className={sectionTitle}>Acompanhamento</p>
         <div className="mt-2 grid gap-3">
           <label className={labelClass}>
-            Impacto / observação
-            <textarea name="impactDescription" rows={2} defaultValue={pending?.impactDescription ?? ""} className={textareaClass} placeholder="Descreva o impacto" />
+            Impacto / observação <span className="text-red-500">*</span>
+            <textarea name="impactDescription" rows={2} defaultValue={pending?.impactDescription ?? ""} className={textareaClass} placeholder="Descreva o impacto" required />
           </label>
           <label className={labelClass}>
-            Próxima ação
-            <textarea name="nextAction" rows={2} defaultValue={pending?.nextAction ?? ""} className={textareaClass} placeholder="Próxima ação a ser tomada" />
+            Próxima ação <span className="text-red-500">*</span>
+            <textarea name="nextAction" rows={2} defaultValue={pending?.nextAction ?? ""} className={textareaClass} placeholder="Próxima ação a ser tomada" required />
           </label>
         </div>
       </div>
@@ -148,6 +153,7 @@ export default async function ProjectBlockersPage({ params }: { params: { id: st
   const project = await prisma.project.findUnique({
     where: { id: params.id },
     include: {
+      client: true,
       blockers: { include: { task: true }, orderBy: { createdAt: "desc" } },
       pendingIssues: { include: { risk: true }, orderBy: [{ priority: "desc" }, { dueDate: "asc" }] },
       risks: { orderBy: [{ classification: "desc" }, { registeredAt: "desc" }] },
@@ -185,8 +191,8 @@ export default async function ProjectBlockersPage({ params }: { params: { id: st
                   <input name="name" required className={inputClass} placeholder="Nome do risco" />
                 </label>
                 <label className={labelClass}>
-                  Classificação
-                  <select name="classification" defaultValue="MEDIUM" className={selectClass}>
+                  Classificação <span className="text-red-500">*</span>
+                  <select name="classification" defaultValue="MEDIUM" className={selectClass} required>
                     <option value="LOW">Baixo</option>
                     <option value="MEDIUM">Médio</option>
                     <option value="HIGH">Alto</option>
@@ -194,9 +200,9 @@ export default async function ProjectBlockersPage({ params }: { params: { id: st
                   </select>
                 </label>
               </div>
-              <label className={`${labelClass} mt-3`}>
-                Descrição
-                <textarea name="description" rows={3} className={textareaClass} placeholder="Descreva o risco" />
+              <label className={labelClass}>
+                Descrição <span className="text-red-500">*</span>
+                <textarea name="description" rows={3} className={textareaClass} placeholder="Descreva o risco" required />
               </label>
             </div>
 
@@ -204,16 +210,16 @@ export default async function ProjectBlockersPage({ params }: { params: { id: st
               <p className={sectionTitle}>Análise</p>
               <div className="mt-2 grid grid-cols-3 gap-3">
                 <label className={labelClass}>
-                  Probabilidade
-                  <select name="probability" defaultValue="MEDIUM" className={selectClass}>
+                  Probabilidade <span className="text-red-500">*</span>
+                  <select name="probability" defaultValue="MEDIUM" className={selectClass} required>
                     <option value="LOW">Baixa</option>
                     <option value="MEDIUM">Média</option>
                     <option value="HIGH">Alta</option>
                   </select>
                 </label>
                 <label className={labelClass}>
-                  Estratégia
-                  <select name="responseStrategy" defaultValue="MITIGATE" className={selectClass}>
+                  Estratégia <span className="text-red-500">*</span>
+                  <select name="responseStrategy" defaultValue="MITIGATE" className={selectClass} required>
                     <option value="MITIGATE">Mitigar</option>
                     <option value="ACCEPT">Aceitar</option>
                     <option value="TRANSFER">Transferir</option>
@@ -221,8 +227,8 @@ export default async function ProjectBlockersPage({ params }: { params: { id: st
                   </select>
                 </label>
                 <label className={labelClass}>
-                  Status
-                  <select name="status" defaultValue="OPEN" className={selectClass}>
+                  Status <span className="text-red-500">*</span>
+                  <select name="status" defaultValue="OPEN" className={selectClass} required>
                     <option value="OPEN">Aberto</option>
                     <option value="IN_TREATMENT">Em tratamento</option>
                     <option value="MATERIALIZED">Materializado</option>
@@ -232,12 +238,12 @@ export default async function ProjectBlockersPage({ params }: { params: { id: st
               </div>
               <div className="mt-3 grid grid-cols-2 gap-3">
                 <label className={labelClass}>
-                  Causa
-                  <input name="cause" className={inputClass} placeholder="Causa do risco" />
+                  Causa <span className="text-red-500">*</span>
+                  <input name="cause" className={inputClass} placeholder="Causa do risco" required />
                 </label>
                 <label className={labelClass}>
-                  Evento
-                  <input name="event" className={inputClass} placeholder="Evento que pode ocorrer" />
+                  Evento <span className="text-red-500">*</span>
+                  <input name="event" className={inputClass} placeholder="Evento que pode ocorrer" required />
                 </label>
               </div>
             </div>
@@ -246,16 +252,16 @@ export default async function ProjectBlockersPage({ params }: { params: { id: st
               <p className={sectionTitle}>Impacto e resposta</p>
               <div className="mt-2 grid gap-3">
                 <label className={labelClass}>
-                  Impacto
-                  <textarea name="impact" rows={2} className={textareaClass} placeholder="Descreva o impacto" />
+                  Impacto <span className="text-red-500">*</span>
+                  <textarea name="impact" rows={2} className={textareaClass} placeholder="Descreva o impacto" required />
                 </label>
                 <label className={labelClass}>
-                  Ações preventivas
-                  <textarea name="preventiveActions" rows={2} className={textareaClass} placeholder="Ações para mitigar o risco" />
+                  Ações preventivas <span className="text-red-500">*</span>
+                  <textarea name="preventiveActions" rows={2} className={textareaClass} placeholder="Ações para mitigar o risco" required />
                 </label>
                 <label className={labelClass}>
-                  Plano de contingência
-                  <textarea name="contingencyPlan" rows={2} className={textareaClass} placeholder="Plano caso o risco se materialize" />
+                  Plano de contingência <span className="text-red-500">*</span>
+                  <textarea name="contingencyPlan" rows={2} className={textareaClass} placeholder="Plano caso o risco se materialize" required />
                 </label>
               </div>
             </div>
@@ -264,16 +270,16 @@ export default async function ProjectBlockersPage({ params }: { params: { id: st
               <p className={sectionTitle}>Responsável e acompanhamento</p>
               <div className="mt-2 grid grid-cols-3 gap-3">
                 <label className={labelClass}>
-                  Gatilhos
-                  <input name="triggers" className={inputClass} placeholder="Sinais de alerta" />
+                  Gatilhos <span className="text-red-500">*</span>
+                  <input name="triggers" className={inputClass} placeholder="Sinais de alerta" required />
                 </label>
-                <PeopleMultiSelect name="owner" label="Responsável" people={people} />
+                <PeopleSelect name="owner" label="Responsável" people={people} required />
                 <label className={labelClass}>
-                  Última revisão
-                  <input name="lastReviewAt" type="date" className={inputClass} />
+                  Última revisão <span className="text-red-500">*</span>
+                  <input name="lastReviewAt" type="date" className={inputClass} required />
                 </label>
               </div>
-              <label className={`${labelClass} mt-3`}>
+              <label className={labelClass}>
                 Observações
                 <textarea name="notes" rows={2} className={textareaClass} placeholder="Notas adicionais" />
               </label>
@@ -299,17 +305,17 @@ export default async function ProjectBlockersPage({ params }: { params: { id: st
                 </label>
                 <div className="grid grid-cols-2 gap-3">
                   <label className={labelClass}>
-                    Data de abertura
-                    <input name="openedAt" type="date" defaultValue={new Date().toISOString().slice(0, 10)} className={inputClass} />
+                    Data de abertura <span className="text-red-500">*</span>
+                    <input name="openedAt" type="date" defaultValue={new Date().toISOString().slice(0, 10)} className={inputClass} required />
                   </label>
                   <label className={labelClass}>
-                    Previsão de resolução
-                    <input name="expectedResolutionAt" type="date" className={inputClass} />
+                    Previsão de resolução <span className="text-red-500">*</span>
+                    <input name="expectedResolutionAt" type="date" className={inputClass} required />
                   </label>
                 </div>
                 <label className={labelClass}>
-                  Descrição
-                  <textarea name="description" rows={3} placeholder="Descrição do bloqueio" className={textareaClass} />
+                  Descrição <span className="text-red-500">*</span>
+                  <textarea name="description" rows={3} placeholder="Descrição do bloqueio" className={textareaClass} required />
                 </label>
               </div>
             </div>
@@ -319,22 +325,26 @@ export default async function ProjectBlockersPage({ params }: { params: { id: st
               <div className="mt-2 grid gap-3">
                 <div className="grid grid-cols-2 gap-3">
                   <label className={labelClass}>
-                    Tarefa relacionada
-                    <select name="taskId" className={selectClass}>
-                      <option value="">Projeto geral</option>
+                    Tarefa relacionada <span className="text-red-500">*</span>
+                    <select name="taskId" className={selectClass} required>
+                      <option value="">Selecione a tarefa</option>
                       {project.tasks.map((task) => <option key={task.id} value={task.id}>{task.name}</option>)}
                     </select>
                   </label>
                   <label className={labelClass}>
-                    Empresa responsável
-                    <input name="responsibleCompany" className={inputClass} placeholder="Empresa ou área" />
+                    Empresa responsável <span className="text-red-500">*</span>
+                    <select name="responsibleCompany" className={selectClass} required>
+                      <option value="">Selecione</option>
+                      <option value="OFM">OFM</option>
+                      <option value={project.client?.name}>{project.client?.name}</option>
+                    </select>
                   </label>
                 </div>
-                <PeopleMultiSelect name="responsiblePerson" label="Pessoa responsável" people={people} />
+                <PeopleSelect name="responsiblePerson" label="Pessoa responsável" people={people} required />
                 <div className="grid grid-cols-2 gap-3">
                   <label className={labelClass}>
-                    Status
-                    <select name="status" defaultValue="OPEN" className={selectClass}>
+                    Status <span className="text-red-500">*</span>
+                    <select name="status" defaultValue="OPEN" className={selectClass} required>
                       <option value="OPEN">Aberto</option>
                       <option value="IN_PROGRESS">Em andamento</option>
                       <option value="RESOLVED">Resolvido</option>
@@ -342,8 +352,8 @@ export default async function ProjectBlockersPage({ params }: { params: { id: st
                     </select>
                   </label>
                   <label className={labelClass}>
-                    Criticidade
-                    <select name="criticality" defaultValue="MEDIUM" className={selectClass}>
+                    Criticidade <span className="text-red-500">*</span>
+                    <select name="criticality" defaultValue="MEDIUM" className={selectClass} required>
                       <option value="LOW">Baixa</option>
                       <option value="MEDIUM">Média</option>
                       <option value="HIGH">Alta</option>
@@ -352,8 +362,8 @@ export default async function ProjectBlockersPage({ params }: { params: { id: st
                   </label>
                 </div>
                 <label className={labelClass}>
-                  Responsável pela resolução
-                  <select name="resolverId" className={selectClass}>
+                  Responsável pela resolução <span className="text-red-500">*</span>
+                  <select name="resolverId" className={selectClass} required>
                     <option value="">Selecione</option>
                     {users.map((user) => <option key={user.id} value={user.id}>{user.name}</option>)}
                   </select>
@@ -366,21 +376,30 @@ export default async function ProjectBlockersPage({ params }: { params: { id: st
               <div className="mt-2 grid gap-3">
                 <div className="grid grid-cols-2 gap-3">
                   <label className={labelClass}>
-                    Impacto no cronograma (dias)
-                    <input name="scheduleImpactDays" type="number" defaultValue="0" placeholder="Dias de atraso" className={inputClass} />
+                    Impacto no cronograma (dias) <span className="text-red-500">*</span>
+                    <input name="scheduleImpactDays" type="number" defaultValue="0" placeholder="Dias de atraso" className={inputClass} required />
                   </label>
                   <label className={labelClass}>
-                    Impacto financeiro
-                    <input name="financialImpact" type="number" step="0.01" defaultValue="0" placeholder="Valor em R$" className={inputClass} />
+                    Impacto financeiro (R$) <span className="text-red-500">*</span>
+                    <input name="financialImpact" type="text" defaultValue="0" placeholder="R$ 0,00" className={inputClass} required
+                      onInput={(e) => {
+                        const input = e.currentTarget;
+                        let value = input.value.replace(/\D/g, "");
+                        if (value) {
+                          value = (parseInt(value) / 100).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                        }
+                        input.value = value ? `R$ ${value}` : "";
+                      }}
+                    />
                   </label>
                 </div>
                 <label className={labelClass}>
-                  Impacto no projeto
-                  <textarea name="impactDescription" rows={2} className={textareaClass} placeholder="Descreva o impacto" />
+                  Impacto no projeto <span className="text-red-500">*</span>
+                  <textarea name="impactDescription" rows={2} className={textareaClass} placeholder="Descreva o impacto" required />
                 </label>
                 <label className={labelClass}>
-                  Próxima ação
-                  <textarea name="nextAction" rows={2} className={textareaClass} placeholder="Próxima ação a ser tomada" />
+                  Próxima ação <span className="text-red-500">*</span>
+                  <textarea name="nextAction" rows={2} className={textareaClass} placeholder="Próxima ação a ser tomada" required />
                 </label>
               </div>
             </div>

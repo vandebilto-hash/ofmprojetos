@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { DialogAction } from "@/components/ui/dialog-action";
 import { FileUpload } from "@/components/ui/file-upload";
-import { PeopleMultiSelect } from "@/components/ui/people-multi-select";
+import { PeopleSelect } from "@/components/ui/people-select";
 import { PageHeader } from "@/components/ui/page-header";
 import { ProjectTabs } from "@/features/projects/project-tabs";
 import { formatDate } from "@/lib/format";
@@ -12,7 +12,7 @@ import { createMilestoneAction, deleteMilestoneAction, updateMilestoneAction } f
 const inputClass = "h-10 rounded-md border border-line bg-white px-3 text-sm text-ink outline-none transition-colors placeholder:text-slate-400 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white dark:placeholder-slate-500";
 const selectClass = "h-10 rounded-md border border-line bg-white px-3 text-sm text-ink outline-none transition-colors focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white";
 const textareaClass = "min-h-[80px] rounded-md border border-line bg-white px-3 py-2 text-sm text-ink outline-none transition-colors placeholder:text-slate-400 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white dark:placeholder-slate-500";
-const labelClass = "grid gap-1.5 text-sm font-medium text-slate-700 dark:text-slate-300";
+const labelClass = "mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300";
 const sectionTitle = "text-xs font-bold uppercase tracking-wide text-slate-500 dark:text-slate-400";
 
 function inputDate(value: Date | null) {
@@ -56,8 +56,8 @@ export default async function ProjectMilestonesPage({ params }: { params: { id: 
                   <input name="name" required className={inputClass} placeholder="Nome do marco" />
                 </label>
                 <label className={labelClass}>
-                  Tipo
-                  <select name="type" defaultValue="Entrega" className={selectClass}>
+                  Tipo <span className="text-red-500">*</span>
+                  <select name="type" defaultValue="Entrega" className={selectClass} required>
                     <option value="Entrega">Entrega</option>
                     <option value="Aprovação">Aprovação</option>
                     <option value="Reunião">Reunião</option>
@@ -85,8 +85,8 @@ export default async function ProjectMilestonesPage({ params }: { params: { id: 
                   <input name="actualDate" type="date" className={inputClass} />
                 </label>
                 <label className={labelClass}>
-                  Status
-                  <select name="status" defaultValue="PLANNED" className={selectClass}>
+                  Status <span className="text-red-500">*</span>
+                  <select name="status" defaultValue="PLANNED" className={selectClass} required>
                     <option value="PLANNED">Planejado</option>
                     <option value="IN_PROGRESS">Em andamento</option>
                     <option value="COMPLETED">Concluído</option>
@@ -99,7 +99,7 @@ export default async function ProjectMilestonesPage({ params }: { params: { id: 
             <div>
               <p className={sectionTitle}>Responsável e evidência</p>
               <div className="mt-2 grid grid-cols-2 gap-3">
-                <PeopleMultiSelect name="owner" label="Responsável" people={people} />
+                <PeopleSelect name="owner" label="Responsável" people={people} required />
                 <FileUpload name="evidenceUrl" label="Evidência" />
               </div>
             </div>
@@ -142,8 +142,8 @@ export default async function ProjectMilestonesPage({ params }: { params: { id: 
                           <input name="name" required defaultValue={milestone.name} className={inputClass} />
                         </label>
                         <label className={labelClass}>
-                          Tipo
-                          <select name="type" defaultValue={milestone.type ?? "Entrega"} className={selectClass}>
+                          Tipo <span className="text-red-500">*</span>
+                          <select name="type" defaultValue={milestone.type ?? "Entrega"} className={selectClass} required>
                             <option value="Entrega">Entrega</option>
                             <option value="Aprovação">Aprovação</option>
                             <option value="Reunião">Reunião</option>
@@ -171,8 +171,8 @@ export default async function ProjectMilestonesPage({ params }: { params: { id: 
                           <input name="actualDate" type="date" defaultValue={inputDate(milestone.actualDate)} className={inputClass} />
                         </label>
                         <label className={labelClass}>
-                          Status
-                          <select name="status" defaultValue={milestone.status} className={selectClass}>
+                          Status <span className="text-red-500">*</span>
+                          <select name="status" defaultValue={milestone.status} className={selectClass} required>
                             <option value="PLANNED">Planejado</option>
                             <option value="IN_PROGRESS">Em andamento</option>
                             <option value="COMPLETED">Concluído</option>
@@ -185,7 +185,7 @@ export default async function ProjectMilestonesPage({ params }: { params: { id: 
                     <div>
                       <p className={sectionTitle}>Responsável e evidência</p>
                       <div className="mt-2 grid grid-cols-2 gap-3">
-                        <PeopleMultiSelect name="owner" label="Responsável" people={people} defaultValue={milestone.owner ?? ""} />
+                        <PeopleSelect name="owner" label="Responsável" people={people} defaultValue={milestone.owner ?? ""} required />
                         <FileUpload name="evidenceUrl" label="Evidência" defaultValue={milestone.evidenceUrl ?? ""} />
                       </div>
                     </div>
