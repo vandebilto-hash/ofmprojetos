@@ -40,21 +40,21 @@ export default async function ProjectGovernancePage({ params }: { params: { id: 
               <div className="mt-2 grid grid-cols-2 gap-3">
                 <label className="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">
                   Nome <span className="text-red-500">*</span>
-                  <input name="name" required className="h-10 rounded-md border border-line bg-white px-3 text-sm text-ink outline-none transition-colors placeholder:text-slate-400 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white" placeholder="Nome da pessoa" />
+                  <input name="name" required className="h-10 w-full rounded-md border border-line bg-white px-3 text-sm text-ink outline-none transition-colors placeholder:text-slate-400 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white" placeholder="Nome da pessoa" />
                 </label>
                 <label className="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">
                   Empresa/Área <span className="text-red-500">*</span>
-                  <input name="company" required className="h-10 rounded-md border border-line bg-white px-3 text-sm text-ink outline-none transition-colors placeholder:text-slate-400 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white" placeholder="Empresa ou área" />
+                  <input name="company" required className="h-10 w-full rounded-md border border-line bg-white px-3 text-sm text-ink outline-none transition-colors placeholder:text-slate-400 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white" placeholder="Empresa ou área" />
                 </label>
               </div>
               <div className="mt-3 grid grid-cols-2 gap-3">
                 <label className="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">
                   Cargo <span className="text-red-500">*</span>
-                  <input name="jobTitle" required className="h-10 rounded-md border border-line bg-white px-3 text-sm text-ink outline-none transition-colors placeholder:text-slate-400 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white" placeholder="Cargo" />
+                  <input name="jobTitle" required className="h-10 w-full rounded-md border border-line bg-white px-3 text-sm text-ink outline-none transition-colors placeholder:text-slate-400 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white" placeholder="Cargo" />
                 </label>
                 <label className="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">
                   Papel no projeto <span className="text-red-500">*</span>
-                  <input name="projectRole" required className="h-10 rounded-md border border-line bg-white px-3 text-sm text-ink outline-none transition-colors placeholder:text-slate-400 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white" placeholder="Papel no projeto" />
+                  <input name="projectRole" required className="h-10 w-full rounded-md border border-line bg-white px-3 text-sm text-ink outline-none transition-colors placeholder:text-slate-400 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white" placeholder="Papel no projeto" />
                 </label>
               </div>
             </div>
@@ -64,7 +64,7 @@ export default async function ProjectGovernancePage({ params }: { params: { id: 
               <div className="mt-2 grid grid-cols-3 gap-3">
                 <label className="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">
                   Tipo <span className="text-red-500">*</span>
-                  <select name="type" defaultValue="CLIENT" className="h-10 rounded-md border border-line bg-white px-3 text-sm text-ink outline-none transition-colors focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white" required>
+                  <select name="type" defaultValue="CLIENT" className="h-10 w-full rounded-md border border-line bg-white px-3 text-sm text-ink outline-none transition-colors focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white" required>
                     <option value="INTERNAL">Interno</option>
                     <option value="CLIENT">Cliente</option>
                     <option value="PARTNER">Parceiro</option>
@@ -74,14 +74,14 @@ export default async function ProjectGovernancePage({ params }: { params: { id: 
                 </label>
                 <label className="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">
                   Influência <span className="text-red-500">*</span>
-                  <select name="influence" defaultValue="LOW" className="h-10 rounded-md border border-line bg-white px-3 text-sm text-ink outline-none transition-colors focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white" required>
+                  <select name="influence" defaultValue="LOW" className="h-10 w-full rounded-md border border-line bg-white px-3 text-sm text-ink outline-none transition-colors focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white" required>
                     <option value="LOW">Baixa</option>
                     <option value="HIGH">Alta</option>
                   </select>
                 </label>
                 <label className="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">
                   Interesse <span className="text-red-500">*</span>
-                  <select name="interest" defaultValue="LOW" className="h-10 rounded-md border border-line bg-white px-3 text-sm text-ink outline-none transition-colors focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white" required>
+                  <select name="interest" defaultValue="LOW" className="h-10 w-full rounded-md border border-line bg-white px-3 text-sm text-ink outline-none transition-colors focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white" required>
                     <option value="LOW">Baixo</option>
                     <option value="HIGH">Alto</option>
                   </select>
@@ -89,7 +89,7 @@ export default async function ProjectGovernancePage({ params }: { params: { id: 
               </div>
               <label className="mb-1.5 mt-3 block text-sm font-medium text-slate-700 dark:text-slate-300">
                 Classificação de comunicação <span className="text-red-500">*</span>
-                <select name="classification" defaultValue="Manter informado" className="h-10 rounded-md border border-line bg-white px-3 text-sm text-ink outline-none transition-colors focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white" required>
+                <select name="classification" defaultValue="Manter informado" className="h-10 w-full rounded-md border border-line bg-white px-3 text-sm text-ink outline-none transition-colors focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white" required>
                   <option value="Gerenciar de perto">Gerenciar de perto</option>
                   <option value="Manter satisfeito">Manter satisfeito</option>
                   <option value="Manter informado">Manter informado</option>
@@ -103,16 +103,16 @@ export default async function ProjectGovernancePage({ params }: { params: { id: 
               <div className="mt-2 grid grid-cols-2 gap-3">
                 <label className="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">
                   E-mail
-                  <input name="email" type="email" className="h-10 rounded-md border border-line bg-white px-3 text-sm text-ink outline-none transition-colors placeholder:text-slate-400 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white" placeholder="email@exemplo.com" />
+                  <input name="email" type="email" className="h-10 w-full rounded-md border border-line bg-white px-3 text-sm text-ink outline-none transition-colors placeholder:text-slate-400 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white" placeholder="email@exemplo.com" />
                 </label>
                 <label className="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">
                   Telefone
-                  <input name="phone" className="h-10 rounded-md border border-line bg-white px-3 text-sm text-ink outline-none transition-colors placeholder:text-slate-400 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white" placeholder="(00) 00000-0000" />
+                  <input name="phone" className="h-10 w-full rounded-md border border-line bg-white px-3 text-sm text-ink outline-none transition-colors placeholder:text-slate-400 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white" placeholder="(00) 00000-0000" />
                 </label>
               </div>
               <label className="mb-1.5 mt-3 block text-sm font-medium text-slate-700 dark:text-slate-300">
                 Observações
-                <textarea name="notes" rows={3} className="min-h-[80px] rounded-md border border-line bg-white px-3 py-2 text-sm text-ink outline-none transition-colors placeholder:text-slate-400 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white" placeholder="Notas adicionais" />
+                <textarea name="notes" rows={3} className="min-h-[80px] w-full rounded-md border border-line bg-white px-3 py-2 text-sm text-ink outline-none transition-colors placeholder:text-slate-400 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white" placeholder="Notas adicionais" />
               </label>
             </div>
 
@@ -172,21 +172,21 @@ export default async function ProjectGovernancePage({ params }: { params: { id: 
                         <div className="mt-2 grid grid-cols-2 gap-3">
                           <label className="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">
                             Nome <span className="text-red-500">*</span>
-                            <input name="name" required defaultValue={item.name} className="h-10 rounded-md border border-line bg-white px-3 text-sm text-ink outline-none transition-colors focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white" />
+                            <input name="name" required defaultValue={item.name} className="h-10 w-full rounded-md border border-line bg-white px-3 text-sm text-ink outline-none transition-colors focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white" />
                           </label>
                           <label className="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">
                             Empresa/Área <span className="text-red-500">*</span>
-                            <input name="company" required defaultValue={item.company ?? ""} className="h-10 rounded-md border border-line bg-white px-3 text-sm text-ink outline-none transition-colors focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white" />
+                            <input name="company" required defaultValue={item.company ?? ""} className="h-10 w-full rounded-md border border-line bg-white px-3 text-sm text-ink outline-none transition-colors focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white" />
                           </label>
                         </div>
                         <div className="mt-3 grid grid-cols-2 gap-3">
                           <label className="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">
                             Cargo <span className="text-red-500">*</span>
-                            <input name="jobTitle" required defaultValue={item.jobTitle ?? ""} className="h-10 rounded-md border border-line bg-white px-3 text-sm text-ink outline-none transition-colors focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white" />
+                            <input name="jobTitle" required defaultValue={item.jobTitle ?? ""} className="h-10 w-full rounded-md border border-line bg-white px-3 text-sm text-ink outline-none transition-colors focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white" />
                           </label>
                           <label className="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">
                             Papel no projeto <span className="text-red-500">*</span>
-                            <input name="projectRole" required defaultValue={item.projectRole ?? ""} className="h-10 rounded-md border border-line bg-white px-3 text-sm text-ink outline-none transition-colors focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white" />
+                            <input name="projectRole" required defaultValue={item.projectRole ?? ""} className="h-10 w-full rounded-md border border-line bg-white px-3 text-sm text-ink outline-none transition-colors focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white" />
                           </label>
                         </div>
                       </div>
@@ -196,7 +196,7 @@ export default async function ProjectGovernancePage({ params }: { params: { id: 
                         <div className="mt-2 grid grid-cols-3 gap-3">
                           <label className="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">
                             Tipo <span className="text-red-500">*</span>
-                            <select name="type" defaultValue={item.type} className="h-10 rounded-md border border-line bg-white px-3 text-sm text-ink outline-none transition-colors focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white" required>
+                            <select name="type" defaultValue={item.type} className="h-10 w-full rounded-md border border-line bg-white px-3 text-sm text-ink outline-none transition-colors focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white" required>
                               <option value="INTERNAL">Interno</option>
                               <option value="CLIENT">Cliente</option>
                               <option value="PARTNER">Parceiro</option>
@@ -206,14 +206,14 @@ export default async function ProjectGovernancePage({ params }: { params: { id: 
                           </label>
                           <label className="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">
                             Influência <span className="text-red-500">*</span>
-                            <select name="influence" defaultValue={item.influence} className="h-10 rounded-md border border-line bg-white px-3 text-sm text-ink outline-none transition-colors focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white" required>
+                            <select name="influence" defaultValue={item.influence} className="h-10 w-full rounded-md border border-line bg-white px-3 text-sm text-ink outline-none transition-colors focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white" required>
                               <option value="LOW">Baixa</option>
                               <option value="HIGH">Alta</option>
                             </select>
                           </label>
                           <label className="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">
                             Interesse <span className="text-red-500">*</span>
-                            <select name="interest" defaultValue={item.interest} className="h-10 rounded-md border border-line bg-white px-3 text-sm text-ink outline-none transition-colors focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white" required>
+                            <select name="interest" defaultValue={item.interest} className="h-10 w-full rounded-md border border-line bg-white px-3 text-sm text-ink outline-none transition-colors focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white" required>
                               <option value="LOW">Baixo</option>
                               <option value="HIGH">Alto</option>
                             </select>
@@ -221,7 +221,7 @@ export default async function ProjectGovernancePage({ params }: { params: { id: 
                         </div>
                         <label className="mb-1.5 mt-3 block text-sm font-medium text-slate-700 dark:text-slate-300">
                           Classificação de comunicação <span className="text-red-500">*</span>
-                          <select name="classification" defaultValue={item.classification ?? "Manter informado"} className="h-10 rounded-md border border-line bg-white px-3 text-sm text-ink outline-none transition-colors focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white" required>
+                          <select name="classification" defaultValue={item.classification ?? "Manter informado"} className="h-10 w-full rounded-md border border-line bg-white px-3 text-sm text-ink outline-none transition-colors focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white" required>
                             <option value="Gerenciar de perto">Gerenciar de perto</option>
                             <option value="Manter satisfeito">Manter satisfeito</option>
                             <option value="Manter informado">Manter informado</option>
@@ -235,16 +235,16 @@ export default async function ProjectGovernancePage({ params }: { params: { id: 
                         <div className="mt-2 grid grid-cols-2 gap-3">
                           <label className="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">
                             E-mail
-                            <input name="email" type="email" defaultValue={item.email ?? ""} className="h-10 rounded-md border border-line bg-white px-3 text-sm text-ink outline-none transition-colors focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white" />
+                            <input name="email" type="email" defaultValue={item.email ?? ""} className="h-10 w-full rounded-md border border-line bg-white px-3 text-sm text-ink outline-none transition-colors focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white" />
                           </label>
                           <label className="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">
                             Telefone
-                            <input name="phone" defaultValue={item.phone ?? ""} className="h-10 rounded-md border border-line bg-white px-3 text-sm text-ink outline-none transition-colors focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white" />
+                            <input name="phone" defaultValue={item.phone ?? ""} className="h-10 w-full rounded-md border border-line bg-white px-3 text-sm text-ink outline-none transition-colors focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white" />
                           </label>
                         </div>
                         <label className="mb-1.5 mt-3 block text-sm font-medium text-slate-700 dark:text-slate-300">
                           Observações
-                          <textarea name="notes" defaultValue={item.notes ?? ""} rows={3} className="min-h-[80px] rounded-md border border-line bg-white px-3 py-2 text-sm text-ink outline-none transition-colors focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white" />
+                          <textarea name="notes" defaultValue={item.notes ?? ""} rows={3} className="min-h-[80px] w-full rounded-md border border-line bg-white px-3 py-2 text-sm text-ink outline-none transition-colors focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white" />
                         </label>
                       </div>
 

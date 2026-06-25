@@ -41,7 +41,7 @@ export function FileUpload({ name, defaultValue, label = "Arquivo", required = f
   }
 
   return (
-    <div className="grid gap-1.5 text-sm font-medium">
+    <div className="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">
       <span>{label}</span>
       <input type="hidden" name={name} value={value} required={required} />
       <div className="rounded-lg border border-dashed border-line bg-slate-50 p-3">

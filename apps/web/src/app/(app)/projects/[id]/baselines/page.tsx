@@ -23,15 +23,15 @@ export default async function ProjectBaselinesPage({ params }: { params: { id: s
             <input type="hidden" name="projectId" value={project.id} />
             <label className="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">
               Nome <span className="text-red-500">*</span>
-              <input name="name" required placeholder="Nome da baseline" className="h-10 rounded-md border border-line bg-white px-3 text-sm text-ink outline-none transition-colors placeholder:text-slate-400 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white" />
+              <input name="name" required placeholder="Nome da baseline" className="h-10 w-full rounded-md border border-line bg-white px-3 text-sm text-ink outline-none transition-colors placeholder:text-slate-400 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white" />
             </label>
             <label className="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">
               Descrição <span className="text-red-500">*</span>
-              <input name="description" required placeholder="Descrição" className="h-10 rounded-md border border-line bg-white px-3 text-sm text-ink outline-none transition-colors placeholder:text-slate-400 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white" />
+              <input name="description" required placeholder="Descrição" className="h-10 w-full rounded-md border border-line bg-white px-3 text-sm text-ink outline-none transition-colors placeholder:text-slate-400 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white" />
             </label>
             <label className="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">
               Motivo <span className="text-red-500">*</span>
-              <textarea name="reason" placeholder="Justificativa obrigatória para criação da baseline" rows={3} required className="min-h-[80px] rounded-md border border-line bg-white px-3 py-2 text-sm text-ink outline-none transition-colors placeholder:text-slate-400 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white" />
+              <textarea name="reason" placeholder="Justificativa obrigatória para criação da baseline" rows={3} required className="min-h-[80px] w-full rounded-md border border-line bg-white px-3 py-2 text-sm text-ink outline-none transition-colors placeholder:text-slate-400 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white" />
             </label>
             <button className="w-fit inline-flex h-10 items-center justify-center gap-2 rounded-md bg-brand-600 px-5 text-sm font-semibold text-white transition-colors hover:bg-brand-700">Criar baseline</button>
           </form>
@@ -52,11 +52,11 @@ export default async function ProjectBaselinesPage({ params }: { params: { id: s
                     <input type="hidden" name="projectId" value={project.id} />
                     <label className="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">
                       Nome <span className="text-red-500">*</span>
-                      <input name="name" required defaultValue={baseline.name} className="h-10 rounded-md border border-line bg-white px-3 text-sm text-ink outline-none transition-colors focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white" />
+                      <input name="name" required defaultValue={baseline.name} className="h-10 w-full rounded-md border border-line bg-white px-3 text-sm text-ink outline-none transition-colors focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white" />
                     </label>
                     <label className="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">
                       Descrição e motivo
-                      <textarea name="description" defaultValue={baseline.description ?? ""} rows={5} className="min-h-[80px] rounded-md border border-line bg-white px-3 py-2 text-sm text-ink outline-none transition-colors focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white" />
+                      <textarea name="description" defaultValue={baseline.description ?? ""} rows={5} className="min-h-[80px] w-full rounded-md border border-line bg-white px-3 py-2 text-sm text-ink outline-none transition-colors focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white" />
                     </label>
                     <label className="flex h-10 items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-300">
                       <input name="isActive" type="checkbox" defaultChecked={baseline.isActive} value="true" className="h-4 w-4 rounded border-slate-300 text-brand-600 focus:ring-brand-500" />

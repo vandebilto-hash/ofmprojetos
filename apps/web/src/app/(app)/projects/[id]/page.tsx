@@ -34,19 +34,19 @@ export default async function ProjectDetailPage({ params }: { params: { id: stri
           <div className="mt-4 grid gap-4">
             <label className="grid gap-1.5 text-sm font-medium text-slate-700 dark:text-slate-300">
               Missão do projeto
-              <textarea name="mission" defaultValue={project.home?.mission ?? ""} rows={3} className="min-h-[80px] rounded-md border border-line bg-white px-3 py-2 text-sm text-ink outline-none transition-colors placeholder:text-slate-400 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white dark:placeholder-slate-500" placeholder="Descreva a missão do projeto" />
+              <textarea name="mission" defaultValue={project.home?.mission ?? ""} rows={3} className="min-h-[80px] w-full rounded-md border border-line bg-white px-3 py-2 text-sm text-ink outline-none transition-colors placeholder:text-slate-400 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white dark:placeholder-slate-500" placeholder="Descreva a missão do projeto" />
             </label>
             <label className="grid gap-1.5 text-sm font-medium text-slate-700 dark:text-slate-300">
               Sobre o cliente
-              <textarea name="clientOverview" defaultValue={project.home?.clientOverview ?? ""} rows={3} className="min-h-[80px] rounded-md border border-line bg-white px-3 py-2 text-sm text-ink outline-none transition-colors placeholder:text-slate-400 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white dark:placeholder-slate-500" placeholder="Informações sobre o cliente" />
+              <textarea name="clientOverview" defaultValue={project.home?.clientOverview ?? ""} rows={3} className="min-h-[80px] w-full rounded-md border border-line bg-white px-3 py-2 text-sm text-ink outline-none transition-colors placeholder:text-slate-400 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white dark:placeholder-slate-500" placeholder="Informações sobre o cliente" />
             </label>
             <label className="grid gap-1.5 text-sm font-medium text-slate-700 dark:text-slate-300">
               Proposta
-              <textarea name="proposal" defaultValue={project.home?.proposal ?? ""} rows={3} className="min-h-[80px] rounded-md border border-line bg-white px-3 py-2 text-sm text-ink outline-none transition-colors placeholder:text-slate-400 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white dark:placeholder-slate-500" placeholder="Proposta do projeto" />
+              <textarea name="proposal" defaultValue={project.home?.proposal ?? ""} rows={3} className="min-h-[80px] w-full rounded-md border border-line bg-white px-3 py-2 text-sm text-ink outline-none transition-colors placeholder:text-slate-400 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white dark:placeholder-slate-500" placeholder="Proposta do projeto" />
             </label>
             <label className="grid gap-1.5 text-sm font-medium text-slate-700 dark:text-slate-300">
               Escopo
-              <textarea name="scope" defaultValue={project.home?.scope ?? ""} rows={3} className="min-h-[80px] rounded-md border border-line bg-white px-3 py-2 text-sm text-ink outline-none transition-colors placeholder:text-slate-400 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white dark:placeholder-slate-500" placeholder="Escopo do projeto" />
+              <textarea name="scope" defaultValue={project.home?.scope ?? ""} rows={3} className="min-h-[80px] w-full rounded-md border border-line bg-white px-3 py-2 text-sm text-ink outline-none transition-colors placeholder:text-slate-400 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white dark:placeholder-slate-500" placeholder="Escopo do projeto" />
             </label>
           </div>
           <div className="mt-5 flex justify-end border-t border-line pt-4 dark:border-slate-700">
@@ -63,22 +63,22 @@ export default async function ProjectDetailPage({ params }: { params: { id: stri
                 <input type="hidden" name="projectId" value={project.id} />
                 <label className="grid gap-1.5 text-sm font-medium text-slate-700 dark:text-slate-300">
                   Nome <span className="text-red-500">*</span>
-                  <input name="name" required className="h-10 rounded-md border border-line bg-white px-3 text-sm text-ink outline-none transition-colors placeholder:text-slate-400 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white" placeholder="Nome do parceiro" />
+                  <input name="name" required className="h-10 w-full rounded-md border border-line bg-white px-3 text-sm text-ink outline-none transition-colors placeholder:text-slate-400 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white" placeholder="Nome do parceiro" />
                 </label>
                 <label className="grid gap-1.5 text-sm font-medium text-slate-700 dark:text-slate-300">
                   Tipo
-                  <select name="type" defaultValue="TECHNICAL_PARTNER" className="h-10 rounded-md border border-line bg-white px-3 text-sm text-ink outline-none transition-colors focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white">
+                  <select name="type" defaultValue="TECHNICAL_PARTNER" className="h-10 w-full rounded-md border border-line bg-white px-3 text-sm text-ink outline-none transition-colors focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white">
                     <option value="TECHNICAL_PARTNER">Parceiro Técnico</option>
                     <option value="CLIENT">Cliente</option>
                   </select>
                 </label>
                 <label className="grid gap-1.5 text-sm font-medium text-slate-700 dark:text-slate-300">
                   Descrição
-                  <textarea name="description" rows={3} className="min-h-[80px] rounded-md border border-line bg-white px-3 py-2 text-sm text-ink outline-none transition-colors placeholder:text-slate-400 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white dark:placeholder-slate-500" placeholder="Descrição do parceiro" />
+                  <textarea name="description" rows={3} className="min-h-[80px] w-full rounded-md border border-line bg-white px-3 py-2 text-sm text-ink outline-none transition-colors placeholder:text-slate-400 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white dark:placeholder-slate-500" placeholder="Descrição do parceiro" />
                 </label>
                 <label className="grid gap-1.5 text-sm font-medium text-slate-700 dark:text-slate-300">
                   Website
-                  <input name="website" className="h-10 rounded-md border border-line bg-white px-3 text-sm text-ink outline-none transition-colors placeholder:text-slate-400 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white" placeholder="https://exemplo.com" />
+                  <input name="website" className="h-10 w-full rounded-md border border-line bg-white px-3 text-sm text-ink outline-none transition-colors placeholder:text-slate-400 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white" placeholder="https://exemplo.com" />
                 </label>
                 <ImageUpload name="logoUrl" label="Logo do parceiro" />
                 <div className="flex justify-end border-t border-line pt-3 dark:border-slate-700">
@@ -113,22 +113,22 @@ export default async function ProjectDetailPage({ params }: { params: { id: stri
                       <input type="hidden" name="projectId" value={project.id} />
                       <label className="grid gap-1.5 text-sm font-medium text-slate-700 dark:text-slate-300">
                         Nome <span className="text-red-500">*</span>
-                        <input name="name" required defaultValue={partner.name} className="h-10 rounded-md border border-line bg-white px-3 text-sm text-ink outline-none transition-colors focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white" />
+                        <input name="name" required defaultValue={partner.name} className="h-10 w-full rounded-md border border-line bg-white px-3 text-sm text-ink outline-none transition-colors focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white" />
                       </label>
                       <label className="grid gap-1.5 text-sm font-medium text-slate-700 dark:text-slate-300">
                         Tipo
-                        <select name="type" defaultValue={partner.type} className="h-10 rounded-md border border-line bg-white px-3 text-sm text-ink outline-none transition-colors focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white">
+                        <select name="type" defaultValue={partner.type} className="h-10 w-full rounded-md border border-line bg-white px-3 text-sm text-ink outline-none transition-colors focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white">
                           <option value="TECHNICAL_PARTNER">Parceiro Técnico</option>
                           <option value="CLIENT">Cliente</option>
                         </select>
                       </label>
                       <label className="grid gap-1.5 text-sm font-medium text-slate-700 dark:text-slate-300">
                         Descrição
-                        <textarea name="description" defaultValue={partner.description ?? ""} rows={3} className="min-h-[80px] rounded-md border border-line bg-white px-3 py-2 text-sm text-ink outline-none transition-colors focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white" />
+                        <textarea name="description" defaultValue={partner.description ?? ""} rows={3} className="min-h-[80px] w-full rounded-md border border-line bg-white px-3 py-2 text-sm text-ink outline-none transition-colors focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white" />
                       </label>
                       <label className="grid gap-1.5 text-sm font-medium text-slate-700 dark:text-slate-300">
                         Website
-                        <input name="website" defaultValue={partner.website ?? ""} className="h-10 rounded-md border border-line bg-white px-3 text-sm text-ink outline-none transition-colors focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white" />
+                        <input name="website" defaultValue={partner.website ?? ""} className="h-10 w-full rounded-md border border-line bg-white px-3 text-sm text-ink outline-none transition-colors focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white" />
                       </label>
                       <ImageUpload name="logoUrl" defaultValue={partner.logoUrl} label="Logo do parceiro" />
                       <div className="flex justify-end border-t border-line pt-3 dark:border-slate-700">

@@ -23,7 +23,7 @@ function parsePeople(value?: string | null) {
   );
 }
 
-const inputClass = "h-10 rounded-md border border-line bg-white px-3 text-sm text-ink outline-none transition-colors placeholder:text-slate-400 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white dark:placeholder-slate-500";
+const inputClass = "h-10 w-full rounded-md border border-line bg-white px-3 text-sm text-ink outline-none transition-colors placeholder:text-slate-400 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white dark:placeholder-slate-500";
 
 export function PeopleMultiSelect({ name, label, people, defaultValue, placeholder = "Digite e selecione", required }: PeopleMultiSelectProps) {
   const initialValue = useMemo(() => parsePeople(defaultValue), [defaultValue]);

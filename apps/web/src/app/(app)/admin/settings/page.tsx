@@ -17,7 +17,7 @@ export default async function SettingsPage() {
             <input
               name="companyName"
               defaultValue={String(values.companyName ?? "Projete-se")}
-              className="h-10 rounded-md border border-line bg-white px-3 text-sm text-ink outline-none transition-colors placeholder:text-slate-400 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white"
+              className="h-10 w-full rounded-md border border-line bg-white px-3 text-sm text-ink outline-none transition-colors placeholder:text-slate-400 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white"
             />
           </label>
           <label className="grid gap-1.5 text-sm font-medium text-slate-700 dark:text-slate-300">
@@ -28,7 +28,7 @@ export default async function SettingsPage() {
               min="1"
               max="168"
               defaultValue={String(values.defaultWeeklyCapacityHours ?? 40)}
-              className="h-10 rounded-md border border-line bg-white px-3 text-sm text-ink outline-none transition-colors placeholder:text-slate-400 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white"
+              className="h-10 w-full rounded-md border border-line bg-white px-3 text-sm text-ink outline-none transition-colors placeholder:text-slate-400 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white"
             />
           </label>
           <label className="grid gap-1.5 text-sm font-medium text-slate-700 dark:text-slate-300">
@@ -39,7 +39,7 @@ export default async function SettingsPage() {
               min="1"
               max="24"
               defaultValue={String(values.defaultDailyCapacityHours ?? 8)}
-              className="h-10 rounded-md border border-line bg-white px-3 text-sm text-ink outline-none transition-colors placeholder:text-slate-400 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white"
+              className="h-10 w-full rounded-md border border-line bg-white px-3 text-sm text-ink outline-none transition-colors placeholder:text-slate-400 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white"
             />
           </label>
           <label className="grid gap-1.5 text-sm font-medium text-slate-700 dark:text-slate-300">
@@ -48,7 +48,7 @@ export default async function SettingsPage() {
               name="defaultCurrency"
               maxLength={3}
               defaultValue={String(values.defaultCurrency ?? "BRL")}
-              className="h-10 rounded-md border border-line bg-white px-3 text-sm text-ink uppercase outline-none transition-colors placeholder:text-slate-400 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white"
+              className="h-10 w-full rounded-md border border-line bg-white px-3 text-sm text-ink uppercase outline-none transition-colors placeholder:text-slate-400 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white"
             />
           </label>
           <label className="flex items-center gap-3 rounded-md border border-line px-4 py-3 text-sm font-medium text-slate-700 dark:border-slate-700 dark:text-slate-300">

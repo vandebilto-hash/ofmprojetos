@@ -81,24 +81,24 @@ export function ResourceMatrix({ users }: { users: User[] }) {
                           <input type="hidden" name="userId" value={user.id} />
                           <label className="grid gap-1.5 text-sm font-medium text-slate-700 dark:text-slate-300">
                             Nome <span className="text-red-500">*</span>
-                            <input name="name" required defaultValue={user.name} className="h-10 rounded-md border border-line bg-white px-3 text-sm text-ink outline-none transition-colors placeholder:text-slate-400 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white" />
+                            <input name="name" required defaultValue={user.name} className="h-10 w-full rounded-md border border-line bg-white px-3 text-sm text-ink outline-none transition-colors placeholder:text-slate-400 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white" />
                           </label>
                           <label className="grid gap-1.5 text-sm font-medium text-slate-700 dark:text-slate-300">
                             Cargo
-                            <input name="jobTitle" defaultValue={user.jobTitle ?? ""} className="h-10 rounded-md border border-line bg-white px-3 text-sm text-ink outline-none transition-colors placeholder:text-slate-400 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white" placeholder="Cargo" />
+                            <input name="jobTitle" defaultValue={user.jobTitle ?? ""} className="h-10 w-full rounded-md border border-line bg-white px-3 text-sm text-ink outline-none transition-colors placeholder:text-slate-400 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white" placeholder="Cargo" />
                           </label>
                           <div className="grid grid-cols-3 gap-3">
                             <label className="grid gap-1.5 text-sm font-medium text-slate-700 dark:text-slate-300">
                               Capacidade semanal
-                              <input name="weeklyCapacityHours" type="number" step="0.01" defaultValue={Number(user.weeklyCapacityHours)} className="h-10 rounded-md border border-line bg-white px-3 text-sm text-ink outline-none transition-colors focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white" />
+                              <input name="weeklyCapacityHours" type="number" step="0.01" defaultValue={Number(user.weeklyCapacityHours)} className="h-10 w-full rounded-md border border-line bg-white px-3 text-sm text-ink outline-none transition-colors focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white" />
                             </label>
                             <label className="grid gap-1.5 text-sm font-medium text-slate-700 dark:text-slate-300">
                               Capacidade diária
-                              <input name="dailyCapacityHours" type="number" step="0.01" defaultValue={Number(user.dailyCapacityHours)} className="h-10 rounded-md border border-line bg-white px-3 text-sm text-ink outline-none transition-colors focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white" />
+                              <input name="dailyCapacityHours" type="number" step="0.01" defaultValue={Number(user.dailyCapacityHours)} className="h-10 w-full rounded-md border border-line bg-white px-3 text-sm text-ink outline-none transition-colors focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white" />
                             </label>
                             <label className="grid gap-1.5 text-sm font-medium text-slate-700 dark:text-slate-300">
                               Taxa por hora
-                              <input name="hourlyRate" type="number" step="0.01" defaultValue={hourlyRate} className="h-10 rounded-md border border-line bg-white px-3 text-sm text-ink outline-none transition-colors focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white" />
+                              <input name="hourlyRate" type="number" step="0.01" defaultValue={hourlyRate} className="h-10 w-full rounded-md border border-line bg-white px-3 text-sm text-ink outline-none transition-colors focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white" />
                             </label>
                           </div>
                           <div className="flex justify-end border-t border-line pt-3 dark:border-slate-700">

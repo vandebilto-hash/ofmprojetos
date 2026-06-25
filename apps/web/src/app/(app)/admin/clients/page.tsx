@@ -18,31 +18,31 @@ export default async function AdminClientsPage() {
               <div className="mt-2 grid gap-3">
                 <label className="grid gap-1.5 text-sm font-medium text-slate-700 dark:text-slate-300">
                   Nome do cliente <span className="text-red-500">*</span>
-                  <input name="name" required className="h-10 rounded-md border border-line bg-white px-3 text-sm text-ink outline-none transition-colors placeholder:text-slate-400 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white" placeholder="Nome do cliente" />
+                  <input name="name" required className="h-10 w-full rounded-md border border-line bg-white px-3 text-sm text-ink outline-none transition-colors placeholder:text-slate-400 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white" placeholder="Nome do cliente" />
                 </label>
                 <div className="grid grid-cols-2 gap-3">
                   <label className="grid gap-1.5 text-sm font-medium text-slate-700 dark:text-slate-300">
                     CNPJ/Identificador
-                    <input name="identifier" className="h-10 rounded-md border border-line bg-white px-3 text-sm text-ink outline-none transition-colors placeholder:text-slate-400 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white" placeholder="00.000.000/0001-00" />
+                    <input name="identifier" className="h-10 w-full rounded-md border border-line bg-white px-3 text-sm text-ink outline-none transition-colors placeholder:text-slate-400 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white" placeholder="00.000.000/0001-00" />
                   </label>
                   <label className="grid gap-1.5 text-sm font-medium text-slate-700 dark:text-slate-300">
                     Responsável principal
-                    <input name="mainContact" className="h-10 rounded-md border border-line bg-white px-3 text-sm text-ink outline-none transition-colors placeholder:text-slate-400 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white" placeholder="Nome do responsável" />
+                    <input name="mainContact" className="h-10 w-full rounded-md border border-line bg-white px-3 text-sm text-ink outline-none transition-colors placeholder:text-slate-400 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white" placeholder="Nome do responsável" />
                   </label>
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <label className="grid gap-1.5 text-sm font-medium text-slate-700 dark:text-slate-300">
                     E-mail
-                    <input name="email" type="email" className="h-10 rounded-md border border-line bg-white px-3 text-sm text-ink outline-none transition-colors placeholder:text-slate-400 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white" placeholder="email@exemplo.com" />
+                    <input name="email" type="email" className="h-10 w-full rounded-md border border-line bg-white px-3 text-sm text-ink outline-none transition-colors placeholder:text-slate-400 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white" placeholder="email@exemplo.com" />
                   </label>
                   <label className="grid gap-1.5 text-sm font-medium text-slate-700 dark:text-slate-300">
                     Telefone
-                    <input name="phone" className="h-10 rounded-md border border-line bg-white px-3 text-sm text-ink outline-none transition-colors placeholder:text-slate-400 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white" placeholder="(00) 00000-0000" />
+                    <input name="phone" className="h-10 w-full rounded-md border border-line bg-white px-3 text-sm text-ink outline-none transition-colors placeholder:text-slate-400 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white" placeholder="(00) 00000-0000" />
                   </label>
                 </div>
                 <label className="grid gap-1.5 text-sm font-medium text-slate-700 dark:text-slate-300">
                   Observações
-                  <textarea name="notes" rows={3} className="min-h-[80px] rounded-md border border-line bg-white px-3 py-2 text-sm text-ink outline-none transition-colors placeholder:text-slate-400 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white" placeholder="Notas adicionais" />
+                  <textarea name="notes" rows={3} className="min-h-[80px] w-full rounded-md border border-line bg-white px-3 py-2 text-sm text-ink outline-none transition-colors placeholder:text-slate-400 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white" placeholder="Notas adicionais" />
                 </label>
               </div>
             </div>
