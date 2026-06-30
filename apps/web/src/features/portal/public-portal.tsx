@@ -413,6 +413,22 @@ function HomeModule({ project }: { project: any }) {
       title="Contexto executivo do projeto"
       description={project.home?.mission ?? project.description ?? "Missão do projeto não cadastrada."}
     >
+      <div className="mb-5 overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-[0_1px_3px_rgba(0,0,0,.04)]">
+        <div className="flex flex-col gap-5 bg-gradient-to-br from-slate-950 via-blue-950 to-blue-700 p-5 text-white sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-white/55">Cliente</p>
+            <h2 className="mt-2 text-2xl font-black leading-tight">{project.client.name}</h2>
+            <p className="mt-1 text-sm font-semibold text-white/65">Identidade visual do projeto</p>
+          </div>
+          <div className="flex h-24 w-40 items-center justify-center rounded-2xl border border-white/15 bg-white p-4 shadow-xl">
+            {project.home?.clientLogoUrl ? (
+              <img src={project.home.clientLogoUrl} alt={`Logo ${project.client.name}`} className="max-h-full max-w-full object-contain" />
+            ) : (
+              <span className="text-3xl font-black text-blue-700">{project.client.name.slice(0, 2).toUpperCase()}</span>
+            )}
+          </div>
+        </div>
+      </div>
       <div className="grid gap-5 lg:grid-cols-[1.1fr_0.9fr]">
         <Panel title="Proposta e escopo">
           <div className="grid gap-4">

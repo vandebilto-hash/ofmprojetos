@@ -32,6 +32,22 @@ export default async function ProjectDetailPage({ params }: { params: { id: stri
           <input type="hidden" name="projectId" value={project.id} />
           <h2 className="text-lg font-bold text-ink">Configurar Home do projeto</h2>
           <div className="mt-4 grid gap-4">
+            <div className="rounded-xl border border-line bg-slate-50 p-4 dark:border-slate-700 dark:bg-[#0f172a]">
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <p className="text-xs font-bold uppercase tracking-wide text-slate-500 dark:text-slate-400">Identidade do cliente</p>
+                  <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">Suba a logo para destacar o cliente na Home e no portal.</p>
+                </div>
+                {project.home?.clientLogoUrl ? (
+                  <div className="flex h-20 w-32 items-center justify-center rounded-lg border border-line bg-white p-3 dark:border-slate-700 dark:bg-slate-950">
+                    <img src={project.home.clientLogoUrl} alt={`Logo ${project.client.name}`} className="max-h-full max-w-full object-contain" />
+                  </div>
+                ) : null}
+              </div>
+              <div className="mt-4">
+                <ImageUpload name="clientLogoUrl" defaultValue={project.home?.clientLogoUrl} label="Logo do cliente" />
+              </div>
+            </div>
             <label className="grid gap-1.5 text-sm font-medium text-slate-700 dark:text-slate-300">
               Missão do projeto
               <textarea name="mission" defaultValue={project.home?.mission ?? ""} rows={3} className="min-h-[80px] w-full rounded-md border border-line bg-white px-3 py-2 text-sm text-ink outline-none transition-colors placeholder:text-slate-400 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white dark:placeholder-slate-500" placeholder="Descreva a missão do projeto" />
@@ -55,6 +71,25 @@ export default async function ProjectDetailPage({ params }: { params: { id: stri
             </button>
           </div>
         </form>
+        <div className="grid gap-4">
+        <div className="overflow-hidden rounded-lg border border-line bg-white shadow-soft dark:border-slate-700 dark:bg-[#111c31]">
+          <div className="bg-gradient-to-br from-slate-950 via-brand-900 to-brand-700 p-5 text-white">
+            <p className="text-xs font-bold uppercase tracking-[0.18em] text-white/60">Cliente</p>
+            <div className="mt-4 flex items-center gap-4">
+              <div className="flex h-20 w-28 shrink-0 items-center justify-center rounded-xl border border-white/15 bg-white p-3 shadow-lg">
+                {project.home?.clientLogoUrl ? (
+                  <img src={project.home.clientLogoUrl} alt={`Logo ${project.client.name}`} className="max-h-full max-w-full object-contain" />
+                ) : (
+                  <span className="text-2xl font-black text-brand-700">{project.client.name.slice(0, 2).toUpperCase()}</span>
+                )}
+              </div>
+              <div>
+                <h2 className="text-xl font-black leading-tight">{project.client.name}</h2>
+                <p className="mt-1 text-sm text-white/70">Identidade visual exibida na Home e no portal do cliente.</p>
+              </div>
+            </div>
+          </div>
+        </div>
         <div className="rounded-lg border border-line bg-white p-5 shadow-soft">
           <div className="flex items-center justify-between gap-3">
             <h2 className="text-lg font-bold text-ink">Parceiros</h2>
@@ -150,6 +185,7 @@ export default async function ProjectDetailPage({ params }: { params: { id: stri
             ))}
             {!project.partners.length ? <p className="text-sm text-slate-500">Nenhum parceiro cadastrado.</p> : null}
           </div>
+        </div>
         </div>
       </section>
     </>

@@ -432,6 +432,7 @@ model ClientAccessLog {
 model ProjectHome {
   id             String   @id @default(cuid())
   projectId      String   @unique
+  clientLogoUrl  String?
   mission        String?
   clientOverview String?
   proposal       String?

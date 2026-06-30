@@ -151,6 +151,7 @@ const projectActionSchema = z.object({
 
 const projectHomeSchema = z.object({
   projectId: z.string().min(1),
+  clientLogoUrl: z.string().optional(),
   mission: z.string().optional(),
   clientOverview: z.string().optional(),
   proposal: z.string().optional(),
@@ -532,6 +533,7 @@ export async function updateProjectHomeAction(formData: FormData) {
   const home = await prisma.projectHome.upsert({
     where: { projectId: data.projectId },
     update: {
+      clientLogoUrl: data.clientLogoUrl || null,
       mission: data.mission || null,
       clientOverview: data.clientOverview || null,
       proposal: data.proposal || null,
@@ -539,6 +541,7 @@ export async function updateProjectHomeAction(formData: FormData) {
     },
     create: {
       projectId: data.projectId,
+      clientLogoUrl: data.clientLogoUrl || null,
       mission: data.mission || null,
       clientOverview: data.clientOverview || null,
       proposal: data.proposal || null,
