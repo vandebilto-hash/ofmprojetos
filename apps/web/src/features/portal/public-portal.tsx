@@ -418,7 +418,6 @@ function HomeModule({ project }: { project: any }) {
           <div>
             <p className="text-[10px] font-black uppercase tracking-[0.2em] text-white/55">Cliente</p>
             <h2 className="mt-2 text-2xl font-black leading-tight">{project.client.name}</h2>
-            <p className="mt-1 text-sm font-semibold text-white/65">Identidade visual do projeto</p>
           </div>
           <div className="flex h-24 w-40 items-center justify-center rounded-2xl border border-white/15 bg-white p-4 shadow-xl">
             {project.home?.clientLogoUrl ? (
