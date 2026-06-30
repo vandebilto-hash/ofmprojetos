@@ -30,14 +30,14 @@ export default async function PublicProjectModulePage({ params }: { params: { to
             orderBy: { createdAt: "desc" }
           },
           importantEmails: {
-            where: { parentId: null },
+            where: { parentId: null, visibility: "CLIENT_VISIBLE" },
             include: {
               attachments: { orderBy: { createdAt: "asc" } },
-              replies: { include: { attachments: { orderBy: { createdAt: "asc" } } }, orderBy: { date: "asc" } }
+              replies: { where: { visibility: "CLIENT_VISIBLE" }, include: { attachments: { orderBy: { createdAt: "asc" } } }, orderBy: { date: "asc" } }
             },
             orderBy: { date: "desc" }
           },
-          meetingMinutes: { orderBy: { meetingDate: "desc" } },
+          meetingMinutes: { where: { visibility: "CLIENT_VISIBLE" }, orderBy: { meetingDate: "desc" } },
           todos: {
             where: { visibleToClient: true },
             include: { task: true, risk: true, blocker: true, pendingIssue: true },

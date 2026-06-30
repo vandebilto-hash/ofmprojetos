@@ -9,6 +9,12 @@ import { prisma } from "@/lib/prisma/client";
 import { getProjectPeople } from "@/lib/project-people";
 import { deleteMeetingMinuteAction, upsertMeetingMinuteAction } from "@/server/actions/projects";
 
+const visibilityLabel: Record<string, string> = {
+  INTERNAL: "Interno OFM",
+  PROJECT_TEAM: "Equipe do projeto",
+  CLIENT_VISIBLE: "Público / cliente"
+};
+
 function inputDate(value: Date | null) {
   return value ? value.toISOString().slice(0, 10) : "";
 }
@@ -40,7 +46,7 @@ export default async function ProjectMinutesPage({ params }: { params: { id: str
           <article key={minute.id} className="rounded-lg border border-line bg-white p-4 text-sm shadow-soft">
             <div className="flex items-start justify-between gap-3">
               <div>
-                <p className="text-xs font-bold text-slate-500">{formatDate(minute.meetingDate)} | {minute.meetingType ?? "Reuniao"} | {minute.status}</p>
+                <p className="text-xs font-bold text-slate-500">{formatDate(minute.meetingDate)} | {minute.meetingType ?? "Reuniao"} | {minute.status} | {visibilityLabel[minute.visibility] ?? "Equipe do projeto"}</p>
                 <h2 className="mt-1 font-bold text-ink">{minute.title}</h2>
                 <p className="mt-1 text-slate-600">{minute.summary}</p>
                 <p className="mt-2 text-xs text-slate-500">Participantes: {minute.participants ?? "-"}</p>
@@ -94,7 +100,7 @@ function MinuteForm({ projectId, minute, people }: { projectId: string; minute?:
 
       <div>
         <p className={sectionTitle}>Detalhes</p>
-        <div className="mt-2 grid grid-cols-3 gap-3">
+        <div className="mt-2 grid grid-cols-4 gap-3">
           <label className={labelClass}>
             Data <span className="text-red-500">*</span>
             <input name="meetingDate" type="date" required defaultValue={inputDate(minute?.meetingDate ?? null)} className={inputClass} />
@@ -117,6 +123,14 @@ function MinuteForm({ projectId, minute, people }: { projectId: string; minute?:
               <option value="Em revisão">Em revisão</option>
               <option value="Publicado">Publicado</option>
               <option value="Cancelado">Cancelado</option>
+            </select>
+          </label>
+          <label className={labelClass}>
+            Visibilidade <span className="text-red-500">*</span>
+            <select name="visibility" defaultValue={minute?.visibility ?? "PROJECT_TEAM"} className={selectClass} required>
+              <option value="INTERNAL">Interno OFM</option>
+              <option value="PROJECT_TEAM">Equipe do projeto</option>
+              <option value="CLIENT_VISIBLE">Público / cliente</option>
             </select>
           </label>
         </div>

@@ -266,7 +266,7 @@ function PortalAtasTab({ project }: { project: any }) {
             </p>
           </div>
           {minute.fileUrl ? (
-            <Link href={minute.fileUrl.startsWith("data:") ? `/api/files/document?documentId=${minute.id}` : minute.fileUrl} target="_blank" className="mt-3 inline-flex items-center gap-1.5 rounded-lg bg-[#062553] px-3 py-2 text-xs font-bold text-white hover:bg-[#0f1b3d]">
+            <Link href={minute.fileUrl.startsWith("data:") ? `/api/files/minute?minuteId=${minute.id}` : minute.fileUrl} target="_blank" className="mt-3 inline-flex items-center gap-1.5 rounded-lg bg-[#062553] px-3 py-2 text-xs font-bold text-white hover:bg-[#0f1b3d]">
               <BookOpen size={12} />
               Abrir ata
             </Link>

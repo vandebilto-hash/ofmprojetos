@@ -34,6 +34,22 @@ const tabLabels: Record<TabKey, string> = {
 
 const planDocumentTypes = ["Plano do projeto", "Cronograma", "Contrato"];
 
+const visibilityLabel: Record<string, string> = {
+  INTERNAL: "Interno OFM",
+  PROJECT_TEAM: "Equipe do projeto",
+  CLIENT_VISIBLE: "Público / cliente",
+};
+
+function VisibilitySelect({ defaultValue, selectClass }: { defaultValue?: string; selectClass: string }) {
+  return (
+    <select name="visibility" defaultValue={defaultValue ?? "PROJECT_TEAM"} required className={selectClass}>
+      <option value="INTERNAL">Interno OFM</option>
+      <option value="PROJECT_TEAM">Equipe do projeto</option>
+      <option value="CLIENT_VISIBLE">Público / cliente</option>
+    </select>
+  );
+}
+
 export function UnifiedDocumentsClient({
   project,
   people,
@@ -101,7 +117,7 @@ function EmailsTab({ project, people }: { project: any; people: string[] }) {
             <div className="flex items-start justify-between gap-3">
               <div>
                 <p className="text-xs font-bold text-slate-500">
-                  {formatDate(email.date)} | {email.category} | {email.status}
+                  {formatDate(email.date)} | {email.category} | {email.status} | {visibilityLabel[email.visibility] ?? "Equipe do projeto"}
                 </p>
                 <h2 className="mt-1 font-bold text-ink">{email.subject}</h2>
                 <p className="mt-1 text-slate-600">{email.summary}</p>
@@ -172,7 +188,7 @@ function EmailsTab({ project, people }: { project: any; people: string[] }) {
                       <div>
                         <p className="text-xs font-bold text-slate-500">
                           {formatDate(reply.date)} | {reply.category} |{" "}
-                          {reply.status}
+                          {reply.status} | {visibilityLabel[reply.visibility] ?? "Equipe do projeto"}
                         </p>
                         <h3 className="mt-1 font-bold text-ink">
                           {reply.subject}
@@ -385,6 +401,10 @@ function EmailForm({
           />
         </label>
       </div>
+      <label className={labelClass}>
+        Visibilidade <span className="text-red-500">*</span>
+        <VisibilitySelect defaultValue={email?.visibility} selectClass={selectClass} />
+      </label>
       <FileUpload
         name="attachmentUrl"
         label="Arquivo do e-mail"
@@ -431,7 +451,7 @@ function AtasTab({ project, people }: { project: any; people: string[] }) {
               <div>
                 <p className="text-xs font-bold text-slate-500">
                   {formatDate(minute.meetingDate)} |{" "}
-                  {minute.meetingType ?? "Reuniao"} | {minute.status}
+                  {minute.meetingType ?? "Reuniao"} | {minute.status} | {visibilityLabel[minute.visibility] ?? "Equipe do projeto"}
                 </p>
                 <h2 className="mt-1 font-bold text-ink">{minute.title}</h2>
                 <p className="mt-1 text-slate-600">{minute.summary}</p>
@@ -578,6 +598,10 @@ function MinuteForm({
         people={people}
         defaultValue={minute?.participants ?? ""}
       />
+      <label className={labelClass}>
+        Visibilidade <span className="text-red-500">*</span>
+        <VisibilitySelect defaultValue={minute?.visibility} selectClass={selectClass} />
+      </label>
       <FileUpload
         name="fileUrl"
         label="Arquivo"
@@ -662,7 +686,7 @@ function ProjectDocumentsList({
                 <div>
                   <p className="font-semibold text-ink">{document.name}</p>
                   <p className="text-slate-500">
-                    {document.type} | {document.status} | {document.version ?? "sem versao"} | {document.visibility === "CLIENT_VISIBLE" ? "cliente" : document.visibility === "PROJECT_TEAM" ? "equipe" : "interno"}
+                    {document.type} | {document.status} | {document.version ?? "sem versao"} | {visibilityLabel[document.visibility] ?? "Equipe do projeto"}
                   </p>
                 </div>
                 <div className="flex gap-2">
@@ -830,13 +854,13 @@ function DocumentForm({
           Visibilidade <span className="text-red-500">*</span>
           <select
             name="visibility"
-            defaultValue={document?.visibility ?? "CLIENT_VISIBLE"}
+            defaultValue={document?.visibility ?? "PROJECT_TEAM"}
             required
             className={selectClass}
           >
-            <option value="CLIENT_VISIBLE">Cliente</option>
-            <option value="PROJECT_TEAM">Equipe</option>
-            <option value="INTERNAL">Interno</option>
+            <option value="INTERNAL">Interno OFM</option>
+            <option value="PROJECT_TEAM">Equipe do projeto</option>
+            <option value="CLIENT_VISIBLE">Público / cliente</option>
           </select>
         </label>
       </div>

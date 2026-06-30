@@ -253,6 +253,7 @@ const importantEmailSchema = z.object({
   category: z.string().optional(),
   status: z.string().optional(),
   date: dateField,
+  visibility: z.enum(["INTERNAL", "PROJECT_TEAM", "CLIENT_VISIBLE"]).default("PROJECT_TEAM"),
   attachmentUrl: z.string().optional(),
   attachments: z.string().optional()
 });
@@ -277,6 +278,7 @@ const meetingMinuteSchema = z.object({
   meetingType: z.string().optional(),
   participants: z.string().optional(),
   status: z.string().optional(),
+  visibility: z.enum(["INTERNAL", "PROJECT_TEAM", "CLIENT_VISIBLE"]).default("PROJECT_TEAM"),
   fileUrl: z.string().optional()
 });
 
@@ -984,6 +986,7 @@ export async function upsertImportantEmailAction(formData: FormData) {
     category: data.category || "E-mail Formal",
     status: data.status || "Solucionado",
     date: data.date,
+    visibility: data.visibility,
     attachmentUrl: data.attachmentUrl || null
   };
   const before = data.emailId ? await prisma.importantEmail.findUnique({ where: { id: data.emailId } }) : null;
@@ -1032,6 +1035,7 @@ export async function upsertMeetingMinuteAction(formData: FormData) {
     meetingType: data.meetingType || null,
     participants: data.participants || null,
     status: data.status || "Publicado",
+    visibility: data.visibility,
     fileUrl: data.fileUrl || null
   };
   const before = data.minuteId ? await prisma.meetingMinute.findUnique({ where: { id: data.minuteId } }) : null;

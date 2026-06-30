@@ -10,6 +10,12 @@ import { prisma } from "@/lib/prisma/client";
 import { getProjectPeople } from "@/lib/project-people";
 import { deleteImportantEmailAction, upsertImportantEmailAction } from "@/server/actions/projects";
 
+const visibilityLabel: Record<string, string> = {
+  INTERNAL: "Interno OFM",
+  PROJECT_TEAM: "Equipe do projeto",
+  CLIENT_VISIBLE: "Público / cliente"
+};
+
 function inputDate(value: Date | null) {
   return value ? value.toISOString().slice(0, 10) : "";
 }
@@ -48,7 +54,7 @@ export default async function ProjectEmailsPage({ params }: { params: { id: stri
           <article key={email.id} className="rounded-lg border border-line bg-white p-4 text-sm shadow-soft">
             <div className="flex items-start justify-between gap-3">
               <div>
-                <p className="text-xs font-bold text-slate-500">{formatDate(email.date)} | {email.category} | {email.status}</p>
+                <p className="text-xs font-bold text-slate-500">{formatDate(email.date)} | {email.category} | {email.status} | {visibilityLabel[email.visibility] ?? "Equipe do projeto"}</p>
                 <h2 className="mt-1 font-bold text-ink">{email.subject}</h2>
                 <p className="mt-1 text-slate-600">{email.summary}</p>
                 <p className="mt-2 text-xs text-slate-500">Origem: {email.origin ?? "-"} | Envolvidos: {email.involved ?? "-"}</p>
@@ -77,7 +83,7 @@ export default async function ProjectEmailsPage({ params }: { params: { id: stri
                   <div key={reply.id} className="rounded-lg border border-line bg-slate-50 p-3">
                     <div className="flex items-start justify-between gap-3">
                       <div>
-                        <p className="text-xs font-bold text-slate-500">{formatDate(reply.date)} | {reply.category} | {reply.status}</p>
+                        <p className="text-xs font-bold text-slate-500">{formatDate(reply.date)} | {reply.category} | {reply.status} | {visibilityLabel[reply.visibility] ?? "Equipe do projeto"}</p>
                         <h3 className="mt-1 font-bold text-ink">{reply.subject}</h3>
                         <p className="mt-1 text-slate-600">{reply.summary}</p>
                         <p className="mt-2 text-xs text-slate-500">Origem: {reply.origin ?? "-"} | Envolvidos: {reply.involved ?? "-"}</p>
@@ -165,7 +171,7 @@ function EmailForm({ projectId, parentId, email, people, defaultSubject }: { pro
 
       <div>
         <p className={sectionTitle}>Classificação</p>
-        <div className="mt-2 grid grid-cols-3 gap-3">
+        <div className="mt-2 grid grid-cols-4 gap-3">
           <label className={labelClass}>
             Categoria <span className="text-red-500">*</span>
             <select name="category" defaultValue={email?.category ?? "E-mail Formal"} className={selectClass} required>
@@ -190,6 +196,14 @@ function EmailForm({ projectId, parentId, email, people, defaultSubject }: { pro
           <label className={labelClass}>
             Data <span className="text-red-500">*</span>
             <input name="date" type="date" required defaultValue={inputDate(email?.date ?? null)} className={inputClass} />
+          </label>
+          <label className={labelClass}>
+            Visibilidade <span className="text-red-500">*</span>
+            <select name="visibility" defaultValue={email?.visibility ?? "PROJECT_TEAM"} className={selectClass} required>
+              <option value="INTERNAL">Interno OFM</option>
+              <option value="PROJECT_TEAM">Equipe do projeto</option>
+              <option value="CLIENT_VISIBLE">Público / cliente</option>
+            </select>
           </label>
         </div>
       </div>

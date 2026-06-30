@@ -346,6 +346,7 @@ model ImportantEmail {
   status        String                     @default("Solucionado")
   date          DateTime
   attachmentUrl String?
+  visibility    DocumentVisibility         @default(PROJECT_TEAM)
   project       Project                    @relation(fields: [projectId], references: [id], onDelete: Cascade)
   parent        ImportantEmail?            @relation("EmailThread", fields: [parentId], references: [id], onDelete: Cascade)
   replies       ImportantEmail[]           @relation("EmailThread")
@@ -353,7 +354,7 @@ model ImportantEmail {
   createdAt     DateTime                   @default(now())
   updatedAt     DateTime                   @updatedAt
 
-  @@index([projectId, date, status])
+  @@index([projectId, date, status, visibility])
   @@index([parentId, date])
 }
 
@@ -378,11 +379,12 @@ model MeetingMinute {
   participants String?
   status       String   @default("Publicado")
   fileUrl      String?
+  visibility   DocumentVisibility @default(PROJECT_TEAM)
   project      Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
-  @@index([projectId, meetingDate, status])
+  @@index([projectId, meetingDate, status, visibility])
 }
 
 model ProjectModuleSetting {
