@@ -69,7 +69,11 @@ export function ProjectPortal({ project, publicToken }: ProjectPortalProps) {
             {project.partners.map((partner: any) => (
               <div key={partner.id} className="rounded-lg bg-slate-50 p-3">
                 <div className="flex items-center gap-2">
-                  {partner.logoUrl ? <img src={partner.logoUrl} alt={partner.name} className="h-8 w-8 rounded object-contain" /> : null}
+                  {partner.logoUrl ? (
+                    <div className="flex h-10 w-20 shrink-0 items-center justify-center rounded border border-line bg-white p-1.5">
+                      <img src={partner.logoUrl} alt={partner.name} className="max-h-full max-w-full object-contain" />
+                    </div>
+                  ) : null}
                   <p className="font-semibold text-ink">{partner.name}</p>
                   <span className={`rounded px-1.5 py-0.5 text-[10px] font-semibold ${partner.type === "CLIENT" ? "bg-blue-100 text-blue-700" : "bg-violet-100 text-violet-700"}`}>
                     {partner.type === "CLIENT" ? "Cliente" : "Parceiro Técnico"}

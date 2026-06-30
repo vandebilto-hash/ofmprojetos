@@ -110,7 +110,9 @@ export default async function ProjectDetailPage({ params }: { params: { id: stri
               <div key={partner.id} className="flex items-start justify-between gap-3 rounded-md border border-line p-3 text-sm">
                 <div className="flex items-start gap-3">
                   {partner.logoUrl ? (
-                    <img src={partner.logoUrl} alt={partner.name} className="h-10 w-10 shrink-0 rounded-md object-contain" />
+                    <div className="flex h-12 w-24 shrink-0 items-center justify-center rounded-md border border-line bg-white p-2 dark:border-slate-700">
+                      <img src={partner.logoUrl} alt={partner.name} className="max-h-full max-w-full object-contain" />
+                    </div>
                   ) : null}
                   <div>
                     <div className="flex items-center gap-2">

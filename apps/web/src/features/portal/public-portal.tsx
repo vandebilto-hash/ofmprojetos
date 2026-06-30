@@ -443,13 +443,15 @@ function HomeModule({ project }: { project: any }) {
               const initials = partner.name.split(" ").map((w: string) => w[0]).join("").slice(0,2).toUpperCase();
               return (
                 <div key={partner.id} className="flex items-start gap-3 rounded-xl border border-slate-100 bg-white p-4 shadow-[0_1px_3px_rgba(0,0,0,.04)] transition-shadow hover:shadow-md">
-                  {partner.logoUrl ? (
-                    <img src={partner.logoUrl} alt={partner.name} className="h-10 w-10 shrink-0 rounded-lg object-contain" />
-                  ) : (
-                    <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-xs font-black text-white ${colors[i % colors.length]}`}>
-                      {initials}
-                    </div>
-                  )}
+                  <div className="flex h-12 w-24 shrink-0 items-center justify-center rounded-lg border border-slate-100 bg-white p-2 shadow-sm">
+                    {partner.logoUrl ? (
+                      <img src={partner.logoUrl} alt={partner.name} className="max-h-full max-w-full object-contain" />
+                    ) : (
+                      <div className={`flex h-8 w-8 items-center justify-center rounded-lg text-xs font-black text-white ${colors[i % colors.length]}`}>
+                        {initials}
+                      </div>
+                    )}
+                  </div>
                   <div>
                     <div className="flex items-center gap-2">
                       <p className="text-sm font-black text-slate-900">{partner.name}</p>
