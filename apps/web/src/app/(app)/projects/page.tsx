@@ -1,5 +1,5 @@
 import { getServerSession } from "next-auth";
-import { Search, SlidersHorizontal } from "lucide-react";
+import { Download, Search, SlidersHorizontal } from "lucide-react";
 import { DialogAction } from "@/components/ui/dialog-action";
 import { PageHeader } from "@/components/ui/page-header";
 import { ImportProjectForm } from "@/features/projects/import-project-form";
@@ -15,6 +15,10 @@ export default async function ProjectsPage({
 }) {
   const session = await getServerSession(authOptions);
   const canManage = canManageProject(session?.user.role);
+  const exportParams = new URLSearchParams();
+  if (searchParams.q) exportParams.set("q", searchParams.q);
+  if (searchParams.status) exportParams.set("status", searchParams.status);
+  const exportHref = `/api/export/projects${exportParams.toString() ? `?${exportParams.toString()}` : ""}`;
 
   const [projects, clients, managers] = await Promise.all([
     prisma.project.findMany({
@@ -39,8 +43,16 @@ export default async function ProjectsPage({
         title="Projetos"
         description={`${projects.length} projeto${projects.length !== 1 ? "s" : ""} encontrado${projects.length !== 1 ? "s" : ""}`}
         actions={
-          canManage ? (
-            <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2">
+            <a
+              href={exportHref}
+              className="inline-flex h-9 items-center gap-2 rounded-md border border-line bg-white px-4 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-50 dark:border-slate-700 dark:bg-[#111c31] dark:text-slate-100 dark:hover:bg-slate-800"
+            >
+              <Download size={15} aria-hidden="true" />
+              Exportar CSV
+            </a>
+            {canManage ? (
+              <>
               <DialogAction
                 title="Importar projeto"
                 description="Importe arquivos MS Project ou CSV para criar projeto, tarefas, predecessoras e recursos."
@@ -60,8 +72,9 @@ export default async function ProjectsPage({
               >
                 Novo projeto
               </a>
-            </div>
-          ) : undefined
+              </>
+            ) : null}
+          </div>
         }
       />
 
