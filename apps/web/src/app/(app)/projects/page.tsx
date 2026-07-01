@@ -19,6 +19,9 @@ export default async function ProjectsPage({
   if (searchParams.q) exportParams.set("q", searchParams.q);
   if (searchParams.status) exportParams.set("status", searchParams.status);
   const exportHref = `/api/export/projects${exportParams.toString() ? `?${exportParams.toString()}` : ""}`;
+  const mspdiExportParams = new URLSearchParams(exportParams);
+  mspdiExportParams.set("format", "mspdi");
+  const mspdiExportHref = `/api/export/projects?${mspdiExportParams.toString()}`;
 
   const [projects, clients, managers] = await Promise.all([
     prisma.project.findMany({
@@ -50,6 +53,13 @@ export default async function ProjectsPage({
             >
               <Download size={15} aria-hidden="true" />
               Exportar CSV
+            </a>
+            <a
+              href={mspdiExportHref}
+              className="inline-flex h-9 items-center gap-2 rounded-md border border-line bg-white px-4 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-50 dark:border-slate-700 dark:bg-[#111c31] dark:text-slate-100 dark:hover:bg-slate-800"
+            >
+              <Download size={15} aria-hidden="true" />
+              Exportar MPP
             </a>
             {canManage ? (
               <>
