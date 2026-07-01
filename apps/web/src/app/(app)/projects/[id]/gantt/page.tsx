@@ -1,4 +1,5 @@
 import { getServerSession } from "next-auth";
+import { Download } from "lucide-react";
 import { notFound } from "next/navigation";
 import { DialogAction } from "@/components/ui/dialog-action";
 import { PageHeader } from "@/components/ui/page-header";
@@ -61,6 +62,14 @@ export default async function ProjectGanttPage({ params, searchParams }: { param
             <p className="mt-1 max-w-2xl text-sm text-slate-600">Importe MPP, crie baselines, visualize o Gantt e atualize status, progresso, horas e responsaveis na lista To-do abaixo.</p>
           </div>
           <div className="flex flex-wrap justify-end gap-2">
+            <a
+              href={`/api/export?projectId=${project.id}&format=mspdi`}
+              download
+              className="inline-flex h-9 items-center gap-2 rounded-md border border-line bg-white px-4 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-50 dark:border-slate-700 dark:bg-[#111c31] dark:text-slate-100 dark:hover:bg-slate-800"
+            >
+              <Download size={15} aria-hidden="true" />
+              Exportar MPP
+            </a>
             <DialogAction title="Criar baseline" description="Salve um snapshot do cronograma atual e informe o motivo." trigger="create" triggerLabel="Nova baseline">
               <form action={createBaselineAction} className="grid gap-3">
                 <input type="hidden" name="projectId" value={project.id} />
