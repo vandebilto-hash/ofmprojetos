@@ -1,3 +1,4 @@
+import { getServerSession } from "next-auth";
 import { DialogAction } from "@/components/ui/dialog-action";
 import { DeleteConfirmationDialog } from "@/components/ui/delete-confirmation-dialog";
 import { PageHeader } from "@/components/ui/page-header";
@@ -5,8 +6,10 @@ import { PasswordInput } from "@/components/ui/password-input";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { EmptyState } from "@/components/ui/empty-state";
 import { CreateUserForm } from "@/features/admin/create-user-form";
+import { authOptions } from "@/lib/auth/options";
+import { isSuperAdminUser } from "@/lib/permissions/super-admin";
 import { prisma } from "@/lib/prisma/client";
-import { deleteUserAction, updateUserStatusAction } from "@/server/actions/admin";
+import { deleteUserAction, updateUserRoleAction, updateUserStatusAction } from "@/server/actions/admin";
 import { UsersRound } from "lucide-react";
 
 const roleLabels: Record<string, string> = {
@@ -40,9 +43,12 @@ function UserAvatar({ name, status }: { name: string; status: string }) {
 }
 
 export default async function AdminUsersPage() {
-  const [users, clients] = await Promise.all([
+  const session = await getServerSession(authOptions);
+  const isSuperAdmin = isSuperAdminUser(session?.user);
+  const [users, clients, roles] = await Promise.all([
     prisma.user.findMany({ include: { role: true, client: true }, orderBy: { name: "asc" } }),
-    prisma.client.findMany({ orderBy: { name: "asc" } })
+    prisma.client.findMany({ orderBy: { name: "asc" } }),
+    prisma.role.findMany({ orderBy: { name: "asc" } })
   ]);
 
   return (
@@ -140,9 +146,31 @@ export default async function AdminUsersPage() {
                     </td>
                     <td className="px-4 py-3 text-slate-600 dark:text-slate-400">{user.email}</td>
                     <td className="px-4 py-3">
-                      <span className="rounded-md bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-700 dark:bg-slate-700 dark:text-slate-300">
-                        {roleLabels[user.role.name] ?? user.role.name}
-                      </span>
+                      {isSuperAdmin ? (
+                        <form action={updateUserRoleAction} className="flex items-center gap-2">
+                          <input type="hidden" name="userId" value={user.id} />
+                          <select
+                            name="roleName"
+                            defaultValue={user.role.name}
+                            className="h-8 rounded-md border border-line bg-white px-2 text-xs font-semibold text-slate-700 outline-none focus:border-brand-500 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white"
+                            aria-label={`Perfil de ${user.name}`}
+                          >
+                            {roles.map((role) => (
+                              <option key={role.id} value={role.name}>{roleLabels[role.name] ?? role.name}</option>
+                            ))}
+                          </select>
+                          <button
+                            type="submit"
+                            className="rounded-md bg-brand-600 px-2.5 py-1 text-xs font-semibold text-white transition-colors hover:bg-brand-700"
+                          >
+                            Salvar
+                          </button>
+                        </form>
+                      ) : (
+                        <span className="rounded-md bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-700 dark:bg-slate-700 dark:text-slate-300">
+                          {roleLabels[user.role.name] ?? user.role.name}
+                        </span>
+                      )}
                     </td>
                     <td className="px-4 py-3 text-slate-600 dark:text-slate-400">{user.client?.name ?? "—"}</td>
                     <td className="px-4 py-3 tabular-nums text-slate-600 dark:text-slate-400">

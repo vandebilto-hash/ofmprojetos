@@ -1,12 +1,27 @@
+import { getServerSession } from "next-auth";
 import { DialogAction } from "@/components/ui/dialog-action";
 import { DeleteConfirmationDialog } from "@/components/ui/delete-confirmation-dialog";
 import { PageHeader } from "@/components/ui/page-header";
 import { StatusBadge } from "@/components/ui/status-badge";
+import { authOptions } from "@/lib/auth/options";
+import { isSuperAdminUser } from "@/lib/permissions/super-admin";
 import { prisma } from "@/lib/prisma/client";
-import { createClientAction, deleteClientAction, updateClientStatusAction } from "@/server/actions/admin";
+import { createClientAction, deleteClientAction, updateClientStatusAction, updateUserRoleAction } from "@/server/actions/admin";
+
+const roleLabels: Record<string, string> = {
+  ADMIN: "Administrador",
+  PROJECT_MANAGER: "Gestor",
+  EMPLOYEE: "Funcionário",
+  CLIENT: "Cliente"
+};
 
 export default async function AdminClientsPage() {
-  const clients = await prisma.client.findMany({ include: { projects: true, users: true }, orderBy: { name: "asc" } });
+  const session = await getServerSession(authOptions);
+  const isSuperAdmin = isSuperAdminUser(session?.user);
+  const [clients, roles] = await Promise.all([
+    prisma.client.findMany({ include: { projects: true, users: { include: { role: true }, orderBy: { name: "asc" } } }, orderBy: { name: "asc" } }),
+    prisma.role.findMany({ orderBy: { name: "asc" } })
+  ]);
   return (
     <>
       <PageHeader title="Clientes" description="Cadastro de clientes e vinculos com projetos e usuarios." />
@@ -84,6 +99,43 @@ export default async function AdminClientsPage() {
             <p className="mt-2 text-sm text-slate-600">{client.email ?? "-"} | {client.phone ?? "-"}</p>
             <p className="mt-2 text-xs text-slate-500">{client.projects.length} projetos | {client.users.length} usuarios cliente</p>
             {client.notes ? <p className="mt-2 text-sm text-slate-500">{client.notes}</p> : null}
+            {client.users.length ? (
+              <div className="mt-4 rounded-lg border border-line bg-slate-50 p-3 dark:border-slate-700 dark:bg-[#0f172a]">
+                <p className="text-xs font-bold uppercase tracking-wide text-slate-500 dark:text-slate-400">Usuários vinculados</p>
+                <div className="mt-2 grid gap-2">
+                  {client.users.map((user) => (
+                    <div key={user.id} className="flex flex-wrap items-center justify-between gap-2 rounded-md bg-white px-3 py-2 text-sm dark:bg-[#111c31]">
+                      <div>
+                        <p className="font-semibold text-ink dark:text-white">{user.name}</p>
+                        <p className="text-xs text-slate-500">{user.email}</p>
+                      </div>
+                      {isSuperAdmin ? (
+                        <form action={updateUserRoleAction} className="flex items-center gap-2">
+                          <input type="hidden" name="userId" value={user.id} />
+                          <select
+                            name="roleName"
+                            defaultValue={user.role.name}
+                            className="h-8 rounded-md border border-line bg-white px-2 text-xs font-semibold text-slate-700 outline-none focus:border-brand-500 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white"
+                            aria-label={`Perfil de ${user.name}`}
+                          >
+                            {roles.map((role) => (
+                              <option key={role.id} value={role.name}>{roleLabels[role.name] ?? role.name}</option>
+                            ))}
+                          </select>
+                          <button type="submit" className="rounded-md bg-brand-600 px-2.5 py-1 text-xs font-semibold text-white hover:bg-brand-700">
+                            Salvar
+                          </button>
+                        </form>
+                      ) : (
+                        <span className="rounded-md bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-700 dark:bg-slate-700 dark:text-slate-300">
+                          {roleLabels[user.role.name] ?? user.role.name}
+                        </span>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : null}
           </div>
         ))}
       </div>

@@ -6,6 +6,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { authOptions } from "@/lib/auth/options";
 import { can } from "@/lib/permissions/rbac";
+import { isSuperAdminUser } from "@/lib/permissions/super-admin";
 import { prisma } from "@/lib/prisma/client";
 
 const userSchema = z.object({
@@ -32,6 +33,11 @@ const clientSchema = z.object({
 const userStatusSchema = z.object({
   userId: z.string().min(1),
   status: z.enum(["ACTIVE", "INACTIVE"])
+});
+
+const userRoleSchema = z.object({
+  userId: z.string().min(1),
+  roleName: z.enum(["ADMIN", "PROJECT_MANAGER", "EMPLOYEE", "CLIENT"])
 });
 
 const userDeleteSchema = z.object({
@@ -170,6 +176,39 @@ export async function updateUserStatusAction(formData: FormData) {
   });
 
   revalidatePath("/admin/users");
+  revalidatePath("/admin");
+}
+
+export async function updateUserRoleAction(formData: FormData) {
+  const session = await getServerSession(authOptions);
+  if (!isSuperAdminUser(session?.user)) throw new Error("Somente o superadmin pode alterar permissoes de usuarios.");
+
+  const data = userRoleSchema.parse(Object.fromEntries(formData));
+  if (data.userId === session?.user.id && data.roleName !== "ADMIN") {
+    throw new Error("O superadmin nao pode remover o proprio perfil de administrador.");
+  }
+
+  const before = await prisma.user.findUniqueOrThrow({ where: { id: data.userId }, include: { role: true } });
+  const role = await prisma.role.findUniqueOrThrow({ where: { name: data.roleName } });
+  const user = await prisma.user.update({
+    where: { id: data.userId },
+    data: { roleId: role.id },
+    include: { role: true }
+  });
+
+  await prisma.auditLog.create({
+    data: {
+      actorId: session?.user.id,
+      entityType: "User",
+      entityId: user.id,
+      action: "UPDATE_ROLE",
+      before: { id: before.id, roleName: before.role.name },
+      after: { id: user.id, roleName: user.role.name }
+    }
+  });
+
+  revalidatePath("/admin/users");
+  revalidatePath("/admin/clients");
   revalidatePath("/admin");
 }
 
